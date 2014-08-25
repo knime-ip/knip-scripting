@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./scripting_icon.png" type="Manipulator">
+	<name>Scripting</name>
+
+	<shortDescription>Script your own KNIME and KNIP nodes.</shortDescription>
+
+	<fullDescription>
+		<intro></intro>
+		<tab name="Options">
+			<option name="Defalt">
+			</option>
+		</tab>
+	</fullDescription>
+
+	<ports>
+		<inPort name="input" index="0">
+		</inPort>
+		<outPort index="0" name="output">Result</outPort>
+	</ports>
+
+</knimeNode>

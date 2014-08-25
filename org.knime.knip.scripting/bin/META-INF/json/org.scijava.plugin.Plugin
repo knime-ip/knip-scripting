@@ -1,0 +1,1 @@
+{"class":"org.knime.knip.scripting.base.BlockingCommandJavaRunner","values":{"priority":Infinity,"type":"org.scijava.plugins.scripting.java.JavaRunner"}}

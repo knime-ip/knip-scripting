@@ -91,7 +91,7 @@ public class ScriptingNodeFactory<T extends RealType<T>> extends
 
 	@Override
 	public NodeModel createNodeModel() {
-		return new ScriptingNodeModel();
+		return new ScriptingNodeModel(1, 1);
 	}
 
 }

@@ -50,6 +50,7 @@ package org.knime.knip.scripting.base;
 
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.knip.base.node.LazyNodeDialogPane;
+import org.knime.knip.scripting.ui.CodeEditorDialogComponent;
 
 /**
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>

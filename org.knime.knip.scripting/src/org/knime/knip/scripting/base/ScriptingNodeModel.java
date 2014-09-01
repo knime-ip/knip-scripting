@@ -37,7 +37,6 @@ import org.knime.knip.scijava.bridge.impl.KnimeOutputDataTableService;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
-import org.scijava.command.CommandService;
 import org.scijava.module.ModuleItem;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Plugin;
@@ -105,24 +104,24 @@ public class ScriptingNodeModel extends NodeModel {
 
 		m_context = new Context(ScriptService.class, JavaService.class,
 				KnimeInputDataTableService.class,
-				KnimeOutputDataTableService.class, KnimeExecutionService.class,
+				KnimeOutputDataTableService.class,
+				KnimeExecutionService.class,
 				ObjectService.class, WidgetService.class,
 				InputAdapterService.class, OutputAdapterService.class);
 		
 		/* add custom CommandRunner Plugin */
-		m_context.getService(PluginService.class).addPlugin(
-				new PluginInfo<>(BlockingCommandJavaRunner.class,
+		PluginService plugins = m_context.getService(PluginService.class);
+		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
 						JavaRunner.class));
 		
 		m_objectService = m_context.getService(ObjectService.class);
 		m_java = m_objectService.getObjects(JavaScriptLanguage.class).get(0);
 		m_javaEngine = (JavaEngine) m_java.getScriptEngine();		
 		m_javaRunner = m_context.getService(JavaService.class);
+		
+		/* create classLoaderManager */
 
-		/* create context */
-		m_clManager = new ClassLoaderManager();
-
-		/* add libraries to class path */
+		/* add libraries to its class path */
 		ArrayList<URL> urls = new ArrayList<URL>();
 
 		for (String project : DEFAULT_DEPENDENCIES) {
@@ -130,8 +129,9 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 
 		URL[] urlArray = urls.toArray(new URL[] {});
-		m_clManager.setClassLoader(urlArray); // store the url class loader.
-												// TODO: Move to Constructor
+		
+		m_clManager = new ClassLoaderManager(urlArray);
+		
 		m_clManager.resetClassLoader();
 	}
 
@@ -140,7 +140,8 @@ public class ScriptingNodeModel extends NodeModel {
 
 		URLClassLoader m_urlClassLoader;
 
-		public ClassLoaderManager() {
+		public ClassLoaderManager(URL[] urls) {
+			setClassLoader(urls);
 		}
 
 		public void setClassLoader(URL[] urls) {

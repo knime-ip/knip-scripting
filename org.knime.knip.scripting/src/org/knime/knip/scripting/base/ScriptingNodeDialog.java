@@ -48,26 +48,450 @@
  */
 package org.knime.knip.scripting.base;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.script.ScriptException;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
+
+import org.knime.core.data.DataTableSpec;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.NotConfigurableException;
+import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
-import org.knime.knip.base.node.LazyNodeDialogPane;
+import org.knime.core.node.util.ColumnSelectionList;
+import org.knime.knip.scijava.bridge.widget.DialogWidgetService;
+import org.knime.knip.scripting.matching.ColumnInputMatching;
 import org.knime.knip.scripting.ui.CodeEditorDialogComponent;
+import org.knime.knip.scripting.ui.table.ColumnInputMatchingTable;
+import org.knime.knip.scripting.util.ClassLoaderManager;
+import org.scijava.Context;
+import org.scijava.command.Command;
+import org.scijava.command.CommandInfo;
+import org.scijava.command.CommandService;
+import org.scijava.module.Module;
+import org.scijava.module.ModuleException;
+import org.scijava.object.ObjectService;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.plugin.PluginInfo;
+import org.scijava.plugin.PluginService;
+import org.scijava.plugins.scripting.java.JavaEngine;
+import org.scijava.plugins.scripting.java.JavaRunner;
+import org.scijava.plugins.scripting.java.JavaScriptLanguage;
+import org.scijava.script.ScriptLanguage;
+import org.scijava.ui.swing.widget.SwingInputHarvester;
+import org.scijava.ui.swing.widget.SwingInputPanel;
 
 /**
+ * Dialog for the Scripting Node.
+ * 
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
+ * 
+ * @see ScriptingNodeModel
+ * @see ScriptingNodeFactory
  */
-public class ScriptingNodeDialog extends LazyNodeDialogPane {
+public class ScriptingNodeDialog extends NodeDialogPane implements
+		ActionListener {
 
-	private SettingsModelString m_codeModel;
+	/* settings: SettingsModels/Config IDs etc */
+	private final SettingsModelString m_codeModel = ScriptingNodeModel
+			.createCodeSettingsModel();
 
+	public final static String CFG_CIM_TABLE = "CIM_Table";
+
+	/* containers */
+	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
+	private final ArrayList<DialogComponent> m_generatedComponents = new ArrayList<DialogComponent>();
+
+	/* options for easy debugging */
+	public final static boolean DEBUG_UI = false;
+
+	// scijava context
+	private final Context m_context;
+
+	@Parameter
+	private ObjectService m_objectService;
+	@Parameter
+	private CommandService m_commandService;
+	@Parameter
+	private DialogWidgetService m_widgetService;
+
+	private JavaScriptLanguage m_java;
+	private JavaEngine m_javaEngine;
+	private ClassLoaderManager m_clManager;
+
+	/* UI Components */
+
+	// Table containing column/input matching.
+	private final ColumnInputMatchingTable m_columnMatchingTable = new ColumnInputMatchingTable(
+			new DataTableSpec(), null);
+
+	// Labels
+	private final static JLabel LBL_HEADER = new JLabel("Script Editor");
+	private final static JLabel LBL_LANG = new JLabel("Language: ");
+	private final static JLabel LBL_COLUMN = new JLabel("Column:");
+	private final static JLabel LBL_CIM = new JLabel("Column/Input Matchings:");
+
+	// ActionCommands for removing and adding column/input matchings
+	private final static String CMD_ADD = "add";
+	private final static String CMD_REM = "rem";
+
+	// tab panels
+	private final JPanel m_editorPanel = new JPanel(new GridBagLayout());
+	private final JPanel m_autogenPanel = new JPanel(new GridBagLayout());
+
+	// Language selection Combobox
+	private final JComboBox<String> m_langSelection = new JComboBox<String>(
+			new String[] { "Java" });
+
+	// column selection list for generating inputs with column matchings
+	private final ColumnSelectionList m_columnList = new ColumnSelectionList();
+
+	/* "cache" for data and compilation results */
+	private DataTableSpec m_lastDataTableSpec;
+	private Module m_lastCompiledModule;
+
+	/**
+	 * Default constructor
+	 */
 	public ScriptingNodeDialog() {
-		addDialogComponents();
+		m_context = ScriptingNodeModel.createContext();
+
+		/* add custom CommandRunner Plugin */
+		PluginService plugins = m_context.getService(PluginService.class);
+		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
+				JavaRunner.class));
+
+		m_context.inject(this);
+
+		ArrayList<String> languages = new ArrayList<String>();
+		for (ScriptLanguage s : m_objectService
+				.getObjects(ScriptLanguage.class)) {
+			languages.add(s.getLanguageName());
+		}
+
+		m_langSelection.setModel(new DefaultComboBoxModel<String>(languages
+				.toArray(new String[] {})));
+
+		m_java = m_objectService.getObjects(JavaScriptLanguage.class).get(0);
+		m_javaEngine = (JavaEngine) m_java.getScriptEngine();
+
+		m_clManager = ScriptingNodeModel.createClassLoaderManager();
+
+		/* one time setup of some components */
+		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+
+		/* create tabs */
+		super.addTabAt(0, "Script Editor", m_editorPanel);
+		super.addTabAt(1, "<Autogenerated Tab>", m_autogenPanel);
+
 		buildDialog();
+
 	}
 
-	public void addDialogComponents() {
-		m_codeModel = ScriptingNodeModel.createCodeSettingsModel();
-
-		addDialogComponent(new CodeEditorDialogComponent(m_codeModel));
+	/* utility functions for creating GridBagConstraints */
+	private static final GridBagConstraints createGBC(int x, int y, int w, int h) {
+		return new GridBagConstraints(x, y, w, h, 1.0, 1.0,
+				GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH,
+				new Insets(0, 0, 0, 0), 0, 0);
 	}
+
+	private static final GridBagConstraints createGBC(int x, int y, int w,
+			int h, int anchor, int fill) {
+		float weightx = 1.0f;
+		float weighty = 1.0f;
+
+		if (fill == GridBagConstraints.NONE) {
+			weightx = weighty = 0.0f;
+		} else if (fill == GridBagConstraints.HORIZONTAL) {
+			weighty = 0.0f;
+		} else if (fill == GridBagConstraints.VERTICAL) {
+			weightx = 0.0f;
+		}
+
+		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
+				fill, new Insets(0, 0, 0, 0), 0, 0);
+	}
+
+	private static final GridBagConstraints createGBC(int x, int y, int w,
+			int h, int anchor, int fill, double weightx, double weighty) {
+		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
+				fill, new Insets(0, 0, 0, 0), 0, 0);
+	}
+
+	/*
+	 * Add dialog components to tab panels.
+	 */
+	private void buildDialog() {
+		final int FILL_BOTH = GridBagConstraints.BOTH;
+		final int FILL_NONE = GridBagConstraints.NONE;
+		final int FILL_HORI = GridBagConstraints.HORIZONTAL;
+		final int FILL_VERT = GridBagConstraints.VERTICAL;
+		final int FIRST_LINE_START = GridBagConstraints.FIRST_LINE_START;
+		final int WEST = GridBagConstraints.WEST;
+		final int EAST = GridBagConstraints.EAST;
+		final Insets NO_INSETS = new Insets(0, 0, 0, 0);
+
+		/*
+		 * Script Editor Tab
+		 */
+
+		/*
+		 * Default values: gridx = RELATIVE; gridy = RELATIVE; gridwidth = 1;
+		 * gridheight = 1;
+		 * 
+		 * weightx = 0; weighty = 0; anchor = CENTER; fill = NONE;
+		 * 
+		 * insets = new Insets(0, 0, 0, 0); ipadx = 0; ipady = 0;
+		 */
+
+		final GridBagConstraints gbc_lbl_header = createGBC(0, 0, 1, 1, WEST,
+				FILL_NONE);
+		final GridBagConstraints gbc_lbl_lang = createGBC(2, 0, 1, 1, EAST,
+				FILL_NONE);
+		final GridBagConstraints gbc_lbl_cim = createGBC(0, 2, 1, 1, EAST,
+				FILL_NONE);
+
+		final GridBagConstraints gbc_ls = createGBC(3, 0, 2, 1, EAST, FILL_HORI);
+		gbc_ls.insets = new Insets(3, 3, 3, 0);
+
+		final GridBagConstraints gbc_ep = createGBC(1, 1, 4, 1,
+				FIRST_LINE_START, FILL_BOTH, 1.0, 1.0);
+		gbc_ep.insets = new Insets(0, 3, 0, 0);
+		final GridBagConstraints gbc_csl = createGBC(0, 1, 1, 1, WEST,
+				FILL_VERT);
+		final GridBagConstraints gbc_cim = createGBC(0, 3, 5, 1,
+				FIRST_LINE_START, FILL_HORI, 1.0, 0.0);
+
+		final GridBagConstraints gbc_add = createGBC(3, 2, 1, 1, WEST,
+				FILL_HORI);
+		final GridBagConstraints gbc_rem = createGBC(4, 2, 1, 1, WEST,
+				FILL_HORI);
+
+		m_editorPanel.add(m_langSelection, gbc_ls);
+
+		DialogComponent editor = new CodeEditorDialogComponent(m_codeModel);
+		addDialogComponent(m_editorPanel, editor, gbc_ep);
+
+		m_columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		m_columnList.setUserSelectionAllowed(true);
+		
+		JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
+		columnSelectionPanel.add(LBL_COLUMN,
+				createGBC(0, 0, 1, 1, FIRST_LINE_START, FILL_HORI, 1.0, 0.0));
+		columnSelectionPanel.add(m_columnList,
+				createGBC(0, 1, 1, 1, FIRST_LINE_START, FILL_BOTH, 1.0, 1.0));
+		// FIXME lazy way of adding the neat border. Add scrollpane to list instead
+		// columnSelectionPanel.setBorder(UIManager.getBorder("Table.scrollPaneBorder"));
+		columnSelectionPanel.setPreferredSize(new Dimension(180, 0));
+		JScrollPane sp = new JScrollPane(columnSelectionPanel); 
+		m_editorPanel.add(sp, gbc_csl);
+
+		JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
+		m_columnMatchingTable.setFillsViewportHeight(true);
+		m_columnMatchingTable.setPreferredScrollableViewportSize(new Dimension(
+				100, 150));
+		m_editorPanel.add(scrollPane, gbc_cim);
+
+		/*
+		 * "Add column/input matching" button
+		 */
+		JButton addBtn = new JButton("+");
+		addBtn.setActionCommand(CMD_ADD);
+		addBtn.addActionListener(this);
+		addBtn.setToolTipText("Add column/input matching.");
+		m_editorPanel.add(addBtn, gbc_add);
+
+		/*
+		 * "Remove column/input matching" button
+		 */
+		JButton remBtn = new JButton("-");
+		remBtn.setActionCommand(CMD_REM);
+		remBtn.addActionListener(this);
+		remBtn.setToolTipText("Remove selected column/input matching.");
+		m_editorPanel.add(remBtn, gbc_rem);
+
+		/*
+		 * Labels
+		 */
+		m_editorPanel.add(LBL_HEADER, gbc_lbl_header);
+		m_editorPanel.add(LBL_LANG, gbc_lbl_lang);
+		m_editorPanel.add(LBL_CIM, gbc_lbl_cim);
+
+		// / DEBUG CODE ///
+		if (DEBUG_UI) {
+			applyDebugColors();
+			System.out.println("Built Dialog!"); // TODO replace with logger
+		}
+
+	}
+
+	/*
+	 * Apply visible colors to some of the components. While debugging the ui
+	 * layout this can come in handy, since it allows to see whether a component
+	 * is filling out a cell of a GridBagLayout.
+	 */
+	private void applyDebugColors() {
+		Color PINKISCH = new Color(100, 150, 100);
+		Color PEACHY = new Color(255, 200, 128);
+
+		LBL_HEADER.setBackground(PINKISCH);
+		LBL_HEADER.setOpaque(true);
+		LBL_LANG.setBackground(Color.cyan);
+		LBL_LANG.setOpaque(true);
+		LBL_CIM.setBackground(PEACHY);
+		LBL_CIM.setOpaque(true);
+	}
+
+	/*
+	 * Utility function to add a DialogComponent to a panel and the
+	 * m_dialogComponents container for loading and saving.
+	 */
+	private void addDialogComponent(JPanel panel, DialogComponent comp,
+			Object constraints) {
+		panel.add(comp.getComponentPanel(), constraints);
+		m_dialogComponents.add(comp);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void saveSettingsTo(NodeSettingsWO settings)
+			throws InvalidSettingsException {
+		for (DialogComponent c : m_dialogComponents) {
+			c.saveSettingsTo(settings);
+		}
+
+		for (DialogComponent c : m_generatedComponents) {
+			c.saveSettingsTo(settings);
+		}
+
+		m_columnMatchingTable.getModel().saveSettingsForDialog(
+				settings.addConfig(CFG_CIM_TABLE));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void loadSettingsFrom(NodeSettingsRO settings,
+			DataTableSpec[] specs) throws NotConfigurableException {
+		// / DEBUG CODE ///
+		if (DEBUG_UI) {
+			// rebuild panel to reflect possible changes
+			// 'hot code replaced'
+			m_editorPanel.removeAll();
+			m_dialogComponents.clear();
+			buildDialog();
+		}
+
+		// load Settigns for common DialogComponents
+		for (DialogComponent c : m_dialogComponents) {
+			c.loadSettingsFrom(settings, specs);
+		}
+
+		// keep data for later use
+		m_lastDataTableSpec = specs[0];
+		m_lastCompiledModule = compile();
+
+		m_columnList.update(specs[0]);
+		m_columnMatchingTable.updateModel(specs[0],
+				m_lastCompiledModule.getInfo());
+
+		// recreate autogen panel
+		createAutogenPanel();
+
+		// load settings for autogenerated components
+		for (DialogComponent w : m_widgetService.getDialogComponents()) {
+			m_generatedComponents.add(w);
+			w.loadSettingsFrom(settings, specs);
+		}
+
+		try {
+			m_columnMatchingTable.getModel().loadSettingsForDialog(
+					settings.getConfig(CFG_CIM_TABLE));
+		} catch (InvalidSettingsException e) {
+			System.out.println("Nope...: " + e.getMessage());
+		}
+	}
+
+	/*
+	 * Generate the contents of m_autogenPanel from the compiled module
+	 * 
+	 * pre-cond: m_lastCompiledModule != null
+	 */
+	private void createAutogenPanel() {
+		m_autogenPanel.removeAll();
+		m_widgetService.clearWidgets();
+
+		SwingInputHarvester builder = new SwingInputHarvester();
+		m_context.inject(builder);
+		SwingInputPanel inputPanel = builder.createInputPanel();
+		try {
+			builder.buildPanel(inputPanel, m_lastCompiledModule);
+		} catch (ModuleException e) {
+			e.printStackTrace();
+		}
+		m_autogenPanel.add(inputPanel.getComponent());
+	}
+
+	/*
+	 * Compile contents of m_codeModel into a Module.
+	 */
+	@SuppressWarnings("unchecked")
+	private Module compile() {
+		m_clManager.setURLClassLoader();
+
+		try {
+			Class<? extends Command> commandClass = (Class<? extends Command>) m_javaEngine
+					.compile(m_codeModel.getStringValue());
+			return m_commandService.getModuleService().createModule(
+					new CommandInfo(commandClass, commandClass
+							.getAnnotation(Plugin.class)));
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		} finally {
+			m_clManager.resetClassLoader();
+		}
+
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getActionCommand().equals(CMD_ADD)) {
+			m_columnMatchingTable.getModel().addItem(
+					new ColumnInputMatching(true, m_lastDataTableSpec
+							.iterator().next(), m_lastCompiledModule.getInfo()
+							.inputs().iterator().next()));
+		}
+
+		if (e.getActionCommand().equals(CMD_REM)) {
+			int row = m_columnMatchingTable.getSelectedRow();
+			m_columnMatchingTable.getModel().removeItem(row);
+		}
+	};
+
 }

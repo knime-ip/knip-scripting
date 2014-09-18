@@ -1,12 +1,11 @@
 package org.knime.knip.scripting.ui;
 
-import java.util.HashSet;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 
-import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -33,21 +32,16 @@ public class CodeEditorDialogComponent extends DialogComponent implements Change
 
 		m_textArea = new RSyntaxTextArea(20, 60);
 		
-		//FIXME: Find a way that works
-		LookAndFeel.installProperty(m_textArea,
-                "focusTraversalKeysForward",
-                new HashSet<KeyStroke>());
-		LookAndFeel.installProperty(m_textArea,
-                "focusTraversalKeysBackward",
-                new HashSet<KeyStroke>());
-
 		m_textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
 		m_textArea.setCodeFoldingEnabled(true);
 		m_textArea.setAntiAliasingEnabled(true);
 		
 		RTextScrollPane sp = new RTextScrollPane(m_textArea);
-		getComponentPanel().add(sp);
 		
+		JPanel panel = getComponentPanel();
+		panel.setLayout(new GridBagLayout());
+		panel.add(sp, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		panel.setFocusTraversalKeysEnabled(false);
 		m_provider.updateCompletions(m_codeModel.getStringValue());
 		new AutoCompletion(m_provider).install(m_textArea);
 

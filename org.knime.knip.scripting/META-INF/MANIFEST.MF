@@ -4,7 +4,7 @@ Bundle-SymbolicName: org.knime.knip.scripting.base;singleton:=true
 Bundle-ManifestVersion: 2
 Bundle-Version: 0.8.2.qualifier
 Bundle-Vendor: University of Konstanz
-Eclipse-RegisterBuddy: org.knime.knip.scijava
+Eclipse-RegisterBuddy: org.knime.knip.scijava, org.knime.knip.base
 Require-Bundle: org.knime.workbench.repository;bundle-version="2.10.0",
  org.knime.base;bundle-version="2.10.1",
  org.knime.knip.scijava;bundle-version="2.24.0",

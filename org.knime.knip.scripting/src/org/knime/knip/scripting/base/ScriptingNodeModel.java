@@ -5,7 +5,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,11 +33,16 @@ import org.knime.knip.scijava.bridge.adapter.OutputAdapterService;
 import org.knime.knip.scijava.bridge.impl.DefaultKnimeExecutionService;
 import org.knime.knip.scijava.bridge.impl.KnimeInputDataTableService;
 import org.knime.knip.scijava.bridge.impl.KnimeOutputDataTableService;
+import org.knime.knip.scijava.bridge.settings.NodeSettingsService;
+import org.knime.knip.scijava.bridge.widget.DialogWidgetService;
+import org.knime.knip.scripting.ui.table.ColumnInputMatchingTableModel;
+import org.knime.knip.scripting.util.ClassLoaderManager;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
 import org.scijava.module.ModuleItem;
 import org.scijava.object.ObjectService;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.plugin.PluginService;
@@ -48,21 +52,44 @@ import org.scijava.plugins.scripting.java.JavaScriptLanguage;
 import org.scijava.plugins.scripting.java.JavaService;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
-import org.scijava.widget.WidgetService;
+import org.scijava.ui.DefaultUIService;
+import org.scijava.widget.DefaultWidgetService;
 
+/**
+ * NodeModel of the ScriptingNode
+ * 
+ * @author Jonathan Hale (University of Konstanz)
+ */
 public class ScriptingNodeModel extends NodeModel {
 
 	private final SettingsModelString m_codeModel = createCodeSettingsModel();
 
-	private NodeLogger logger;
+	private final NodeLogger logger;
 
 	/* scijava context stuff */
 	final Context m_context;
-	final ObjectService m_objectService;
+	
+	@Parameter
+	private ObjectService m_objectService;
+
+	@Parameter
+	private JavaService m_javaRunner;
+	
+	@Parameter
+	private KnimeInputDataTableService m_inService;
+	
+	@Parameter
+	private KnimeOutputDataTableService m_outService;
+	
+	@Parameter
+	private DefaultKnimeExecutionService m_execService;
+	
+	@Parameter
+	private NodeSettingsService m_settingsService;
+	
+	
 	final ScriptLanguage m_java;
 	final JavaEngine m_javaEngine;
-	final JavaService m_javaRunner;
-
 	final ClassLoaderManager m_clManager;
 
 	/**
@@ -76,49 +103,43 @@ public class ScriptingNodeModel extends NodeModel {
 		"package script;\n\n"
 
 		+ "import org.scijava.plugin.Parameter;\n"
-				+ "import org.scijava.plugin.Plugin;\n"
-				+ "import org.scijava.ItemIO;\n"
-				+ "import org.scijava.command.Command;\n\n"
+		+ "import org.scijava.plugin.Plugin;\n"
+		+ "import org.scijava.ItemIO;\n"
+		+ "import org.scijava.command.Command;\n\n"
 
-				+ "public class MyClass implements Command {\n"
-				+ "		@Parameter(type = ItemIO.BOTH)\n"
-				+ "		private String string;\n\n"
+		+ "public class MyClass implements Command {\n"
+		+ "		@Parameter(type = ItemIO.BOTH)\n"
+		+ "		private String string;\n\n"
 
-				+ " 	@Parameter(type = ItemIO.BOTH)\n"
-				+ " 	private Integer integer;\n\n"
+		+ " 	@Parameter(type = ItemIO.BOTH)\n"
+		+ " 	private Integer integer;\n\n"
 
-				+ "		public void run() {\n"
-				+ "			string = \"Here's some custom output!:\" + string;\n"
-				+ "			integer = integer * integer;\n" + "			return;\n"
-				+ "		}\n" + "}\n");
+		+ "		public void run() {\n"
+		+ "			string = \"Here's some custom output!: \" + string;\n"
+		+ "			integer = integer * integer;\n"
+		+ "			return;\n"
+		+ "		}\n"
+		+ "}\n");
 	}
 
 	private static final String[] DEFAULT_DEPENDENCIES = {
 			"org.knime.knip.base", "org.knime.knip.core",
 			"org.knime.knip.scijava" };
 
-	protected ScriptingNodeModel(int nrInDataPorts, int nrOutDataPorts) {
-		super(nrInDataPorts, nrOutDataPorts);
-
-		logger = getLogger();
-
-		m_context = new Context(ScriptService.class, JavaService.class,
+	/**
+	 * Create a Scijava Context
+	 * @return
+	 */
+	public static Context createContext() {
+		return new Context(ScriptService.class, JavaService.class,
 				KnimeInputDataTableService.class,
 				KnimeOutputDataTableService.class,
-				KnimeExecutionService.class,
-				ObjectService.class, WidgetService.class,
-				InputAdapterService.class, OutputAdapterService.class);
-		
-		/* add custom CommandRunner Plugin */
-		PluginService plugins = m_context.getService(PluginService.class);
-		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
-						JavaRunner.class));
-		
-		m_objectService = m_context.getService(ObjectService.class);
-		m_java = m_objectService.getObjects(JavaScriptLanguage.class).get(0);
-		m_javaEngine = (JavaEngine) m_java.getScriptEngine();		
-		m_javaRunner = m_context.getService(JavaService.class);
-		
+				KnimeExecutionService.class, NodeSettingsService.class,
+				ObjectService.class, DefaultWidgetService.class, DialogWidgetService.class,
+				InputAdapterService.class, OutputAdapterService.class, DefaultUIService.class); //TODO DefaultUIService requires loads of stuffs
+	}
+	
+	public static ClassLoaderManager createClassLoaderManager() {
 		/* create classLoaderManager */
 
 		/* add libraries to its class path */
@@ -130,49 +151,46 @@ public class ScriptingNodeModel extends NodeModel {
 
 		URL[] urlArray = urls.toArray(new URL[] {});
 		
-		m_clManager = new ClassLoaderManager(urlArray);
+		ClassLoaderManager clManager = new ClassLoaderManager(urlArray);
 		
-		m_clManager.resetClassLoader();
+		clManager.resetClassLoader();
+		
+		return clManager;
+	}
+	
+	protected ScriptingNodeModel(int nrInDataPorts, int nrOutDataPorts) {
+		super(nrInDataPorts, nrOutDataPorts);
+
+		logger = getLogger();
+
+		m_context = createContext();
+		
+		/* add BlockingCommandRunner Plugin */
+		PluginService plugins = m_context.getService(PluginService.class);
+		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
+						JavaRunner.class));
+		
+		m_context.inject(this);
+		
+		m_java = m_objectService.getObjects(JavaScriptLanguage.class).get(0);
+		m_javaEngine = (JavaEngine) m_java.getScriptEngine();		
+		
+		m_clManager = createClassLoaderManager();
+		
 	}
 
-	private static class ClassLoaderManager {
-		ClassLoader m_classLoader;
-
-		URLClassLoader m_urlClassLoader;
-
-		public ClassLoaderManager(URL[] urls) {
-			setClassLoader(urls);
-		}
-
-		public void setClassLoader(URL[] urls) {
-			m_classLoader = Thread.currentThread().getContextClassLoader();
-			m_urlClassLoader = new URLClassLoader(urls, getClass()
-					.getClassLoader());
-
-			setURLClassLoader();
-		}
-
-		public void setURLClassLoader() {
-			Thread.currentThread().setContextClassLoader(m_urlClassLoader);
-		}
-
-		public void resetClassLoader() {
-			Thread.currentThread().setContextClassLoader(m_classLoader);
-		}
-	}
-
-	protected List<URL> getClasspathFor(String projectName) {
+	protected static List<URL> getClasspathFor(String projectName) {
 		ArrayList<URL> urls = new ArrayList<URL>();
 
 		try {
 			/* Add plugin binaries (.jar or bin/ folder) */
 			final URL url = new URL("platform:/plugin/" + projectName + "/bin/");
 			final File binFile = new File(FileLocator.resolve(url).getFile());
-			logger.debug("[LOAD] " + binFile.getAbsolutePath());
+//			logger.debug("[LOAD] " + binFile.getAbsolutePath());
 			urls.add(file2URL(binFile));
 		} catch (Exception e) {
-			logger.error("Could not form URL for project \"" + projectName
-					+ "\"");
+//			logger.error("Could not form URL for project \"" + projectName
+//					+ "\"");
 		}
 		try {
 			/* Add contents of lib folder */
@@ -180,8 +198,8 @@ public class ScriptingNodeModel extends NodeModel {
 					+ "/lib/mvn/");
 			urls.addAll(getContentsOf(libMvnUrl));
 		} catch (Exception e) {
-			logger.error("Could not form URL lib/mvn folder for project \""
-					+ projectName + "\"");
+//			logger.error("Could not form URL lib/mvn folder for project \""
+//					+ projectName + "\"");
 		}
 		try {
 			/* Add contents of lib folder */
@@ -189,14 +207,14 @@ public class ScriptingNodeModel extends NodeModel {
 					+ "/lib/");
 			urls.addAll(getContentsOf(libUrl));
 		} catch (Exception e) {
-			logger.error("Could not form URL for lib folder in project \""
-					+ projectName + "\"");
+//			logger.error("Could not form URL for lib folder in project \""
+//					+ projectName + "\"");
 		}
 
 		return urls;
 	}
 
-	private Collection<? extends URL> getContentsOf(URL libUrl) {
+	private static Collection<? extends URL> getContentsOf(URL libUrl) {
 		ArrayList<URL> urls = new ArrayList<URL>();
 		try {
 			final File libDir = new File(FileLocator.resolve(libUrl).getFile());
@@ -210,7 +228,7 @@ public class ScriptingNodeModel extends NodeModel {
 				});
 
 				for (File f : files) {
-					logger.debug("[LOAD] " + f.getAbsolutePath());
+//					logger.debug("[LOAD] " + f.getAbsolutePath());
 					urls.add(file2URL(f));
 				}
 			}
@@ -221,7 +239,7 @@ public class ScriptingNodeModel extends NodeModel {
 		return urls;
 	}
 
-	protected URL file2URL(File f) throws MalformedURLException {
+	protected static URL file2URL(File f) throws MalformedURLException {
 		return new URL("file:" + f.getAbsolutePath());
 	}
 
@@ -250,7 +268,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 		List<DataColumnSpec> columnSpecs = new ArrayList<DataColumnSpec>();
 
-		for (ModuleItem output : info.outputs()) {
+		for (ModuleItem<?> output : info.outputs()) {
 			OutputAdapter oa = outAdapters.getMatchingOutputAdapter(output
 					.getType());
 
@@ -259,7 +277,14 @@ public class ScriptingNodeModel extends NodeModel {
 						.getDataCellType()).createSpec());
 			}
 		}
+		
+		// create SettingsModels
+		for(ModuleItem<?> i : info.inputs()) {
+			m_settingsService.createSettingsModel(i);
+		}
 
+		m_cimModel = new ColumnInputMatchingTableModel(inSpecs[0], info);
+		
 		DataTableSpec outSpec = new DataTableSpec(
 				columnSpecs.toArray(new DataColumnSpec[] {}));
 		m_outSpec = new DataTableSpec[] { outSpec };
@@ -276,17 +301,9 @@ public class ScriptingNodeModel extends NodeModel {
 		BufferedDataContainer container = exec
 				.createDataContainer(m_outSpec[0]);
 
-		/* get Input and Ouput Services and set input and output */
-		final KnimeInputDataTableService inService = m_context
-				.getService(KnimeInputDataTableService.class);
-		final KnimeOutputDataTableService outService = m_context
-				.getService(KnimeOutputDataTableService.class);
-		final DefaultKnimeExecutionService execService = m_context
-				.getService(DefaultKnimeExecutionService.class);
-
-		inService.setInputDataTable(inTable);
-		outService.setOutputContainer(container);
-		execService.setExecutionContex(exec);
+		m_inService.setInputDataTable(inTable);
+		m_outService.setOutputContainer(container);
+		m_execService.setExecutionContex(exec);
 
 		m_clManager.setURLClassLoader();
 
@@ -307,10 +324,10 @@ public class ScriptingNodeModel extends NodeModel {
 			 */
 			Class<?> o = m_javaEngine.compile(m_codeModel.getStringValue());
 
-			while (inService.hasNext()) {
-				inService.next();
+			while (m_inService.hasNext()) {
+				m_inService.next();
 				m_javaRunner.run(o);
-				outService.appendRow();
+				m_outService.appendRow();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -320,8 +337,8 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 
 		container.close();
-		outService.setOutputContainer(null);
-		outService.setOutputDataRow(null);
+		m_outService.setOutputContainer(null);
+		m_outService.setOutputDataRow(null);
 
 		return new BufferedDataTable[] { container.getTable() };
 	}
@@ -341,19 +358,30 @@ public class ScriptingNodeModel extends NodeModel {
 			throws InvalidSettingsException {
 		// TODO: Always add settings models here too.
 		m_codeModel.validateSettings(settings);
+		// TODO: Doesn't really make sense until m_codeModel is loaded and compiled: m_settingsService.validateSettings(settings);
 	}
+	
+	ColumnInputMatchingTableModel m_cimModel;
 
 	@Override
 	protected void loadValidatedSettingsFrom(NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		// TODO: Always add settings models here too.
 		m_codeModel.loadSettingsFrom(settings);
+		m_settingsService.loadSettingsFrom(settings);
+		
+//		if (m_cimModel == null) return;
+//		m_cimModel.loadSettingsForDialog(settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE)); //TODO temp
 	}
 
 	@Override
 	protected void saveSettingsTo(NodeSettingsWO settings) {
 		// TODO: Always add settings models here too.
 		m_codeModel.saveSettingsTo(settings);
+		m_settingsService.saveSettingsTo(settings);
+		
+//		if (m_cimModel == null) return;
+//		m_cimModel.saveSettingsForDialog(settings.addConfig(ScriptingNodeDialog.CFG_CIM_TABLE)); //TODO temp
 	}
 
 	@Override

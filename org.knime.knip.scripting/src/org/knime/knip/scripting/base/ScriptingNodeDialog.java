@@ -76,7 +76,7 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.util.ColumnSelectionList;
-import org.knime.knip.scijava.bridge.widget.DialogWidgetService;
+import org.knime.knip.scijava.commands.widget.DialogWidgetService;
 import org.knime.knip.scripting.matching.ColumnInputMatching;
 import org.knime.knip.scripting.ui.CodeEditorDialogComponent;
 import org.knime.knip.scripting.ui.table.ColumnInputMatchingTable;

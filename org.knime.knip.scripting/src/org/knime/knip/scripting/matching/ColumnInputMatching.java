@@ -1,7 +1,12 @@
 package org.knime.knip.scripting.matching;
 
+import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.DataColumnSpecCreator;
+import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
+import org.knime.core.data.MissingCell;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.config.Config;
 import org.scijava.module.ModuleInfo;
@@ -34,7 +39,7 @@ public class ColumnInputMatching {
 	public final static String[] COLUMN_NAMES = { "active", "column", "input" };
 
 	public final static Class<?>[] COLUMN_CLASSES = { Boolean.class,
-			DataColumnSpec.class, ModuleItem.class };
+			String.class, ModuleItem.class };
 
 	/**
 	 * Constructor
@@ -46,7 +51,7 @@ public class ColumnInputMatching {
 	 * @param input
 	 *            the input the column is matched to.
 	 */
-	public ColumnInputMatching(Boolean active, DataColumnSpec column,
+	public ColumnInputMatching(Boolean active, String column,
 			ModuleItem<?> input) {
 		m_values = new Object[COLUMNS];
 
@@ -55,27 +60,62 @@ public class ColumnInputMatching {
 		m_values[COL_INPUT] = input;
 	}
 
-	void setActive(Boolean b) {
+	/**
+	 * Set this Column input matching to be (in-)active.
+	 * @param b
+	 */
+	public void setActive(Boolean b) {
 		m_values[COL_ACTIVE] = b;
 	}
 
-	void setColumn(DataColumnSpec c) {
+	/**
+	 * Set the name of the column which the input is matched to.
+	 * @param c
+	 */
+	public void setColumn(String c) {
 		m_values[COL_COLUMN] = c;
 	}
 
-	void setInput(ModuleItem<?> i) {
+	/**
+	 * Set input which is matched to the column.
+	 * @param i
+	 */
+	public void setInput(ModuleItem<?> i) {
 		m_values[COL_INPUT] = i;
 	}
 
-	Boolean getActive() {
+	/**
+	 * @return whether this matching is active.
+	 */
+	public Boolean getActive() {
 		return (Boolean) m_values[COL_ACTIVE];
 	}
 
-	DataColumnSpec getColumn() {
-		return (DataColumnSpec) m_values[COL_COLUMN];
+	/**
+	 * @return the column the input is matched to.
+	 */
+	public String getColumnName() {
+		if (m_values[COL_COLUMN] instanceof DataColumnSpec) {
+			return ((DataColumnSpec) m_values[COL_COLUMN]).getName();
+		}
+		return (String) m_values[COL_COLUMN];
+	}
+	
+	/**
+	 * Get DataCell for row and DataTableSpec.
+	 * @param r DataRow to find the Cell in.
+	 * @param spec DataTable spec to help with finding column index.
+	 * @return the DataCell or null, if there was no such column in spec.
+	 */
+	public DataCell getDataCell(DataRow r, DataTableSpec spec) {
+		int index = spec.findColumnIndex(((DataColumnSpec) m_values[COL_COLUMN]).getName());
+		return (index >= 0 && index < r.getNumCells()) ? r.getCell(index) : null;
 	}
 
-	ModuleItem<?> getInput() {
+	/**
+	 * @return the input which is matched to the column.
+	 */
+	public ModuleItem<?> getInput() {
 		return (ModuleItem<?>) m_values[COL_INPUT];
 	}
 
@@ -87,13 +127,13 @@ public class ColumnInputMatching {
 			DataTableSpec tableSpec, ModuleInfo moduleInfo)
 			throws InvalidSettingsException {
 		setActive(config.getBoolean(CFG_ACTIVE));
-		setColumn(tableSpec.getColumnSpec(config.getString(CFG_COLUMN)));
+		setColumn(config.getString(CFG_COLUMN));
 		setInput(moduleInfo.getInput(config.getString(CFG_INPUT)));
 	}
 
 	public void saveSettingsForDialog(final Config config) {
 		config.addBoolean(CFG_ACTIVE, getActive());
-		config.addString(CFG_COLUMN, getColumn().getName());
+		config.addString(CFG_COLUMN, getColumnName());
 		config.addString(CFG_INPUT, getInput().getName());
 	}
 }

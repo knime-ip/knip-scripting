@@ -56,6 +56,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 import javax.script.ScriptException;
 import javax.swing.DefaultComboBoxModel;
@@ -67,6 +68,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 
+import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
@@ -87,6 +89,7 @@ import org.scijava.command.CommandInfo;
 import org.scijava.command.CommandService;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleException;
+import org.scijava.module.ModuleItem;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -350,10 +353,10 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 * is filling out a cell of a GridBagLayout.
 	 */
 	private void applyDebugColors() {
-		Color PINKISCH = new Color(100, 150, 100);
+		Color PINKISH = new Color(100, 150, 100);
 		Color PEACHY = new Color(255, 200, 128);
 
-		LBL_HEADER.setBackground(PINKISCH);
+		LBL_HEADER.setBackground(PINKISH);
 		LBL_HEADER.setOpaque(true);
 		LBL_LANG.setBackground(Color.cyan);
 		LBL_LANG.setOpaque(true);
@@ -404,7 +407,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			buildDialog();
 		}
 
-		// load Settigns for common DialogComponents
+		// load Settings for common DialogComponents
 		for (DialogComponent c : m_dialogComponents) {
 			c.loadSettingsFrom(settings, specs);
 		}
@@ -482,10 +485,26 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(CMD_ADD)) {
+			
+			ModuleItem i = null;
+			try {
+				i =  m_lastCompiledModule.getInfo().inputs().iterator().next();
+			} catch (NoSuchElementException exc) {
+				this.getLogger().error("No input found.");
+				return;
+			}
+			
+			DataColumnSpec cs = m_lastDataTableSpec
+					.iterator().next();
+			
+			if (cs == null) {
+				this.getLogger().error("No column found.");
+				return;
+			}
+			
 			m_columnMatchingTable.getModel().addItem(
-					new ColumnInputMatching(true, m_lastDataTableSpec
-							.iterator().next(), m_lastCompiledModule.getInfo()
-							.inputs().iterator().next()));
+					new ColumnInputMatching(true, cs.getName(), i)
+			);
 		}
 
 		if (e.getActionCommand().equals(CMD_REM)) {

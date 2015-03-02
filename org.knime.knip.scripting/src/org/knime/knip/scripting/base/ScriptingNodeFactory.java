@@ -48,17 +48,10 @@
  */
 package org.knime.knip.scripting.base;
 
-import net.imglib2.type.numeric.RealType;
-
-import org.knime.core.data.def.StringCell;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeView;
-import org.knime.knip.base.data.img.ImgPlusValue;
-import org.knime.knip.base.node.ValueToCellNodeDialog;
-import org.knime.knip.base.node.ValueToCellNodeFactory;
-import org.knime.knip.base.node.ValueToCellNodeModel;
 
 /**
  * TODO
@@ -66,8 +59,7 @@ import org.knime.knip.base.node.ValueToCellNodeModel;
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
-public class ScriptingNodeFactory<T extends RealType<T>> extends
-		NodeFactory {
+public class ScriptingNodeFactory extends NodeFactory {
 
 	@Override
 	protected int getNrNodeViews() {

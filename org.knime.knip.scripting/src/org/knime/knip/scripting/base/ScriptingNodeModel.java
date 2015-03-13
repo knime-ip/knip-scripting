@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,20 +27,16 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
-import org.knime.knip.scijava.bridge.KnimeExecutionService;
-import org.knime.knip.scijava.bridge.adapter.InputAdapterService;
-import org.knime.knip.scijava.bridge.adapter.OutputAdapter;
-import org.knime.knip.scijava.bridge.adapter.OutputAdapterService;
-import org.knime.knip.scijava.bridge.impl.DefaultKnimeExecutionService;
-import org.knime.knip.scijava.bridge.impl.KnimeInputDataTableService;
-import org.knime.knip.scijava.bridge.impl.KnimeOutputDataTableService;
-import org.knime.knip.scijava.bridge.settings.NodeSettingsService;
-import org.knime.knip.scijava.bridge.widget.DialogWidgetService;
+import org.knime.knip.scijava.commands.adapter.OutputAdapter;
+import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
+import org.knime.knip.scijava.commands.impl.DefaultKnimeExecutionService;
+import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
+import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
+import org.knime.knip.scijava.commands.settings.NodeSettingsService;
+import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scripting.matching.ColumnInputMatchingKnimePreprocessor;
-import org.knime.knip.scripting.matching.ColumnInputMatchingList;
 import org.knime.knip.scripting.matching.ColumnInputMatchingsService;
 import org.knime.knip.scripting.matching.DefaultColumnInputMatchingsService;
-import org.knime.knip.scripting.util.ClassLoaderManager;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
@@ -56,10 +53,7 @@ import org.scijava.plugins.scripting.java.JavaRunner;
 import org.scijava.plugins.scripting.java.JavaScriptLanguage;
 import org.scijava.plugins.scripting.java.JavaService;
 import org.scijava.script.ScriptLanguage;
-import org.scijava.script.ScriptService;
 import org.scijava.service.ServiceHelper;
-import org.scijava.ui.DefaultUIService;
-import org.scijava.widget.DefaultWidgetService;
 
 /**
  * NodeModel of the ScriptingNode
@@ -70,7 +64,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 	private final SettingsModelString m_codeModel = createCodeSettingsModel();
 
-	private final NodeLogger logger;
+	private final NodeLogger log;
 
 	/* scijava context stuff */
 	final Context m_context;
@@ -78,32 +72,37 @@ public class ScriptingNodeModel extends NodeModel {
 	@Parameter
 	private ObjectService m_objectService;
 
+	/* java services run compiled java scripts and commands */
 	@Parameter
 	private JavaService m_javaRunner;
 	
+	/* Service for passing DataTables as input to commands */
 	@Parameter
 	private KnimeInputDataTableService m_inService;
 	
+	/* Service for creating DataTables from command outputs */
 	@Parameter
 	private KnimeOutputDataTableService m_outService;
 	
+	/* Service which holds a KNIME execution context for whatever may need it. */
 	@Parameter
 	private DefaultKnimeExecutionService m_execService;
 	
+	/* Service managing SettingsModels */
 	@Parameter
 	private NodeSettingsService m_settingsService;
 	
+	/* Service for converting module inputs into KNIME datatable cells vice versa */
 	@Parameter
 	private ColumnInputMatchingsService m_cimService;
 	
-	
 	final ScriptLanguage m_java;
 	final JavaEngine m_javaEngine;
-	final ClassLoaderManager m_clManager;
 	
-	/* config cache */
+	/* Store the last used DataTableSpec here */
 	private DataTableSpec m_inputSpec;
 	
+	/* Current compiled command and info */
 	private Class<? extends Command> m_commandClass;
 	private CommandInfo m_commandInfo;
 
@@ -122,6 +121,7 @@ public class ScriptingNodeModel extends NodeModel {
 		+ "import org.scijava.ItemIO;\n"
 		+ "import org.scijava.command.Command;\n\n"
 
+		+ "@Plugin(type = Command.class)\n"
 		+ "public class MyClass implements Command {\n"
 		+ "		@Parameter(type = ItemIO.BOTH)\n"
 		+ "		private String string;\n\n"
@@ -137,49 +137,17 @@ public class ScriptingNodeModel extends NodeModel {
 		+ "}\n");
 	}
 
+	/* dependencies to be resolved for the custom class loader */
 	private static final String[] DEFAULT_DEPENDENCIES = {
 			"org.knime.knip.base", "org.knime.knip.core",
 			"org.knime.knip.scijava" };
 
-	/**
-	 * Create a Scijava Context
-	 * @return
-	 */
-	public static Context createContext() {
-		return new Context(ScriptService.class, JavaService.class,
-				KnimeInputDataTableService.class,
-				KnimeOutputDataTableService.class,
-				KnimeExecutionService.class, NodeSettingsService.class,
-				ObjectService.class, DefaultWidgetService.class, DialogWidgetService.class,
-				InputAdapterService.class, OutputAdapterService.class, DefaultUIService.class); //TODO DefaultUIService requires loads of stuffs
-	}
-	
-	public static ClassLoaderManager createClassLoaderManager() {
-		/* create classLoaderManager */
-
-		/* add libraries to its class path */
-		ArrayList<URL> urls = new ArrayList<URL>();
-
-		for (String project : DEFAULT_DEPENDENCIES) {
-			urls.addAll(getClasspathFor(project));
-		}
-
-		URL[] urlArray = urls.toArray(new URL[]{});
-		
-		ClassLoaderManager clManager = new ClassLoaderManager(urlArray);
-		
-		clManager.resetClassLoader();
-		
-		return clManager;
-	}
-	
 	protected ScriptingNodeModel(int nrInDataPorts, int nrOutDataPorts) {
 		super(nrInDataPorts, nrOutDataPorts);
 
-		logger = getLogger();
+		log = getLogger();
 
-		
-		m_context = createContext();
+		m_context = ScriptingGateway.get().getContext();
 		
 		/* add custom plugins */
 		PluginService plugins = m_context.getService(PluginService.class);
@@ -197,11 +165,14 @@ public class ScriptingNodeModel extends NodeModel {
 		m_context.inject(this);
 		
 		m_java = m_objectService.getObjects(JavaScriptLanguage.class).get(0);
-		m_javaEngine = (JavaEngine) m_java.getScriptEngine();		
-		
-		m_clManager = createClassLoaderManager();
+		m_javaEngine = (JavaEngine) m_java.getScriptEngine();
 	}
 
+	/**
+	 * Method to get the classpath for a specific eclipse project.
+	 * @param projectName
+	 * @return
+	 */
 	protected static List<URL> getClasspathFor(String projectName) {
 		ArrayList<URL> urls = new ArrayList<URL>();
 
@@ -209,11 +180,8 @@ public class ScriptingNodeModel extends NodeModel {
 			/* Add plugin binaries (.jar or bin/ folder) */
 			final URL url = new URL("platform:/plugin/" + projectName + "/bin/");
 			final File binFile = new File(FileLocator.resolve(url).getFile());
-//			logger.debug("[LOAD] " + binFile.getAbsolutePath());
 			urls.add(file2URL(binFile));
 		} catch (Exception e) {
-//			logger.error("Could not form URL for project \"" + projectName
-//					+ "\"");
 		}
 		try {
 			/* Add contents of lib folder */
@@ -221,8 +189,6 @@ public class ScriptingNodeModel extends NodeModel {
 					+ "/lib/mvn/");
 			urls.addAll(getContentsOf(libMvnUrl));
 		} catch (Exception e) {
-//			logger.error("Could not form URL lib/mvn folder for project \""
-//					+ projectName + "\"");
 		}
 		try {
 			/* Add contents of lib folder */
@@ -230,8 +196,6 @@ public class ScriptingNodeModel extends NodeModel {
 					+ "/lib/");
 			urls.addAll(getContentsOf(libUrl));
 		} catch (Exception e) {
-//			logger.error("Could not form URL for lib folder in project \""
-//					+ projectName + "\"");
 		}
 
 		return urls;
@@ -251,7 +215,6 @@ public class ScriptingNodeModel extends NodeModel {
 				});
 
 				for (File f : files) {
-//					logger.debug("[LOAD] " + f.getAbsolutePath());
 					urls.add(file2URL(f));
 				}
 			}
@@ -302,17 +265,19 @@ public class ScriptingNodeModel extends NodeModel {
 				columnSpecs.toArray(new DataColumnSpec[] {}));
 		m_outSpec = new DataTableSpec[] { outSpec };
 
-		m_clManager.resetClassLoader();
 		return m_outSpec;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Class<? extends Command> compile() {
-		m_clManager.setURLClassLoader();
-	
+	public static Class<? extends Command> compile(JavaEngine engine, String code) {
+		ResourceAwareClassLoader racl = ScriptingGateway.get().getClassLoader();
+		
+		Thread.currentThread().setContextClassLoader(
+				new URLClassLoader(racl.getFileURLs().toArray(new URL[]{}), racl)
+		);
+        
 		try {
-			return (Class<? extends Command>) m_javaEngine
-					.compile(m_codeModel.getStringValue());
+			return (Class<? extends Command>) engine.compile(code);
 		} catch (ScriptException e) {
 			e.printStackTrace();
 		}
@@ -328,10 +293,14 @@ public class ScriptingNodeModel extends NodeModel {
 		BufferedDataContainer container = exec
 				.createDataContainer(m_outSpec[0]);
 
+		/* provide the KNIME data via Scijava services */
 		m_inService.setInputDataTable(inTable);
 		m_outService.setOutputContainer(container);
 		m_execService.setExecutionContex(exec);
 
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().getClassLoader());
+		
 		/* compile an run script for all rows */
 		try {
 			/*
@@ -347,6 +316,7 @@ public class ScriptingNodeModel extends NodeModel {
 			 * Dictionary<String, String> headers =
 			 * bundle.getBundle().getHeaders();
 			 */
+			
 			while (m_inService.hasNext()) {
 				m_inService.next();
 				m_javaRunner.run(m_commandClass);
@@ -356,9 +326,12 @@ public class ScriptingNodeModel extends NodeModel {
 			e.printStackTrace();
 			System.out.println(e);
 		}
+		
+		Thread.currentThread().setContextClassLoader(cl);
 
+		/* reset knime context services */
 		container.close();
-//		m_inService.setInputDataTable(null);
+//		m_inService.setInputDataTable(null); // TODO: why not?
 		m_outService.setOutputContainer(null);
 		m_outService.setOutputDataRow(null);
 
@@ -383,25 +356,23 @@ public class ScriptingNodeModel extends NodeModel {
 		// TODO: Doesn't really make sense until m_codeModel is loaded and compiled: m_settingsService.validateSettings(settings);
 	}
 	
-	ColumnInputMatchingList m_columnInputMatchings = new ColumnInputMatchingList();
-
 	@Override
 	protected void loadValidatedSettingsFrom(NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		// TODO: Always add settings models here too.
 		m_codeModel.loadSettingsFrom(settings);
 		
-		m_commandClass = compile();
+		m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
 		
 		if (m_commandClass == null) {
-			System.out.println("Compile Error!");
+			log.error("Compile Error!");
 		} else {
 			m_commandInfo = new CommandInfo(m_commandClass, m_commandClass.getAnnotation(Plugin.class));
 		}
 		
 		try {
 			m_settingsService.loadSettingsFrom(settings);
-			m_columnInputMatchings.loadSettingsForDialog(settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE), m_inputSpec, m_commandInfo);
+			m_cimService.loadSettingsFrom(settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE), m_inputSpec, m_commandInfo);
 		} catch (InvalidSettingsException e) {
 			//this will just not work sometimes, if new compilation contains new inputs etc
 		}
@@ -413,7 +384,7 @@ public class ScriptingNodeModel extends NodeModel {
 		m_codeModel.saveSettingsTo(settings);
 		m_settingsService.saveSettingsTo(settings);
 		
-		m_columnInputMatchings.saveSettingsForDialog(settings.addConfig(ScriptingNodeDialog.CFG_CIM_TABLE)); //TODO temp
+		m_cimService.saveSettingsTo(settings.addConfig(ScriptingNodeDialog.CFG_CIM_TABLE));
 	}
 
 	@Override

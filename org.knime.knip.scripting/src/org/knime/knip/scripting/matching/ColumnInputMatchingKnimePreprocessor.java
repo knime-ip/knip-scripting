@@ -1,20 +1,17 @@
 package org.knime.knip.scripting.matching;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
-import org.knime.knip.scijava.bridge.KnimePreprocessor;
-import org.knime.knip.scijava.bridge.adapter.InputAdapter;
-import org.knime.knip.scijava.bridge.adapter.InputAdapterService;
-import org.knime.knip.scijava.bridge.impl.KnimeInputDataTableService;
+import org.knime.knip.scijava.commands.KnimePreprocessor;
+import org.knime.knip.scijava.commands.adapter.InputAdapter;
+import org.knime.knip.scijava.commands.adapter.InputAdapterService;
+import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.scijava.Priority;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleItem;
 import org.scijava.module.process.AbstractPreprocessorPlugin;
+import org.scijava.module.process.InitPreprocessor;
 import org.scijava.module.process.PreprocessorPlugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -24,7 +21,7 @@ import org.scijava.plugin.Plugin;
  * @author Jonathan Hale (University of Konstanz)
  *
  */
-@Plugin(type = PreprocessorPlugin.class, priority = Priority.FIRST_PRIORITY)
+@Plugin(type = PreprocessorPlugin.class, priority = Priority.NORMAL_PRIORITY)
 public class ColumnInputMatchingKnimePreprocessor extends AbstractPreprocessorPlugin implements KnimePreprocessor {
 
 	@Parameter
@@ -43,14 +40,20 @@ public class ColumnInputMatchingKnimePreprocessor extends AbstractPreprocessorPl
 			if (!module.isResolved(i.getName())) {
 				DataRow r = m_inputTable.getInputDataRow();
 
-				ColumnInputMatching m = m_cimService.getColumnInputMatching(i.getName());
+				String name = m_cimService.getColumnNameFor(i.getName());
 				
-				if (!m.getActive()) {
-					// skip this one,  it wont be resolved by this Preprocessor
+				if (name == null) {
+					System.out.println("Warning: Couldn't find column input matching.");
 					continue;
 				}
+//				if (!m.getActive()) {
+//					// skip this one,  it wont be resolved by this Preprocessor
+//					System.out.println("Warning: cim is not active.");
+//					continue;
+//				}
 				
-				DataCell c = m.getDataCell(r, spec);
+				int index = spec.findColumnIndex(name);
+				DataCell c = r.getCell(index);
 				
 				if (c == null) {
 					cancel("Column Input Matching referred to non-existent cell.");
@@ -65,6 +68,8 @@ public class ColumnInputMatchingKnimePreprocessor extends AbstractPreprocessorPl
 				
 				module.setInput(i.getName(), ia.getValue(c));
 				module.setResolved(i.getName(), true);
+			} else {
+				System.out.println("Warning: input already resolved!");
 			}
 		}
 	}

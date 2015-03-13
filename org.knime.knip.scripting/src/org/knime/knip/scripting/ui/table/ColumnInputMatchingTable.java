@@ -10,7 +10,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.node.util.ColumnComboBoxRenderer;
+import org.scijava.Context;
 import org.scijava.module.ModuleInfo;
 import org.scijava.module.ModuleItem;
 
@@ -28,16 +28,28 @@ public class ColumnInputMatchingTable extends JTable {
 
 	private JComboBox<DataColumnSpec> columnComboBox;
 	private JComboBox<ModuleItem<?>> inputsComboBox;
+	
+	private DataTableSpec m_spec;
 
-	public ColumnInputMatchingTable(DataTableSpec spec, ModuleInfo info) {
-		super(new ColumnInputMatchingTableModel(spec, info));
+	public ColumnInputMatchingTable(DataTableSpec spec, ModuleInfo info, Context context) {
+		super(new ColumnInputMatchingTableModel(spec, info, context));
 		
-		createComponents(spec, info);	
+		m_spec = spec;
+		
+		createComponents(info);	
 		setCellEditors();
 	}
 	
-	private void createComponents(DataTableSpec spec, ModuleInfo info) {
-		columnComboBox = new JComboBox<DataColumnSpec>(dataTableSpecToArray(spec));
+	private void createComponents(ModuleInfo info) {
+		columnComboBox = new JComboBox<DataColumnSpec>(dataTableSpecToArray(m_spec)) {
+			@Override
+			public void setSelectedItem(Object anObject) {
+				if (anObject instanceof String) {
+					anObject = m_spec.getColumnSpec((String) anObject);
+				}
+				super.setSelectedItem(anObject);
+			}
+		};
 		
 		ModuleItem<?>[] data = new ModuleItem<?>[]{};
 		if (info != null) {
@@ -57,10 +69,12 @@ public class ColumnInputMatchingTable extends JTable {
 	 * @param spec
 	 *            the DataTableSpec.
 	 */
-	public void updateModel(DataTableSpec spec, ModuleInfo info) {
-		this.setModel(new ColumnInputMatchingTableModel(spec, info));
+	public void updateModel(DataTableSpec spec, ModuleInfo info, Context context) {
+		this.setModel(new ColumnInputMatchingTableModel(spec, info, context));
 		
-		createComponents(spec, info);
+		m_spec = spec;
+		
+		createComponents(info);
 		setCellEditors();
 	}
 	
@@ -121,16 +135,21 @@ public class ColumnInputMatchingTable extends JTable {
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
+			if (value instanceof String) {
+				/* get the column */
+				value = m_spec.getColumnSpec((String) value);
+			} 	
+			
 			if (value instanceof DataColumnSpec) {
-				JComboBox<DataColumnSpec> cb = new JComboBox<DataColumnSpec>(
-						dataTableSpecToArray(m_spec));
+//			JComboBox<DataColumnSpec> cb = new JComboBox<DataColumnSpec>(
+//					dataTableSpecToArray(m_spec));
+//
+//				cb.setRenderer(new ColumnComboBoxRenderer());
+//				cb.setSelectedItem(value);
 
-				cb.setRenderer(new ColumnComboBoxRenderer());
-				cb.setSelectedItem(value);
-
-				return cb;
+				return columnComboBox;
 			} else {
-				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				return null;
 			}
 		}
 	}

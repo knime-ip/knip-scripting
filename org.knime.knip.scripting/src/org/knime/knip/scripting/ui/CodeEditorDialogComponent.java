@@ -9,7 +9,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -18,12 +17,11 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
-import org.knime.knip.scripting.completion.JavaCompletionProvider;
 
 public class CodeEditorDialogComponent extends DialogComponent implements ChangeListener {
 	RSyntaxTextArea m_textArea;
 	SettingsModelString m_codeModel;
-	JavaCompletionProvider m_provider = new JavaCompletionProvider();
+//	JavaCompletionProvider m_provider = new JavaCompletionProvider();
 
 	public CodeEditorDialogComponent(SettingsModelString sm) {
 		super(sm);
@@ -42,8 +40,8 @@ public class CodeEditorDialogComponent extends DialogComponent implements Change
 		panel.setLayout(new GridBagLayout());
 		panel.add(sp, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 		panel.setFocusTraversalKeysEnabled(false);
-		m_provider.updateCompletions(m_codeModel.getStringValue());
-		new AutoCompletion(m_provider).install(m_textArea);
+//		m_provider.updateCompletions(m_codeModel.getStringValue());
+//		new AutoCompletion(m_provider).install(m_textArea);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -81,7 +79,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements Change
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == m_textArea) {
 			m_codeModel.setStringValue(m_textArea.getText());
-			m_provider.updateCompletions(m_codeModel.getStringValue());
+//			m_provider.updateCompletions(m_codeModel.getStringValue());
 		}
 	}
 }

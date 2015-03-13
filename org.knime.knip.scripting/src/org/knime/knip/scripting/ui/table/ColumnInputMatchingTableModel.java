@@ -5,9 +5,10 @@ import javax.swing.table.AbstractTableModel;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.config.Config;
-import org.knime.knip.scripting.matching.ColumnInputMatching;
-import org.knime.knip.scripting.matching.ColumnInputMatchingList;
+import org.knime.knip.scripting.matching.ColumnInputMatchingsService;
+import org.scijava.Context;
 import org.scijava.module.ModuleInfo;
+import org.scijava.plugin.Parameter;
 
 /**
  * TableModel for the ColumnFieldMatchingTable.
@@ -21,43 +22,58 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	 */
 	private static final long serialVersionUID = 6633031650341577891L;
 
-	private ColumnInputMatchingList m_data = new ColumnInputMatchingList();
+	@Parameter
+	private ColumnInputMatchingsService m_cimService;
 
 	private final DataTableSpec m_tableSpec;
 	private final ModuleInfo m_moduleInfo;
 	
-	public ColumnInputMatchingTableModel(DataTableSpec spec, ModuleInfo info) {
+	public ColumnInputMatchingTableModel(DataTableSpec spec, ModuleInfo info, Context context) {
 		m_tableSpec = spec;
 		m_moduleInfo = info;
+		
+		context.inject(this);
 	}
 
 	@Override
 	public int getRowCount() {
-		return m_data.size();
+		return m_cimService.getMatchingsCount();
 	}
 
 	@Override
 	public int getColumnCount() {
-		return ColumnInputMatching.COLUMNS;
+		return 3;
 	}
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		return m_data.get(rowIndex).m_values[columnIndex];
+		switch(columnIndex) {
+			case 0: return m_cimService.getColumnInputMatchings().get(rowIndex).getFirst();
+			case 1: return new Boolean(true);
+			case 2: return m_cimService.getColumnInputMatchings().get(rowIndex).getSecond();
+			default:
+				return new String("column indx oob");
+		}
 	}
 	
 	@Override
 	public String getColumnName(int column) {
-		return ColumnInputMatching.COLUMN_NAMES[column];
+		switch(column){
+		case 0: return "Column";
+		case 1: return "Active";
+		case 2: return "Input";
+		default:
+			return "column indx oob";
+		}
 	}
 	
-	public void addItem(ColumnInputMatching i) {
-		m_data.add(i);
+	public void addItem(String i, String c) {
+		m_cimService.addColumnInputMatching(i, c);
 		this.fireTableDataChanged();
 	}
 	
 	public void removeItem(int row) {
-		m_data.remove(row);
+		m_cimService.removeColumnInputMatching(row);
 		
 		this.fireTableDataChanged();
 	}
@@ -69,20 +85,26 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		m_data.get(rowIndex).m_values[columnIndex] = aValue;
+		String input = m_cimService.getColumnInputMatchings().get(rowIndex).getFirst();
+		
 	}
 	
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
-		return ColumnInputMatching.COLUMN_CLASSES[columnIndex];
+		if (columnIndex == 1) {
+			return Boolean.class;
+		} else {
+			return String.class;
+		}
 	}
 	
 	public void loadSettingsForDialog(final Config config)
 			throws InvalidSettingsException {
-		m_data.loadSettingsForDialog(config, m_tableSpec, m_moduleInfo);
+		m_cimService.loadSettingsFrom(config, m_tableSpec, m_moduleInfo);
 	}
 
 	public void saveSettingsForDialog(final Config config) {
-		m_data.saveSettingsForDialog(config);
+		m_cimService.saveSettingsTo(config);
 	}
+	
 };

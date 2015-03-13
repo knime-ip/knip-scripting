@@ -9,5 +9,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/tools.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/autocomplete.jar" sourcepath="/home/squareys/Downloads/AutoComplete-2.5.3.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/rsyntaxtextarea.jar"/>
+	<classpathentry kind="src" path="/org.knime.knip.scijava.core"/>
+	<classpathentry kind="src" path="/org.knime.knip.io"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

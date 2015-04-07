@@ -377,7 +377,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			c.saveSettingsTo(settings);
 		}
 
-		m_columnMatchingTable.getModel().saveSettingsForDialog(
+		m_columnMatchingTable.getModel().saveSettingsTo(
 				settings.addConfig(CFG_CIM_TABLE));
 	}
 

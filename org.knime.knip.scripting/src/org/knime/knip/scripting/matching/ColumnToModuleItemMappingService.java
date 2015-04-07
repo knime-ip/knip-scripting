@@ -139,4 +139,13 @@ public interface ColumnToModuleItemMappingService extends Service {
 	 */
 	ColumnToModuleItemMapping getMappingForModuleItem(ModuleItem<?> item);
 
+	/**
+	 * remove a {@link ColumnToModuleItemMapping} from this Service.
+	 * 
+	 * @param mapping
+	 *            {@link ColumnToModuleItemMapping} to remove
+	 * @return removed {@link ColumnToModuleItemMapping} or null if no such
+	 *         mapping was found in this Service
+	 */
+	ColumnToModuleItemMapping removeMapping(ColumnToModuleItemMapping mapping);
 }

@@ -12,7 +12,7 @@ public class Util {
 		ArrayList<String> out = new ArrayList<String>(mappings.size());
 		
 		for (ColumnToModuleItemMapping m : mappings) {
-			out.add(m.getColumnName() + ":" + m.getItemName());
+			out.add(m.getColumnName() + "\n" + m.getItemName());
 		}
 		
 		model.setStringArrayValue(out.toArray(new String[]{}));

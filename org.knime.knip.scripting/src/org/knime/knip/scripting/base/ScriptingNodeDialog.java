@@ -78,8 +78,8 @@ import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.util.ColumnSelectionList;
 import org.knime.knip.scijava.commands.widget.DialogWidgetService;
-import org.knime.knip.scripting.matching.ColumnInputMatchingKnimePreprocessor;
-import org.knime.knip.scripting.matching.ColumnInputMatchingsService;
+import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
 import org.knime.knip.scripting.ui.CodeEditorDialogComponent;
 import org.knime.knip.scripting.ui.table.ColumnInputMatchingTable;
 import org.scijava.Context;
@@ -128,15 +128,15 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 	@Parameter
 	private ObjectService m_objectService;
-	
+
 	@Parameter
 	private CommandService m_commandService;
-	
+
 	@Parameter
 	private DialogWidgetService m_widgetService;
-	
+
 	@Parameter
-	private ColumnInputMatchingsService m_cimService;
+	private ColumnToModuleItemMappingService m_cimService;
 
 	private JavaScriptLanguage m_java;
 	private JavaEngine m_javaEngine;
@@ -178,7 +178,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		m_context = ScriptingGateway.get().getContext();
 
 		m_context.inject(this);
-		
+
 		m_columnMatchingTable = new ColumnInputMatchingTable(
 				new DataTableSpec(), null, m_context);
 
@@ -203,7 +203,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		buildDialog();
 	}
-	
+
 	/* utility functions for creating GridBagConstraints */
 	private static final GridBagConstraints createGBC(int x, int y, int w,
 			int h, int anchor, int fill) {
@@ -284,16 +284,17 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		m_columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_columnList.setUserSelectionAllowed(true);
-		
+
 		JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
 		columnSelectionPanel.add(LBL_COLUMN,
 				createGBC(0, 0, 1, 1, FIRST_LINE_START, FILL_HORI, 1.0, 0.0));
 		columnSelectionPanel.add(m_columnList,
 				createGBC(0, 1, 1, 1, FIRST_LINE_START, FILL_BOTH, 1.0, 1.0));
-		// FIXME lazy way of adding the neat border. Add scrollpane to list instead
+		// FIXME lazy way of adding the neat border. Add scrollpane to list
+		// instead
 		// columnSelectionPanel.setBorder(UIManager.getBorder("Table.scrollPaneBorder"));
 		columnSelectionPanel.setPreferredSize(new Dimension(180, 0));
-		JScrollPane sp = new JScrollPane(columnSelectionPanel); 
+		JScrollPane sp = new JScrollPane(columnSelectionPanel);
 		m_editorPanel.add(sp, gbc_csl);
 
 		JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
@@ -327,7 +328,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		m_editorPanel.add(LBL_LANG, gbc_lbl_lang);
 		m_editorPanel.add(LBL_CIM, gbc_lbl_cim);
 
-		/// DEBUG CODE ///
+		// / DEBUG CODE ///
 		if (DEBUG_UI) {
 			applyDebugColors();
 			getLogger().debug("Built Dialog!");
@@ -404,15 +405,14 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		m_lastDataTableSpec = specs[0];
 		m_lastCompiledModule = compile();
 
-
 		if (m_lastCompiledModule == null) {
 			return;
 		}
-		
+
 		m_columnList.update(specs[0]);
 		m_columnMatchingTable.updateModel(specs[0],
 				m_lastCompiledModule.getInfo(), m_context);
-		
+
 		// recreate autogen panel
 		createAutogenPanel();
 
@@ -426,7 +426,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			m_columnMatchingTable.getModel().loadSettingsForDialog(
 					settings.getConfig(CFG_CIM_TABLE));
 		} catch (InvalidSettingsException e) {
-			getLogger().error("Invalid settings: "  + e.getMessage());
+			getLogger().error("Invalid settings: " + e.getMessage());
 		}
 	}
 
@@ -439,13 +439,12 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		m_autogenPanel.removeAll();
 		m_widgetService.clearWidgets();
 
-		
-		ColumnInputMatchingKnimePreprocessor cimPreprocessor = new ColumnInputMatchingKnimePreprocessor();
+		ColumnInputMappingKnimePreprocessor cimPreprocessor = new ColumnInputMappingKnimePreprocessor();
 		SwingInputHarvester builder = new SwingInputHarvester();
-		
+
 		m_context.inject(builder);
 		m_context.inject(cimPreprocessor);
-		
+
 		SwingInputPanel inputPanel = builder.createInputPanel();
 		try {
 			cimPreprocessor.process(m_lastCompiledModule);
@@ -461,14 +460,16 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 */
 	@SuppressWarnings("unchecked")
 	private Module compile() {
-		Class<? extends Command> commandClass = ScriptingNodeModel.compile(m_javaEngine, m_codeModel.getStringValue());
-		
+		Class<? extends Command> commandClass = ScriptingNodeModel.compile(
+				m_javaEngine, m_codeModel.getStringValue());
+
 		if (commandClass == null) {
 			return null;
 		}
-		
+
 		return m_commandService.getModuleService().createModule(
-				new CommandInfo(commandClass, commandClass.getAnnotation(Plugin.class)));
+				new CommandInfo(commandClass, commandClass
+						.getAnnotation(Plugin.class)));
 	}
 
 	/**
@@ -477,23 +478,22 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(CMD_ADD)) {
-			
+
 			ModuleItem i = null;
 			try {
-				i =  m_lastCompiledModule.getInfo().inputs().iterator().next();
+				i = m_lastCompiledModule.getInfo().inputs().iterator().next();
 			} catch (NoSuchElementException exc) {
 				getLogger().error("No input found.");
 				return;
 			}
-			
-			DataColumnSpec cs = m_lastDataTableSpec
-					.iterator().next();
-			
+
+			DataColumnSpec cs = m_lastDataTableSpec.iterator().next();
+
 			if (cs == null) {
 				getLogger().error("No column found.");
 				return;
 			}
-			
+
 			m_columnMatchingTable.getModel().addItem(i.getName(), cs.getName());
 		}
 

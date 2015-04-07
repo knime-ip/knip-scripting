@@ -34,9 +34,10 @@ import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
-import org.knime.knip.scripting.matching.ColumnInputMatchingKnimePreprocessor;
-import org.knime.knip.scripting.matching.ColumnInputMatchingsService;
-import org.knime.knip.scripting.matching.DefaultColumnInputMatchingsService;
+import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
+import org.knime.knip.scripting.matching.DefaultColumnToModuleItemMappingService;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
@@ -68,40 +69,43 @@ public class ScriptingNodeModel extends NodeModel {
 
 	/* scijava context stuff */
 	final Context m_context;
-	
+
 	@Parameter
 	private ObjectService m_objectService;
 
 	/* java services run compiled java scripts and commands */
 	@Parameter
 	private JavaService m_javaRunner;
-	
+
 	/* Service for passing DataTables as input to commands */
 	@Parameter
 	private KnimeInputDataTableService m_inService;
-	
+
 	/* Service for creating DataTables from command outputs */
 	@Parameter
 	private KnimeOutputDataTableService m_outService;
-	
+
 	/* Service which holds a KNIME execution context for whatever may need it. */
 	@Parameter
 	private DefaultKnimeExecutionService m_execService;
-	
+
 	/* Service managing SettingsModels */
 	@Parameter
 	private NodeSettingsService m_settingsService;
-	
-	/* Service for converting module inputs into KNIME datatable cells vice versa */
+
+	/*
+	 * Service for converting module inputs into KNIME datatable cells vice
+	 * versa
+	 */
 	@Parameter
-	private ColumnInputMatchingsService m_cimService;
-	
+	private ColumnToModuleItemMapping m_cimService;
+
 	final ScriptLanguage m_java;
 	final JavaEngine m_javaEngine;
-	
+
 	/* Store the last used DataTableSpec here */
 	private DataTableSpec m_inputSpec;
-	
+
 	/* Current compiled command and info */
 	private Class<? extends Command> m_commandClass;
 	private CommandInfo m_commandInfo;
@@ -117,24 +121,22 @@ public class ScriptingNodeModel extends NodeModel {
 		"package script;\n\n"
 
 		+ "import org.scijava.plugin.Parameter;\n"
-		+ "import org.scijava.plugin.Plugin;\n"
-		+ "import org.scijava.ItemIO;\n"
-		+ "import org.scijava.command.Command;\n\n"
+				+ "import org.scijava.plugin.Plugin;\n"
+				+ "import org.scijava.ItemIO;\n"
+				+ "import org.scijava.command.Command;\n\n"
 
-		+ "@Plugin(type = Command.class)\n"
-		+ "public class MyClass implements Command {\n"
-		+ "		@Parameter(type = ItemIO.BOTH)\n"
-		+ "		private String string;\n\n"
+				+ "@Plugin(type = Command.class)\n"
+				+ "public class MyClass implements Command {\n"
+				+ "		@Parameter(type = ItemIO.BOTH)\n"
+				+ "		private String string;\n\n"
 
-		+ " 	@Parameter(type = ItemIO.BOTH)\n"
-		+ " 	private Integer integer;\n\n"
+				+ " 	@Parameter(type = ItemIO.BOTH)\n"
+				+ " 	private Integer integer;\n\n"
 
-		+ "		public void run() {\n"
-		+ "			string = \"Here's some custom output!: \" + string;\n"
-		+ "			integer = integer * integer;\n"
-		+ "			return;\n"
-		+ "		}\n"
-		+ "}\n");
+				+ "		public void run() {\n"
+				+ "			string = \"Here's some custom output!: \" + string;\n"
+				+ "			integer = integer * integer;\n" + "			return;\n"
+				+ "		}\n" + "}\n");
 	}
 
 	/* dependencies to be resolved for the custom class loader */
@@ -148,28 +150,32 @@ public class ScriptingNodeModel extends NodeModel {
 		log = getLogger();
 
 		m_context = ScriptingGateway.get().getContext();
-		
+
 		/* add custom plugins */
 		PluginService plugins = m_context.getService(PluginService.class);
 		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
 				JavaRunner.class));
-		plugins.addPlugin(new PluginInfo<>(DefaultColumnInputMatchingsService.class, 
-				ColumnInputMatchingsService.class));
-		plugins.addPlugin(new PluginInfo<>(ColumnInputMatchingKnimePreprocessor.class,
+		plugins.addPlugin(new PluginInfo<>(
+				DefaultColumnToModuleItemMappingService.class,
+				ColumnToModuleItemMappingService.class));
+		plugins.addPlugin(new PluginInfo<>(
+				ColumnInputMappingKnimePreprocessor.class,
 				PreprocessorPlugin.class));
 		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
-		
+
 		/* manually load services */
-		new ServiceHelper(m_context).loadService(ColumnInputMatchingsService.class);
-		
+		new ServiceHelper(m_context)
+				.loadService(ColumnToModuleItemMappingService.class);
+
 		m_context.inject(this);
-		
+
 		m_java = m_objectService.getObjects(JavaScriptLanguage.class).get(0);
 		m_javaEngine = (JavaEngine) m_java.getScriptEngine();
 	}
 
 	/**
 	 * Method to get the classpath for a specific eclipse project.
+	 * 
 	 * @param projectName
 	 * @return
 	 */
@@ -241,7 +247,7 @@ public class ScriptingNodeModel extends NodeModel {
 		if (m_commandClass == null) {
 			throw new InvalidSettingsException("Code could not be compiled!");
 		}
-		
+
 		List<DataColumnSpec> columnSpecs = new ArrayList<DataColumnSpec>();
 
 		for (ModuleItem<?> output : m_commandInfo.outputs()) {
@@ -253,38 +259,39 @@ public class ScriptingNodeModel extends NodeModel {
 						.getDataCellType()).createSpec());
 			}
 		}
-		
+
 		// create SettingsModels
-		for(ModuleItem<?> i : m_commandInfo.inputs()) {
+		for (ModuleItem<?> i : m_commandInfo.inputs()) {
 			m_settingsService.createSettingsModel(i);
 		}
 
 		m_inputSpec = inSpecs[0];
-		
+
 		DataTableSpec outSpec = new DataTableSpec(
 				columnSpecs.toArray(new DataColumnSpec[] {}));
 		m_outSpec = new DataTableSpec[] { outSpec };
 
 		return m_outSpec;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public static Class<? extends Command> compile(JavaEngine engine, String code) {
+	public static Class<? extends Command> compile(JavaEngine engine,
+			String code) {
 		ResourceAwareClassLoader racl = ScriptingGateway.get().getClassLoader();
-		
+
 		Thread.currentThread().setContextClassLoader(
-				new URLClassLoader(racl.getFileURLs().toArray(new URL[]{}), racl)
-		);
-        
+				new URLClassLoader(racl.getFileURLs().toArray(new URL[] {}),
+						racl));
+
 		try {
 			return (Class<? extends Command>) engine.compile(code);
 		} catch (ScriptException e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
-	
+
 	protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
 			final ExecutionContext exec) throws Exception {
 
@@ -299,8 +306,9 @@ public class ScriptingNodeModel extends NodeModel {
 		m_execService.setExecutionContex(exec);
 
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().getClassLoader());
-		
+		Thread.currentThread().setContextClassLoader(
+				ScriptingGateway.get().getClassLoader());
+
 		/* compile an run script for all rows */
 		try {
 			/*
@@ -316,7 +324,7 @@ public class ScriptingNodeModel extends NodeModel {
 			 * Dictionary<String, String> headers =
 			 * bundle.getBundle().getHeaders();
 			 */
-			
+
 			while (m_inService.hasNext()) {
 				m_inService.next();
 				m_javaRunner.run(m_commandClass);
@@ -326,12 +334,12 @@ public class ScriptingNodeModel extends NodeModel {
 			e.printStackTrace();
 			System.out.println(e);
 		}
-		
+
 		Thread.currentThread().setContextClassLoader(cl);
 
 		/* reset knime context services */
 		container.close();
-//		m_inService.setInputDataTable(null); // TODO: why not?
+		// m_inService.setInputDataTable(null); // TODO: why not?
 		m_outService.setOutputContainer(null);
 		m_outService.setOutputDataRow(null);
 
@@ -353,28 +361,33 @@ public class ScriptingNodeModel extends NodeModel {
 			throws InvalidSettingsException {
 		// TODO: Always add settings models here too.
 		m_codeModel.validateSettings(settings);
-		// TODO: Doesn't really make sense until m_codeModel is loaded and compiled: m_settingsService.validateSettings(settings);
+		// TODO: Doesn't really make sense until m_codeModel is loaded and
+		// compiled: m_settingsService.validateSettings(settings);
 	}
-	
+
 	@Override
 	protected void loadValidatedSettingsFrom(NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		// TODO: Always add settings models here too.
 		m_codeModel.loadSettingsFrom(settings);
-		
+
 		m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
-		
+
 		if (m_commandClass == null) {
 			log.error("Compile Error!");
 		} else {
-			m_commandInfo = new CommandInfo(m_commandClass, m_commandClass.getAnnotation(Plugin.class));
+			m_commandInfo = new CommandInfo(m_commandClass,
+					m_commandClass.getAnnotation(Plugin.class));
 		}
-		
+
 		try {
 			m_settingsService.loadSettingsFrom(settings);
-			m_cimService.loadSettingsFrom(settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE), m_inputSpec, m_commandInfo);
+//			m_cimService.loadSettingsFrom(
+//					settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE),
+//					m_inputSpec, m_commandInfo);
 		} catch (InvalidSettingsException e) {
-			//this will just not work sometimes, if new compilation contains new inputs etc
+			// this will just not work sometimes, if new compilation contains
+			// new inputs etc
 		}
 	}
 
@@ -383,12 +396,13 @@ public class ScriptingNodeModel extends NodeModel {
 		// TODO: Always add settings models here too.
 		m_codeModel.saveSettingsTo(settings);
 		m_settingsService.saveSettingsTo(settings);
-		
-		m_cimService.saveSettingsTo(settings.addConfig(ScriptingNodeDialog.CFG_CIM_TABLE));
+
+//		m_cimService.saveSettingsTo(settings
+//				.addConfig(ScriptingNodeDialog.CFG_CIM_TABLE));
 	}
 
 	@Override
 	protected void reset() {
-		
+
 	}
 }

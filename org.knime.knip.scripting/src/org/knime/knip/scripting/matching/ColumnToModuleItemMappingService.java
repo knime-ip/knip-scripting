@@ -140,7 +140,20 @@ public interface ColumnToModuleItemMappingService extends Service {
 	ColumnToModuleItemMapping getMappingForModuleItem(ModuleItem<?> item);
 
 	/**
-	 * remove a {@link ColumnToModuleItemMapping} from this Service.
+	 * Add a {@link ColumnToModuleItemMapping} from this Service if no such
+	 * mapping exists yet.
+	 * 
+	 * @param columnName
+	 *            name of the column to map to inputName
+	 * @param inputName
+	 *            name of the input to map to
+	 * @return created or existing {@link ColumnToModuleItemMapping} mapping
+	 *         columnName to inputName
+	 */
+	ColumnToModuleItemMapping addMapping(String columnName, String inputName);
+
+	/**
+	 * Remove a {@link ColumnToModuleItemMapping} from this Service.
 	 * 
 	 * @param mapping
 	 *            {@link ColumnToModuleItemMapping} to remove

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMappingChangeListener;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleItem;
 import org.scijava.plugin.Plugin;
@@ -18,7 +19,8 @@ import org.scijava.service.AbstractService;
  */
 @Plugin(type = ColumnToModuleItemMappingService.class)
 public abstract class AbstractColumnToModuleItemMappingService extends
-		AbstractService implements ColumnToModuleItemMappingService {
+		AbstractService implements ColumnToModuleItemMappingService,
+		ColumnToModuleItemMappingChangeListener {
 
 	public class DefaultColumnToModuleItemMapping implements
 			ColumnToModuleItemMapping {
@@ -85,7 +87,8 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 
 		@Override
 		public void fireMappingColumnChanged() {
-			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(this);
+			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
+					this);
 			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
 				l.onMappingColumnChanged(e);
 			}
@@ -93,7 +96,8 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 
 		@Override
 		public void fireMappingItemChanged() {
-			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(this);
+			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
+					this);
 			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
 				l.onMappingItemChanged(e);
 			}
@@ -132,7 +136,7 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 			String itemName) {
 		ColumnToModuleItemMapping m = new DefaultColumnToModuleItemMapping(
 				columnName, itemName);
-
+		m.addMappingChangeListener(this);
 		addMapping(m);
 
 		return m;

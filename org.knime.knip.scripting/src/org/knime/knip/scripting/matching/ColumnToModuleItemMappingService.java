@@ -79,7 +79,7 @@ public interface ColumnToModuleItemMappingService extends Service {
 		 * @param e
 		 *            the event that has been fired.
 		 */
-		void onMappingInputChanged(ColumnToModuleItemMappingChangeEvent e);
+		void onMappingItemChanged(ColumnToModuleItemMappingChangeEvent e);
 	}
 
 	/**
@@ -113,21 +113,15 @@ public interface ColumnToModuleItemMappingService extends Service {
 		 * Call
 		 * {@link ColumnToModuleItemMappingChangeListener#onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent)}
 		 * on all listeners.
-		 * 
-		 * @param e
-		 *            event to dispatch
 		 */
-		void fireMappingColumnChanged(ColumnToModuleItemMappingChangeEvent e);
+		void fireMappingColumnChanged();
 
 		/**
 		 * Call
-		 * {@link ColumnToModuleItemMappingChangeListener#onMappingInputChanged(ColumnToModuleItemMappingChangeEvent)}
+		 * {@link ColumnToModuleItemMappingChangeListener#onMappingItemChanged(ColumnToModuleItemMappingChangeEvent)}
 		 * on all listeners.
-		 * 
-		 * @param e
-		 *            event to dispatch
 		 */
-		void fireMappingInputChanged(ColumnToModuleItemMappingChangeEvent e);
+		void fireMappingItemChanged();
 	}
 
 	/**
@@ -214,7 +208,7 @@ public interface ColumnToModuleItemMappingService extends Service {
 		/**
 		 * Set this mappings item name and update listeners if changed. Needs to
 		 * call
-		 * {@link #fireMappingInputChanged(ColumnToModuleItemMappingChangeEvent)}
+		 * {@link #onMappingItemChanged(ColumnToModuleItemMappingChangeEvent)}
 		 * .
 		 * 
 		 * @param itemName

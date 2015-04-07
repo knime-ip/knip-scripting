@@ -85,4 +85,11 @@ public class DefaultColumnToModuleItemMappingService extends AbstractColumnToMod
 		ColumnToModuleItemMapping mapping = e.getSourceMapping();
 		m_mappingsByItem.put(mapping.getItemName(), mapping);
 	}
+
+	@Override
+	public void clear() {
+		m_mappings.clear();
+		m_mappingsByColumn.clear();
+		m_mappingsByItem.clear();
+	}
 }

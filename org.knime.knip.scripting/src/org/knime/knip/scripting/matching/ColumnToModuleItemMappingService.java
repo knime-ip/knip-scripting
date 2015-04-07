@@ -305,4 +305,9 @@ public interface ColumnToModuleItemMappingService extends Service {
 	 *         mapping was found in this Service
 	 */
 	ColumnToModuleItemMapping removeMapping(ColumnToModuleItemMapping mapping);
+	
+	/**
+	 * Remove all {@link ColumnToModuleItemMapping}s from this Service.
+	 */
+	void clear();
 }

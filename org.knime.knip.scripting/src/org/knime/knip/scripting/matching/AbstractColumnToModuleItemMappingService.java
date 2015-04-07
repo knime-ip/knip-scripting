@@ -1,5 +1,7 @@
 package org.knime.knip.scripting.matching;
 
+import java.util.ArrayList;
+
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.scijava.module.Module;
@@ -24,11 +26,14 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 		protected String m_columnName;
 		protected String m_itemName;
 		protected boolean m_active;
+		protected ArrayList<ColumnToModuleItemMappingChangeListener> m_listeners;
 
 		public DefaultColumnToModuleItemMapping(String columnName,
 				String itemName) {
 			m_columnName = columnName;
 			m_itemName = itemName;
+			m_active = true;
+			m_listeners = new ArrayList<ColumnToModuleItemMappingChangeListener>();
 		}
 
 		@Override
@@ -64,6 +69,50 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 		@Override
 		public void setActive(boolean flag) {
 			m_active = flag;
+		}
+
+		@Override
+		public void addMappingChangeListener(
+				ColumnToModuleItemMappingChangeListener listener) {
+			m_listeners.add(listener);
+		}
+
+		@Override
+		public void removeMappingChangeListener(
+				ColumnToModuleItemMappingChangeListener listener) {
+			m_listeners.remove(listener);
+		}
+
+		@Override
+		public void fireMappingColumnChanged() {
+			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(this);
+			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
+				l.onMappingColumnChanged(e);
+			}
+		}
+
+		@Override
+		public void fireMappingItemChanged() {
+			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(this);
+			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
+				l.onMappingItemChanged(e);
+			}
+		}
+
+		@Override
+		public void setColumnName(String columnName) {
+			if (!columnName.equals(m_columnName)) {
+				m_columnName = columnName;
+				fireMappingColumnChanged();
+			}
+		}
+
+		@Override
+		public void setItemName(String itemName) {
+			if (!itemName.equals(m_itemName)) {
+				m_itemName = itemName;
+				fireMappingItemChanged();
+			}
 		}
 
 	}

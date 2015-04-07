@@ -86,18 +86,18 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 		}
 
 		@Override
-		public void fireMappingColumnChanged() {
+		public void fireMappingColumnChanged(String oldValue) {
 			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
-					this);
+					this, oldValue);
 			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
 				l.onMappingColumnChanged(e);
 			}
 		}
 
 		@Override
-		public void fireMappingItemChanged() {
+		public void fireMappingItemChanged(String oldValue) {
 			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
-					this);
+					this, oldValue);
 			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
 				l.onMappingItemChanged(e);
 			}
@@ -106,16 +106,18 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 		@Override
 		public void setColumnName(String columnName) {
 			if (!columnName.equals(m_columnName)) {
+				String oldName = m_columnName;
 				m_columnName = columnName;
-				fireMappingColumnChanged();
+				fireMappingColumnChanged(oldName);
 			}
 		}
 
 		@Override
 		public void setItemName(String itemName) {
 			if (!itemName.equals(m_itemName)) {
+				String oldName = m_itemName;
 				m_itemName = itemName;
-				fireMappingItemChanged();
+				fireMappingItemChanged(oldName);
 			}
 		}
 

@@ -61,9 +61,28 @@ public class DefaultColumnToModuleItemMappingService extends AbstractColumnToMod
 		if (m_mappings.remove(mapping)) {
 			m_mappingsByColumn.remove(mapping.getColumnName());
 			m_mappingsByItem.remove(mapping.getItemName());
+			
+			mapping.removeMappingChangeListener(this);
+			
 			return mapping;
 		}
 		
 		return null;
+	}
+
+	@Override
+	public void onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent e) {
+		m_mappingsByColumn.remove(e.getPreviousValue());
+		
+		ColumnToModuleItemMapping mapping = e.getSourceMapping();
+		m_mappingsByColumn.put(mapping.getColumnName(), mapping);
+	}
+
+	@Override
+	public void onMappingItemChanged(ColumnToModuleItemMappingChangeEvent e) {
+		m_mappingsByItem.remove(e.getPreviousValue());
+		
+		ColumnToModuleItemMapping mapping = e.getSourceMapping();
+		m_mappingsByItem.put(mapping.getItemName(), mapping);
 	}
 }

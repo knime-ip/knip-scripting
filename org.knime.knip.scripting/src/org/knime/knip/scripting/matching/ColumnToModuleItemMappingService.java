@@ -1,5 +1,7 @@
 package org.knime.knip.scripting.matching;
 
+import java.util.EventListener;
+import java.util.EventObject;
 import java.util.List;
 
 import org.knime.core.data.DataColumnSpec;
@@ -19,12 +21,123 @@ import org.scijava.service.Service;
 public interface ColumnToModuleItemMappingService extends Service {
 
 	/**
+	 * Event for {@link ColumnToModuleItemMapping} changes.
+	 * 
+	 * @author Jonathan Hale (University of Konstanz)
+	 */
+	class ColumnToModuleItemMappingChangeEvent extends EventObject {
+
+		/**
+		 * Generated serialVersionID
+		 */
+		private static final long serialVersionUID = 8652877000556694115L;
+
+		/**
+		 * Constructor
+		 * 
+		 * @param source
+		 *            the changed {@link ColumnToModuleItemMapping}
+		 */
+		public ColumnToModuleItemMappingChangeEvent(
+				ColumnToModuleItemMapping source) {
+			super(source);
+		}
+
+		/**
+		 * Get the changed {@link ColumnToModuleItemMapping}.
+		 * 
+		 * @return the changed mapping
+		 */
+		public ColumnToModuleItemMapping getSourceMapping() {
+			return (ColumnToModuleItemMapping) source;
+		}
+
+	}
+
+	/**
+	 * Interface for classes listening to changes to
+	 * {@link ColumnToModuleItemMapping}s.
+	 * 
+	 * @author Jonathan Hale (University of Konstanz)
+	 *
+	 */
+	public interface ColumnToModuleItemMappingChangeListener extends
+			EventListener {
+		/**
+		 * Called when a {@link ColumnToModuleItemMappingChangeEventDispatcher}
+		 * this listener listens to fires a event when the column name changed.
+		 * 
+		 * @param e
+		 *            the event that has been fired.
+		 */
+		void onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent e);
+
+		/**
+		 * Called when a {@link ColumnToModuleItemMappingChangeEventDispatcher}
+		 * this listener listens to fires a event when the item name changed.
+		 * 
+		 * @param e
+		 *            the event that has been fired.
+		 */
+		void onMappingInputChanged(ColumnToModuleItemMappingChangeEvent e);
+	}
+
+	/**
+	 * Interface for classes which fire ColumnToModuleItemMappingChangeEvent
+	 * events.
+	 * 
+	 * @author Jonathan Hale (University of Konstanz)
+	 *
+	 */
+	public interface ColumnToModuleItemMappingChangeEventDispatcher {
+
+		/**
+		 * Add a listener to dispatch events to.
+		 * 
+		 * @param listener
+		 *            the listener to add
+		 */
+		void addMappingChangeListener(
+				ColumnToModuleItemMappingChangeListener listener);
+
+		/**
+		 * Remove a listener from this dispatcher.
+		 * 
+		 * @param listener
+		 *            the listener to remove
+		 */
+		void removeMappingChangeListener(
+				ColumnToModuleItemMappingChangeListener listener);
+
+		/**
+		 * Call
+		 * {@link ColumnToModuleItemMappingChangeListener#onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent)}
+		 * on all listeners.
+		 * 
+		 * @param e
+		 *            event to dispatch
+		 */
+		void fireMappingColumnChanged(ColumnToModuleItemMappingChangeEvent e);
+
+		/**
+		 * Call
+		 * {@link ColumnToModuleItemMappingChangeListener#onMappingInputChanged(ColumnToModuleItemMappingChangeEvent)}
+		 * on all listeners.
+		 * 
+		 * @param e
+		 *            event to dispatch
+		 */
+		void fireMappingInputChanged(ColumnToModuleItemMappingChangeEvent e);
+	}
+
+	/**
 	 * Interfaces for classes containing a mapping from column name to input
 	 * name.
 	 * 
 	 * @author Jonathan Hale (University of Konstanz)
 	 */
-	public interface ColumnToModuleItemMapping {
+	public interface ColumnToModuleItemMapping extends
+			ColumnToModuleItemMappingChangeEventDispatcher {
 		/**
 		 * Get column name.
 		 *
@@ -86,6 +199,28 @@ public interface ColumnToModuleItemMappingService extends Service {
 		 *            {@link ColumnToInputMapping}
 		 */
 		void setActive(boolean flag);
+
+		/**
+		 * Set this mappings column name and update listeners if changed. Needs
+		 * to call
+		 * {@link #fireMappingColumnChanged(ColumnToModuleItemMappingChangeEvent)}
+		 * .
+		 * 
+		 * @param columnName
+		 *            name of the column to set to
+		 */
+		void setColumnName(String columnName);
+
+		/**
+		 * Set this mappings item name and update listeners if changed. Needs to
+		 * call
+		 * {@link #fireMappingInputChanged(ColumnToModuleItemMappingChangeEvent)}
+		 * .
+		 * 
+		 * @param itemName
+		 *            name of the item to set to.
+		 */
+		void setItemName(String itemName);
 	}
 
 	/**

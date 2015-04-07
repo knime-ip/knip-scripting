@@ -133,13 +133,12 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 		}
 	}
 
-	public void loadSettingsForDialog(final Config config)
+	public void loadSettingsFrom(final Config config)
 			throws InvalidSettingsException {
-//		m_cimService.loadSettingsFrom(config, m_tableSpec, m_moduleInfo);
+		
 	}
 
-	public void saveSettingsForDialog(final Config config) {
-//		m_cimService.saveSettingsTo(config);
+	public void saveSettingsTo(final Config config) {
 	}
 
 };

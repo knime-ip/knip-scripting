@@ -25,12 +25,13 @@ import org.scijava.service.AbstractService;
  * @author Jonathan Hale (University of Konstanz)
  */
 @Plugin(type = ColumnToModuleItemMappingService.class)
-public class DefaultColumnToModuleItemMappingService extends AbstractColumnToModuleItemMappingService {
+public class DefaultColumnToModuleItemMappingService extends
+		AbstractColumnToModuleItemMappingService {
 
 	ArrayList<ColumnToModuleItemMapping> m_mappings = new ArrayList<ColumnToModuleItemMapping>();
 	WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByColumn = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
 	WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByItem = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
-	
+
 	@Override
 	public List<ColumnToModuleItemMapping> getMappingsList() {
 		return m_mappings;
@@ -53,27 +54,27 @@ public class DefaultColumnToModuleItemMappingService extends AbstractColumnToMod
 		m_mappingsByColumn.put(mapping.getColumnName(), mapping);
 		m_mappingsByItem.put(mapping.getItemName(), mapping);
 	}
-	
+
 	@Override
 	public ColumnToModuleItemMapping removeMapping(
 			ColumnToModuleItemMapping mapping) {
-		
+
 		if (m_mappings.remove(mapping)) {
 			m_mappingsByColumn.remove(mapping.getColumnName());
 			m_mappingsByItem.remove(mapping.getItemName());
-			
+
 			mapping.removeMappingChangeListener(this);
-			
+
 			return mapping;
 		}
-		
+
 		return null;
 	}
 
 	@Override
 	public void onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent e) {
 		m_mappingsByColumn.remove(e.getPreviousValue());
-		
+
 		ColumnToModuleItemMapping mapping = e.getSourceMapping();
 		m_mappingsByColumn.put(mapping.getColumnName(), mapping);
 	}
@@ -81,7 +82,7 @@ public class DefaultColumnToModuleItemMappingService extends AbstractColumnToMod
 	@Override
 	public void onMappingItemChanged(ColumnToModuleItemMappingChangeEvent e) {
 		m_mappingsByItem.remove(e.getPreviousValue());
-		
+
 		ColumnToModuleItemMapping mapping = e.getSourceMapping();
 		m_mappingsByItem.put(mapping.getItemName(), mapping);
 	}

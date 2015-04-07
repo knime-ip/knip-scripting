@@ -423,7 +423,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		}
 
 		try {
-			m_columnMatchingTable.getModel().loadSettingsForDialog(
+			m_columnMatchingTable.getModel().loadSettingsFrom(
 					settings.getConfig(CFG_CIM_TABLE));
 		} catch (InvalidSettingsException e) {
 			getLogger().error("Invalid settings: " + e.getMessage());

@@ -32,6 +32,7 @@ public interface ColumnToModuleItemMappingService extends Service {
 		 */
 		private static final long serialVersionUID = 8652877000556694115L;
 
+		private final String oldValue;
 		/**
 		 * Constructor
 		 * 
@@ -39,8 +40,10 @@ public interface ColumnToModuleItemMappingService extends Service {
 		 *            the changed {@link ColumnToModuleItemMapping}
 		 */
 		public ColumnToModuleItemMappingChangeEvent(
-				ColumnToModuleItemMapping source) {
+				ColumnToModuleItemMapping source, String oldValue) {
 			super(source);
+			
+			this.oldValue = oldValue;
 		}
 
 		/**
@@ -51,7 +54,14 @@ public interface ColumnToModuleItemMappingService extends Service {
 		public ColumnToModuleItemMapping getSourceMapping() {
 			return (ColumnToModuleItemMapping) source;
 		}
-
+		
+		/**
+		 * Get the previous value of the column/input name.
+		 * @return the previous column or input name.
+		 */
+		public String getPreviousValue() {
+			return oldValue;
+		}
 	}
 
 	/**
@@ -113,15 +123,20 @@ public interface ColumnToModuleItemMappingService extends Service {
 		 * Call
 		 * {@link ColumnToModuleItemMappingChangeListener#onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent)}
 		 * on all listeners.
+		 * 
+		 * @param oldValue value which has been overwritten
 		 */
-		void fireMappingColumnChanged();
+		void fireMappingColumnChanged(String oldValue);
 
 		/**
 		 * Call
 		 * {@link ColumnToModuleItemMappingChangeListener#onMappingItemChanged(ColumnToModuleItemMappingChangeEvent)}
 		 * on all listeners.
+		 * 
+		 * @param oldValue
+		 *            value which has been overwritten
 		 */
-		void fireMappingItemChanged();
+		void fireMappingItemChanged(String oldValue);
 	}
 
 	/**

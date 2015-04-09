@@ -76,10 +76,12 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.core.node.util.ColumnSelectionList;
 import org.knime.knip.scijava.commands.widget.DialogWidgetService;
 import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
+import org.knime.knip.scripting.matching.Util;
 import org.knime.knip.scripting.ui.CodeEditorDialogComponent;
 import org.knime.knip.scripting.ui.table.ColumnInputMatchingTable;
 import org.scijava.Context;
@@ -115,6 +117,9 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	/* settings: SettingsModels/Config IDs etc */
 	private final SettingsModelString m_codeModel = ScriptingNodeModel
 			.createCodeSettingsModel();
+	
+	private final SettingsModelStringArray m_columnInputMappingSettignsModel = ScriptingNodeModel
+			.createColumnInputMappingSettingsModel();
 
 	/* containers */
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
@@ -376,7 +381,9 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		for (DialogComponent c : m_generatedComponents) {
 			c.saveSettingsTo(settings);
 		}
-
+		
+		Util.fillStringArraySettingsModel(m_cimService, m_columnInputMappingSettignsModel);
+		m_columnInputMappingSettignsModel.saveSettingsTo(settings);
 	}
 
 	/**
@@ -392,6 +399,15 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			m_editorPanel.removeAll();
 			m_dialogComponents.clear();
 			buildDialog();
+		}
+
+		try {
+			m_columnInputMappingSettignsModel.loadSettingsFrom(settings);
+			m_cimService.clear();
+			Util.fillColumnToModuleItemMappingService(
+					m_columnInputMappingSettignsModel, m_cimService);
+		} catch (InvalidSettingsException e) {
+			e.printStackTrace();
 		}
 
 		// load Settings for common DialogComponents
@@ -468,10 +484,6 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		return m_commandService.getModuleService().createModule(
 				new CommandInfo(commandClass, commandClass
 						.getAnnotation(Plugin.class)));
-	}
-
-	@Override
-	public void onOpen() {
 	}
 
 	/**

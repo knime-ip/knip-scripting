@@ -27,6 +27,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.knip.scijava.commands.adapter.OutputAdapter;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
 import org.knime.knip.scijava.commands.impl.DefaultKnimeExecutionService;
@@ -36,6 +37,7 @@ import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
+import org.knime.knip.scripting.matching.Util;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.DefaultColumnToModuleItemMappingService;
 import org.scijava.Context;
@@ -64,6 +66,10 @@ import org.scijava.service.ServiceHelper;
 public class ScriptingNodeModel extends NodeModel {
 
 	private final SettingsModelString m_codeModel = createCodeSettingsModel();
+	
+	private final SettingsModelStringArray m_columnInputMappingSettignsModel = ScriptingNodeModel
+			.createColumnInputMappingSettingsModel();
+	
 
 	private final NodeLogger log;
 
@@ -98,7 +104,7 @@ public class ScriptingNodeModel extends NodeModel {
 	 * versa
 	 */
 	@Parameter
-	private ColumnToModuleItemMapping m_cimService;
+	private ColumnToModuleItemMappingService m_cimService;
 
 	final ScriptLanguage m_java;
 	final JavaEngine m_javaEngine;
@@ -110,6 +116,14 @@ public class ScriptingNodeModel extends NodeModel {
 	private Class<? extends Command> m_commandClass;
 	private CommandInfo m_commandInfo;
 
+	/**
+	 * Create column to input mapping settings model.
+	 * @return
+	 */
+	public static SettingsModelStringArray createColumnInputMappingSettingsModel() {
+		return new SettingsModelStringArray("ColumnInputMappings", new String[]{});
+	}
+	
 	/**
 	 * Create Code SettingsModel with some default example code.
 	 * 
@@ -389,6 +403,11 @@ public class ScriptingNodeModel extends NodeModel {
 			// this will just not work sometimes, if new compilation contains
 			// new inputs etc
 		}
+		
+		m_columnInputMappingSettignsModel.loadSettingsFrom(settings);
+		m_cimService.clear();
+		Util.fillColumnToModuleItemMappingService(
+				m_columnInputMappingSettignsModel, m_cimService);
 	}
 
 	@Override
@@ -397,12 +416,13 @@ public class ScriptingNodeModel extends NodeModel {
 		m_codeModel.saveSettingsTo(settings);
 		m_settingsService.saveSettingsTo(settings);
 
-		// m_cimService.saveSettingsTo(settings
-		// .addConfig(ScriptingNodeDialog.CFG_CIM_TABLE));
+		Util.fillStringArraySettingsModel(m_cimService, m_columnInputMappingSettignsModel);
+		m_columnInputMappingSettignsModel.saveSettingsTo(settings);
 	}
 
 	@Override
 	protected void reset() {
 
 	}
+
 }

@@ -105,6 +105,9 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 
 		@Override
 		public void setColumnName(String columnName) {
+			if (columnName == null) {
+				return;
+			}
 			if (!columnName.equals(m_columnName)) {
 				String oldName = m_columnName;
 				m_columnName = columnName;
@@ -114,6 +117,9 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 
 		@Override
 		public void setItemName(String itemName) {
+			if (itemName == null) {
+				return;
+			}
 			if (!itemName.equals(m_itemName)) {
 				String oldName = m_itemName;
 				m_itemName = itemName;

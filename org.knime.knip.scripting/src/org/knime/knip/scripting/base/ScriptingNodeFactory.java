@@ -59,15 +59,17 @@ import org.knime.core.node.NodeView;
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
-public class ScriptingNodeFactory extends NodeFactory {
+public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
 
+	static int MAX_ID = 0;
+	
 	@Override
 	protected int getNrNodeViews() {
 		return 0;
 	}
 
 	@Override
-	public NodeView createNodeView(int viewIndex, NodeModel nodeModel) {
+	public NodeView createNodeView(int viewIndex, ScriptingNodeModel nodeModel) {
 		return null;
 	}
 
@@ -82,8 +84,8 @@ public class ScriptingNodeFactory extends NodeFactory {
 	}
 
 	@Override
-	public NodeModel createNodeModel() {
-		return new ScriptingNodeModel(1, 1);
+	public ScriptingNodeModel createNodeModel() {
+		return new ScriptingNodeModel();
 	}
 
 }

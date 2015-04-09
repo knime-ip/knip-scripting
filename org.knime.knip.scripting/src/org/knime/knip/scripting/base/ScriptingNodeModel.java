@@ -158,8 +158,8 @@ public class ScriptingNodeModel extends NodeModel {
 			"org.knime.knip.base", "org.knime.knip.core",
 			"org.knime.knip.scijava" };
 
-	protected ScriptingNodeModel(int nrInDataPorts, int nrOutDataPorts) {
-		super(nrInDataPorts, nrOutDataPorts);
+	protected ScriptingNodeModel() {
+		super(1, 1);
 
 		log = getLogger();
 

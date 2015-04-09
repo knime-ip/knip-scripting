@@ -187,64 +187,6 @@ public class ScriptingNodeModel extends NodeModel {
 		m_javaEngine = (JavaEngine) m_java.getScriptEngine();
 	}
 
-	/**
-	 * Method to get the classpath for a specific eclipse project.
-	 * 
-	 * @param projectName
-	 * @return
-	 */
-	protected static List<URL> getClasspathFor(String projectName) {
-		ArrayList<URL> urls = new ArrayList<URL>();
-
-		try {
-			/* Add plugin binaries (.jar or bin/ folder) */
-			final URL url = new URL("platform:/plugin/" + projectName + "/bin/");
-			final File binFile = new File(FileLocator.resolve(url).getFile());
-			urls.add(file2URL(binFile));
-		} catch (Exception e) {
-		}
-		try {
-			/* Add contents of lib folder */
-			final URL libMvnUrl = new URL("platform:/plugin/" + projectName
-					+ "/lib/mvn/");
-			urls.addAll(getContentsOf(libMvnUrl));
-		} catch (Exception e) {
-		}
-		try {
-			/* Add contents of lib folder */
-			final URL libUrl = new URL("platform:/plugin/" + projectName
-					+ "/lib/");
-			urls.addAll(getContentsOf(libUrl));
-		} catch (Exception e) {
-		}
-
-		return urls;
-	}
-
-	private static Collection<? extends URL> getContentsOf(URL libUrl) {
-		ArrayList<URL> urls = new ArrayList<URL>();
-		try {
-			final File libDir = new File(FileLocator.resolve(libUrl).getFile());
-			if (libDir.exists() && libDir.isDirectory()) {
-				File[] files = libDir.listFiles(new FilenameFilter() {
-					@Override
-					public boolean accept(File file, String fname) {
-						return fname.endsWith(".jar")
-								|| fname.endsWith(".class");
-					}
-				});
-
-				for (File f : files) {
-					urls.add(file2URL(f));
-				}
-			}
-		} catch (IOException e) {
-			// Ignore. Some projects just don't have /lib/mvn/.
-		}
-
-		return urls;
-	}
-
 	protected static URL file2URL(File f) throws MalformedURLException {
 		return new URL("file:" + f.getAbsolutePath());
 	}

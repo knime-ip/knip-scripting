@@ -26,6 +26,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.knip.scijava.commands.adapter.OutputAdapter;
@@ -65,10 +66,13 @@ import org.scijava.service.ServiceHelper;
  */
 public class ScriptingNodeModel extends NodeModel {
 
+	private static int MAX_NODE_ID = 0;
+	
 	private final SettingsModelString m_codeModel = createCodeSettingsModel();
 
-	private final SettingsModelStringArray m_columnInputMappingSettignsModel = ScriptingNodeModel
-			.createColumnInputMappingSettingsModel();
+	private final SettingsModelStringArray m_columnInputMappingSettignsModel = createColumnInputMappingSettingsModel();
+	
+	private final SettingsModelInteger m_nodeId = createIDSettingsModel();
 
 	private final NodeLogger log;
 
@@ -153,17 +157,22 @@ public class ScriptingNodeModel extends NodeModel {
 				+ "			integer = integer * integer;\n" + "			return;\n"
 				+ "		}\n" + "}\n");
 	}
+	
+	/**
+	 * Create a SettingsModel for the unique ID of this NodeModel.
+	 * @return the SettingsModelInteger which refers to the ID of this NodeModel.
+	 */
+	public static SettingsModelInteger createIDSettingsModel() {
+		return new SettingsModelInteger("NodeId", -1);
+	}
 
 	protected ScriptingNodeModel() {
 		super(1, 1);
 
 		log = getLogger();
-
-		m_context = ScriptingGateway.get().getContext();
-
-		/* manually load services */
-		new ServiceHelper(m_context)
-				.loadService(ColumnToModuleItemMappingService.class);
+		
+		m_nodeId.setIntValue(MAX_NODE_ID++);
+		m_context = ScriptingGateway.get().getContext(m_nodeId.getIntValue());
 
 		m_context.inject(this);
 
@@ -324,13 +333,17 @@ public class ScriptingNodeModel extends NodeModel {
 
 	@Override
 	protected void saveSettingsTo(NodeSettingsWO settings) {
-		// TODO: Always add settings models here too.
+		// TODO: Always add settings models here too. TODO: Better: Add a List!
+		// the node id only needs to be stored for the node dialog.
+		m_nodeId.saveSettingsTo(settings);
+		
 		m_codeModel.saveSettingsTo(settings);
 		m_settingsService.saveSettingsTo(settings);
 
 		Util.fillStringArraySettingsModel(m_cimService,
 				m_columnInputMappingSettignsModel);
 		m_columnInputMappingSettignsModel.saveSettingsTo(settings);
+		
 	}
 
 	@Override

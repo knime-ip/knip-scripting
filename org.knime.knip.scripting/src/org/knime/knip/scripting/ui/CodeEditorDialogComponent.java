@@ -18,30 +18,34 @@ import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
 
-public class CodeEditorDialogComponent extends DialogComponent implements ChangeListener {
+public class CodeEditorDialogComponent extends DialogComponent implements
+		ChangeListener {
 	RSyntaxTextArea m_textArea;
 	SettingsModelString m_codeModel;
-//	JavaCompletionProvider m_provider = new JavaCompletionProvider();
+
+	// JavaCompletionProvider m_provider = new JavaCompletionProvider();
 
 	public CodeEditorDialogComponent(SettingsModelString sm) {
 		super(sm);
-		
+
 		m_codeModel = sm;
 
 		m_textArea = new RSyntaxTextArea(20, 60);
-		
+
 		m_textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
 		m_textArea.setCodeFoldingEnabled(true);
 		m_textArea.setAntiAliasingEnabled(true);
-		
+
 		RTextScrollPane sp = new RTextScrollPane(m_textArea);
-		
+
 		JPanel panel = getComponentPanel();
 		panel.setLayout(new GridBagLayout());
-		panel.add(sp, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		panel.add(sp, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
+				GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH,
+				new Insets(0, 0, 0, 0), 0, 0));
 		panel.setFocusTraversalKeysEnabled(false);
-//		m_provider.updateCompletions(m_codeModel.getStringValue());
-//		new AutoCompletion(m_provider).install(m_textArea);
+		// m_provider.updateCompletions(m_codeModel.getStringValue());
+		// new AutoCompletion(m_provider).install(m_textArea);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -79,7 +83,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements Change
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == m_textArea) {
 			m_codeModel.setStringValue(m_textArea.getText());
-//			m_provider.updateCompletions(m_codeModel.getStringValue());
+			// m_provider.updateCompletions(m_codeModel.getStringValue());
 		}
 	}
 }

@@ -382,9 +382,9 @@ public class ScriptingNodeModel extends NodeModel {
 
 		try {
 			m_settingsService.loadSettingsFrom(settings);
-//			m_cimService.loadSettingsFrom(
-//					settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE),
-//					m_inputSpec, m_commandInfo);
+			// m_cimService.loadSettingsFrom(
+			// settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE),
+			// m_inputSpec, m_commandInfo);
 		} catch (InvalidSettingsException e) {
 			// this will just not work sometimes, if new compilation contains
 			// new inputs etc
@@ -397,8 +397,8 @@ public class ScriptingNodeModel extends NodeModel {
 		m_codeModel.saveSettingsTo(settings);
 		m_settingsService.saveSettingsTo(settings);
 
-//		m_cimService.saveSettingsTo(settings
-//				.addConfig(ScriptingNodeDialog.CFG_CIM_TABLE));
+		// m_cimService.saveSettingsTo(settings
+		// .addConfig(ScriptingNodeDialog.CFG_CIM_TABLE));
 	}
 
 	@Override

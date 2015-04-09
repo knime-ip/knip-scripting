@@ -50,31 +50,32 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 		m_spec = null;
 		m_info = info;
 	}
-	
+
 	@Override
 	public Object getCellEditorValue() {
 		Object value = super.getCellEditorValue();
-		
+
 		if (value instanceof DataColumnSpec) {
 			value = ((DataColumnSpec) value).getName();
 		} else if (value instanceof ModuleItem<?>) {
 			value = ((ModuleItem<?>) value).getName();
 		}
-		
+
 		return value;
 	}
-	
+
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value,
 			boolean isSelected, int row, int column) {
-		
+
 		if (m_mode == EditorMode.COLUMN) {
 			value = m_spec.getColumnSpec((String) value);
-		} else if (m_mode == EditorMode.INPUT){
+		} else if (m_mode == EditorMode.INPUT) {
 			value = m_info.getInput((String) value);
 		}
-		
-		return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+
+		return super.getTableCellEditorComponent(table, value, isSelected, row,
+				column);
 	}
 
 	/*
@@ -96,12 +97,11 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 	 * Converts a given Iterable<ModuleItem<?>> into an array of ModuleItems by
 	 * iterating through the Iterable.
 	 */
-	private static ModuleItem<?>[] moduleToArray(
-			ModuleInfo items) {
+	private static ModuleItem<?>[] moduleToArray(ModuleInfo items) {
 		if (items == null) {
-			return new ModuleItem<?>[]{};
+			return new ModuleItem<?>[] {};
 		}
-		
+
 		ArrayList<ModuleItem<?>> list = new ArrayList<ModuleItem<?>>();
 
 		for (ModuleItem<?> item : items.inputs()) {

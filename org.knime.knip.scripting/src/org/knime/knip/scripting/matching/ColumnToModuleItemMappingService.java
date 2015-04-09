@@ -33,6 +33,7 @@ public interface ColumnToModuleItemMappingService extends Service {
 		private static final long serialVersionUID = 8652877000556694115L;
 
 		private final String oldValue;
+
 		/**
 		 * Constructor
 		 * 
@@ -42,7 +43,7 @@ public interface ColumnToModuleItemMappingService extends Service {
 		public ColumnToModuleItemMappingChangeEvent(
 				ColumnToModuleItemMapping source, String oldValue) {
 			super(source);
-			
+
 			this.oldValue = oldValue;
 		}
 
@@ -54,9 +55,10 @@ public interface ColumnToModuleItemMappingService extends Service {
 		public ColumnToModuleItemMapping getSourceMapping() {
 			return (ColumnToModuleItemMapping) source;
 		}
-		
+
 		/**
 		 * Get the previous value of the column/input name.
+		 * 
 		 * @return the previous column or input name.
 		 */
 		public String getPreviousValue() {
@@ -124,7 +126,8 @@ public interface ColumnToModuleItemMappingService extends Service {
 		 * {@link ColumnToModuleItemMappingChangeListener#onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent)}
 		 * on all listeners.
 		 * 
-		 * @param oldValue value which has been overwritten
+		 * @param oldValue
+		 *            value which has been overwritten
 		 */
 		void fireMappingColumnChanged(String oldValue);
 
@@ -223,8 +226,7 @@ public interface ColumnToModuleItemMappingService extends Service {
 		/**
 		 * Set this mappings item name and update listeners if changed. Needs to
 		 * call
-		 * {@link #onMappingItemChanged(ColumnToModuleItemMappingChangeEvent)}
-		 * .
+		 * {@link #onMappingItemChanged(ColumnToModuleItemMappingChangeEvent)} .
 		 * 
 		 * @param itemName
 		 *            name of the item to set to.
@@ -305,7 +307,7 @@ public interface ColumnToModuleItemMappingService extends Service {
 	 *         mapping was found in this Service
 	 */
 	ColumnToModuleItemMapping removeMapping(ColumnToModuleItemMapping mapping);
-	
+
 	/**
 	 * Remove all {@link ColumnToModuleItemMapping}s from this Service.
 	 */

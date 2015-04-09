@@ -67,7 +67,7 @@ public class BlockingCommandJavaRunner extends AbstractJavaRunner {
 		final Plugin annotation = c.getAnnotation(Plugin.class);
 		final CommandInfo info = new CommandInfo(commandClass, annotation);
 		pluginService.addPlugin(info);
-		
+
 		try {
 			commandService.run(info, true).get();
 		} catch (InterruptedException | ExecutionException e) {

@@ -49,7 +49,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	public void updateModel(DataTableSpec spec, ModuleInfo info) {
 		// reference should stay valid as long as m_cimService exists
 		m_mappingsList = m_cimService.getMappingsList();
-		
+
 		fireTableDataChanged();
 	}
 
@@ -123,7 +123,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 			// Column index out of bounds
 			break;
 		}
-		
+
 		this.fireTableCellUpdated(rowIndex, columnIndex);
 	}
 

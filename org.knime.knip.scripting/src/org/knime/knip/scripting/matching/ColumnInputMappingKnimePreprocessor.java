@@ -69,7 +69,7 @@ public class ColumnInputMappingKnimePreprocessor extends
 							+ inputName + "\".");
 					continue;
 				}
-				
+
 				// the mapping may be inactive in which case we wont use it
 				if (!mapping.isActive()) {
 					// skip this one, it wont be resolved by this Preprocessor
@@ -106,7 +106,8 @@ public class ColumnInputMappingKnimePreprocessor extends
 				module.setInput(inputName, ia.getValue(cell));
 				module.setResolved(inputName, true);
 			} else {
-				// Often this is not intended, so we should inform about this problem
+				// Often this is not intended, so we should inform about this
+				// problem
 				m_log.warn("Input \"" + inputName + "\" was already resolved!");
 			}
 		}

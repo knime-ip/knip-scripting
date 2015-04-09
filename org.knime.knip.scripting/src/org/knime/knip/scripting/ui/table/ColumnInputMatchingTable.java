@@ -51,7 +51,7 @@ public class ColumnInputMatchingTable extends JTable {
 		super(new ColumnInputMatchingTableModel(spec, info, context));
 
 		context.inject(this);
-		
+
 		m_spec = spec;
 		m_info = info;
 
@@ -65,16 +65,16 @@ public class ColumnInputMatchingTable extends JTable {
 	 */
 	private void setCellEditors() {
 		TableColumnModel model = getColumnModel();
-		
+
 		model.getColumn(ColumnInputMatchingTableModel.COLUMN).setCellEditor(
 				new ColumnInputMappingTableCellEditor(m_spec));
-		
+
 		model.getColumn(ColumnInputMatchingTableModel.ACTIVE).setCellEditor(
 				new DefaultCellEditor(new JCheckBox()));
-		
+
 		model.getColumn(ColumnInputMatchingTableModel.INPUT).setCellEditor(
 				new ColumnInputMappingTableCellEditor(m_info));
-		
+
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class ColumnInputMatchingTable extends JTable {
 
 		m_spec = spec;
 		m_info = info;
-		
+
 		setCellEditors();
 	}
 

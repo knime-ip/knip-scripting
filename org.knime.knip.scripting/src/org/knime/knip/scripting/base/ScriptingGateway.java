@@ -30,60 +30,50 @@ import org.scijava.widget.DefaultWidgetService;
  *
  */
 public class ScriptingGateway {
-	
+
 	protected static ScriptingGateway m_instance = null;
-	
+
 	protected ResourceAwareClassLoader m_classLoader = null;
-	
+
 	protected Context m_context = null;
-	
+
 	/**
 	 * Constructor, creates Scijava Context
 	 */
 	protected ScriptingGateway() {
-		List<Class<? extends Service>> requiredServices = Arrays.<Class<? extends Service>> asList(
-			ScriptService.class, 
-			DefaultJavaService.class,
-			KnimeInputDataTableService.class,
-			KnimeOutputDataTableService.class,
-			KnimeExecutionService.class,
-			NodeSettingsService.class,
-			ObjectService.class,
-			DefaultWidgetService.class,
-			DialogWidgetService.class,
-			InputAdapterService.class,
-			OutputAdapterService.class,
-			CommandService.class
-		);
-		
+		List<Class<? extends Service>> requiredServices = Arrays
+				.<Class<? extends Service>> asList(ScriptService.class,
+						DefaultJavaService.class,
+						KnimeInputDataTableService.class,
+						KnimeOutputDataTableService.class,
+						KnimeExecutionService.class, NodeSettingsService.class,
+						ObjectService.class, DefaultWidgetService.class,
+						DialogWidgetService.class, InputAdapterService.class,
+						OutputAdapterService.class, CommandService.class);
+
 		m_classLoader = new ResourceAwareClassLoader(
-				(DefaultClassLoader) getClass().getClassLoader()
-		);
-		
-		m_context = new Context(
-			requiredServices,
-			new PluginIndex(
-					new DefaultPluginFinder(
-							m_classLoader
-					)
-			)	
-		);
+				(DefaultClassLoader) getClass().getClassLoader());
+
+		m_context = new Context(requiredServices, new PluginIndex(
+				new DefaultPluginFinder(m_classLoader)));
 	}
-	
+
 	/**
 	 * Get the Gateway instance.
+	 * 
 	 * @return
 	 */
 	public static ScriptingGateway get() {
 		if (m_instance == null) {
 			m_instance = new ScriptingGateway();
 		}
-		
+
 		return m_instance;
 	}
 
 	/**
 	 * Get context of this Gateway.
+	 * 
 	 * @return
 	 */
 	public Context getContext() {
@@ -92,6 +82,7 @@ public class ScriptingGateway {
 
 	/**
 	 * Get class loader used by this Gateways context.
+	 * 
 	 * @return
 	 */
 	public ResourceAwareClassLoader getClassLoader() {

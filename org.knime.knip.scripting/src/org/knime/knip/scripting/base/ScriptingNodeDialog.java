@@ -114,8 +114,6 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	private final SettingsModelString m_codeModel = ScriptingNodeModel
 			.createCodeSettingsModel();
 
-	public final static String CFG_CIM_TABLE = "CIM_Table";
-
 	/* containers */
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
 	private final ArrayList<DialogComponent> m_generatedComponents = new ArrayList<DialogComponent>();
@@ -147,10 +145,10 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	private final ColumnInputMatchingTable m_columnMatchingTable;
 
 	// Labels
-	private final static JLabel LBL_HEADER = new JLabel("Script Editor");
-	private final static JLabel LBL_LANG = new JLabel("Language: ");
-	private final static JLabel LBL_COLUMN = new JLabel("Column:");
-	private final static JLabel LBL_CIM = new JLabel("Column/Input Matchings:");
+	private final JLabel LBL_HEADER = new JLabel("Script Editor");
+	private final JLabel LBL_LANG = new JLabel("Language: ");
+	private final JLabel LBL_COLUMN = new JLabel("Column:");
+	private final JLabel LBL_CIM = new JLabel("Column/Input Matchings:");
 
 	// ActionCommands for removing and adding column/input matchings
 	private final static String CMD_ADD = "add";
@@ -377,8 +375,6 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			c.saveSettingsTo(settings);
 		}
 
-		m_columnMatchingTable.getModel().saveSettingsTo(
-				settings.addConfig(CFG_CIM_TABLE));
 	}
 
 	/**
@@ -410,9 +406,10 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		}
 
 		m_columnList.update(specs[0]);
-		m_columnMatchingTable.updateModel(specs[0],
-				m_lastCompiledModule.getInfo(), m_context);
 
+		if (true) {
+			return; //TODO!!
+		}
 		// recreate autogen panel
 		createAutogenPanel();
 
@@ -422,12 +419,6 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			w.loadSettingsFrom(settings, specs);
 		}
 
-		try {
-			m_columnMatchingTable.getModel().loadSettingsFrom(
-					settings.getConfig(CFG_CIM_TABLE));
-		} catch (InvalidSettingsException e) {
-			getLogger().error("Invalid settings: " + e.getMessage());
-		}
 	}
 
 	/*
@@ -436,6 +427,9 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 * pre-cond: m_lastCompiledModule != null
 	 */
 	private void createAutogenPanel() {
+		if (true) {
+			return; //TODO!!!
+		}
 		m_autogenPanel.removeAll();
 		m_widgetService.clearWidgets();
 
@@ -471,6 +465,11 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 				new CommandInfo(commandClass, commandClass
 						.getAnnotation(Plugin.class)));
 	}
+	
+	 @Override
+	 public void onOpen() {
+		 m_editorPanel.invalidate();
+	 }
 
 	/**
 	 * {@inheritDoc}
@@ -479,7 +478,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(CMD_ADD)) {
 
-			ModuleItem i = null;
+			ModuleItem<?> i = null;
 			try {
 				i = m_lastCompiledModule.getInfo().inputs().iterator().next();
 			} catch (NoSuchElementException exc) {
@@ -494,7 +493,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 				return;
 			}
 
-			m_columnMatchingTable.getModel().addItem(i.getName(), cs.getName());
+			m_columnMatchingTable.getModel().addItem(cs.getName(), i.getName());
 		}
 
 		if (e.getActionCommand().equals(CMD_REM)) {

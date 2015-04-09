@@ -4,9 +4,12 @@ import java.awt.Component;
 import java.util.ArrayList;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
+import javax.swing.JLabel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
@@ -27,88 +30,104 @@ public class ColumnInputMatchingTable extends JTable {
 
 	private JComboBox<DataColumnSpec> columnComboBox;
 	private JComboBox<ModuleItem<?>> inputsComboBox;
-	
-	private DataTableSpec m_spec;
 
-	public ColumnInputMatchingTable(DataTableSpec spec, ModuleInfo info, Context context) {
+	private DataTableSpec m_spec;
+	private ModuleInfo m_info;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param spec
+	 *            data table spec to get additional information for column names
+	 *            from
+	 * @param info
+	 *            module info to get additional information for module input
+	 *            names from
+	 * @param context
+	 *            ScijavaContext to get Services from
+	 */
+	public ColumnInputMatchingTable(DataTableSpec spec, ModuleInfo info,
+			Context context) {
 		super(new ColumnInputMatchingTableModel(spec, info, context));
+
+		context.inject(this);
 		
 		m_spec = spec;
-		
-		createComponents(info);	
-		setCellEditors();
-	}
-	
-	private void createComponents(ModuleInfo info) {
-		columnComboBox = new JComboBox<DataColumnSpec>(dataTableSpecToArray(m_spec)) {
-			@Override
-			public void setSelectedItem(Object anObject) {
-				if (anObject instanceof String) {
-					anObject = m_spec.getColumnSpec((String) anObject);
-				}
-				super.setSelectedItem(anObject);
-			}
-		};
-		
-		ModuleItem<?>[] data = new ModuleItem<?>[]{};
-		if (info != null) {
-			data = moduleInputsToArray(info.inputs());
-		}
-		inputsComboBox = new JComboBox<ModuleItem<?>>(data);
+		m_info = info;
+
+		updateModel(spec, info);
 	}
 
-	private void setCellEditors() {
-		getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(columnComboBox));
-		getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(inputsComboBox));
+	/*
+	 * Combo Box for rendering column names
+	 */
+	private class ModuleItemComboBox extends JComboBox<ModuleItem<?>> {
+		/**
+		 * Generated serial version id
+		 */
+		private static final long serialVersionUID = -4928567867334045540L;
+
+		public ModuleItemComboBox(ModuleItem<?>[] array) {
+			super(array);
+		}
+
+		@Override
+		public void setSelectedItem(Object anObject) {
+			if (anObject instanceof String) {
+				anObject = m_info.getInput((String) anObject);
+				// if null, nothing will be selected.
+			}
+			super.setSelectedItem(anObject);
+		}
 	}
 
 	/**
-	 * Update this Tables model to represent a given DataTableSpec.
+	 * Set the cell editors as the created Components.
+	 * 
+	 * @see #createComponents()
+	 */
+	private void setCellEditors() {
+		TableColumnModel model = getColumnModel();
+		
+		model.getColumn(ColumnInputMatchingTableModel.COLUMN).setCellEditor(
+				new ColumnInputMappingTableCellEditor(m_spec));
+		model.getColumn(ColumnInputMatchingTableModel.COLUMN).setCellRenderer(
+				new ColumnFieldMappingTableCellRenderer());
+		
+		model.getColumn(ColumnInputMatchingTableModel.ACTIVE).setCellEditor(
+				new DefaultCellEditor(new JCheckBox()));
+		
+		model.getColumn(ColumnInputMatchingTableModel.INPUT).setCellEditor(
+				new ColumnInputMappingTableCellEditor(m_info));
+		model.getColumn(ColumnInputMatchingTableModel.INPUT).setCellRenderer(
+				new InputFieldMappingTableCellRenderer());
+		
+	}
+
+	/**
+	 * Update this Tables model to represent a given DataTableSpec and
+	 * ModuleInfo.
 	 * 
 	 * @param spec
 	 *            the DataTableSpec.
 	 */
-	public void updateModel(DataTableSpec spec, ModuleInfo info, Context context) {
-		this.setModel(new ColumnInputMatchingTableModel(spec, info, context));
-		
+	public void updateModel(DataTableSpec spec, ModuleInfo info) {
+		((ColumnInputMatchingTableModel) getModel()).updateModel(spec, info);
+
 		m_spec = spec;
-		
-		createComponents(info);
+		m_info = info;
+
 		setCellEditors();
+		
+		super.updateUI();
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ColumnInputMatchingTableModel getModel() {
 		return (ColumnInputMatchingTableModel) super.getModel();
-	}
-
-	/*
-	 * Converts a given DataTableSpec into an array of DataColumnSpecs by iterating
-	 * through the DataTableSpec.
-	 */
-	private static DataColumnSpec[] dataTableSpecToArray(DataTableSpec spec) {
-		DataColumnSpec[] specs = new DataColumnSpec[spec.getNumColumns()];
-
-		int i = 0;
-		for (DataColumnSpec s : spec) {
-			specs[i++] = s;
-		}
-
-		return specs;
-	}
-	
-	/*
-	 * Converts a given Iterable<ModuleItem<?>> into an array of ModuleItems by iterating
-	 * through the Iterable.
-	 */
-	private static ModuleItem<?>[] moduleInputsToArray(Iterable<ModuleItem<?>> items) {
-		ArrayList<ModuleItem<?>> list = new ArrayList<ModuleItem<?>>();
-		
-		for (ModuleItem<?> item : items) {
-			list.add(item);
-		}
-
-		return list.toArray(new ModuleItem[]{});
 	}
 
 	/**
@@ -117,18 +136,13 @@ public class ColumnInputMatchingTable extends JTable {
 	 * @author Jonathan Hale (University of Konstanz)
 	 *
 	 */
-	public class ColumnFieldMatchingTableCellRenderer extends DefaultTableCellRenderer {
+	private class ColumnFieldMappingTableCellRenderer extends
+			DefaultTableCellRenderer {
 
 		/**
 		 * Generated serialVersionUID
 		 */
 		private static final long serialVersionUID = -5599066681704425666L;
-		private DataTableSpec m_spec;
-
-		public ColumnFieldMatchingTableCellRenderer(DataTableSpec spec) {
-			super();
-			m_spec = spec;
-		}
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table,
@@ -136,20 +150,45 @@ public class ColumnInputMatchingTable extends JTable {
 				int column) {
 			if (value instanceof String) {
 				/* get the column */
-				value = m_spec.getColumnSpec((String) value);
-			} 	
-			
-			if (value instanceof DataColumnSpec) {
-//			JComboBox<DataColumnSpec> cb = new JComboBox<DataColumnSpec>(
-//					dataTableSpecToArray(m_spec));
-//
-//				cb.setRenderer(new ColumnComboBoxRenderer());
-//				cb.setSelectedItem(value);
+				DataColumnSpec spec = m_spec.getColumnSpec((String) value);
 
-				return columnComboBox;
-			} else {
-				return null;
+				if (spec != null) {
+					value = spec;
+				}
 			}
+
+			return new JLabel((String) value);
+		}
+	}
+
+	/**
+	 * TableCellRenderer for Tables containing a column with DataColumnSpecs.
+	 * 
+	 * @author Jonathan Hale (University of Konstanz)
+	 *
+	 */
+	private class InputFieldMappingTableCellRenderer extends
+			DefaultTableCellRenderer {
+
+		/**
+		 * Generated serialVersionUID
+		 */
+		private static final long serialVersionUID = -5599066681704425666L;
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			if (value instanceof String) {
+				/* get the column */
+				DataColumnSpec spec = m_spec.getColumnSpec((String) value);
+
+				if (spec != null) {
+					value = spec;
+				}
+			}
+
+			return new JLabel((String) value);
 		}
 	}
 }

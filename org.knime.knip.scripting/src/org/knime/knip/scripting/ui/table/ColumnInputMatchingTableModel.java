@@ -20,10 +20,14 @@ import org.scijava.plugin.Parameter;
  */
 public class ColumnInputMatchingTableModel extends AbstractTableModel {
 
+	/** Constants for table column indices */
+	/** "Column" column index */
 	public static final int COLUMN = 0;
+	/** "Active" column index */
 	public static final int ACTIVE = 1;
+	/** "INPUT" column index */
 	public static final int INPUT = 2;
-	
+
 	/**
 	 * Generated serialVersionUID
 	 */
@@ -32,8 +36,8 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	@Parameter
 	private ColumnToModuleItemMappingService m_cimService;
 
-	private final DataTableSpec m_tableSpec;
-	private final ModuleInfo m_moduleInfo;
+	private DataTableSpec m_tableSpec;
+	private ModuleInfo m_moduleInfo;
 
 	// reference to the m_cimServices mappings list. Should only be used for
 	// read.
@@ -41,10 +45,13 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 
 	public ColumnInputMatchingTableModel(DataTableSpec spec, ModuleInfo info,
 			Context context) {
+		context.inject(this);
+		updateModel(spec, info);
+	}
+
+	public void updateModel(DataTableSpec spec, ModuleInfo info) {
 		m_tableSpec = spec;
 		m_moduleInfo = info;
-
-		context.inject(this);
 
 		// reference should stay valid as long as m_cimService exists
 		m_mappingsList = m_cimService.getMappingsList();
@@ -108,25 +115,27 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	public void setValueAt(Object value, int rowIndex, int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
-			m_mappingsList.get(rowIndex).setColumnName((String)value);
+			m_mappingsList.get(rowIndex).setColumnName((String) value);
 			break;
 		case ACTIVE:
-			m_mappingsList.get(rowIndex).setActive((Boolean)value);
+			m_mappingsList.get(rowIndex).setActive((Boolean) value);
 			break;
 		case INPUT:
-			m_mappingsList.get(rowIndex).setItemName((String)value);
+			m_mappingsList.get(rowIndex).setItemName((String) value);
 			break;
 		default:
 			// Column index out of bounds
 			break;
 		}
+		
+		this.fireTableCellUpdated(rowIndex, columnIndex);
 	}
 
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
 		if (columnIndex == ACTIVE) {
 			return Boolean.class;
-		} else if (columnIndex == COLUMN || columnIndex == INPUT){
+		} else if (columnIndex == COLUMN || columnIndex == INPUT) {
 			return String.class;
 		} else {
 			return Void.class;
@@ -135,7 +144,6 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 
 	public void loadSettingsFrom(final Config config)
 			throws InvalidSettingsException {
-		
 	}
 
 	public void saveSettingsTo(final Config config) {

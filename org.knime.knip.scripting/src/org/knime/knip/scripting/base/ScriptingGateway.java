@@ -12,12 +12,20 @@ import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.commands.widget.DialogWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
+import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
+import org.knime.knip.scripting.matching.DefaultColumnToModuleItemMappingService;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
+import org.scijava.display.DisplayPostprocessor;
+import org.scijava.module.process.PreprocessorPlugin;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.DefaultPluginFinder;
 import org.scijava.plugin.PluginIndex;
+import org.scijava.plugin.PluginInfo;
+import org.scijava.plugin.PluginService;
 import org.scijava.plugins.scripting.java.DefaultJavaService;
+import org.scijava.plugins.scripting.java.JavaRunner;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
 import org.scijava.widget.DefaultWidgetService;
@@ -56,6 +64,18 @@ public class ScriptingGateway {
 
 		m_context = new Context(requiredServices, new PluginIndex(
 				new DefaultPluginFinder(m_classLoader)));
+		
+		/* add custom plugins */
+		PluginService plugins = m_context.getService(PluginService.class);
+		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
+				JavaRunner.class));
+		plugins.addPlugin(new PluginInfo<>(
+				DefaultColumnToModuleItemMappingService.class,
+				ColumnToModuleItemMappingService.class));
+		plugins.addPlugin(new PluginInfo<>(
+				ColumnInputMappingKnimePreprocessor.class,
+				PreprocessorPlugin.class));
+		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
 	}
 
 	/**

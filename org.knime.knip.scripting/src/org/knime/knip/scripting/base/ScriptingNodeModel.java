@@ -161,18 +161,6 @@ public class ScriptingNodeModel extends NodeModel {
 
 		m_context = ScriptingGateway.get().getContext();
 
-		/* add custom plugins */
-		PluginService plugins = m_context.getService(PluginService.class);
-		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
-				JavaRunner.class));
-		plugins.addPlugin(new PluginInfo<>(
-				DefaultColumnToModuleItemMappingService.class,
-				ColumnToModuleItemMappingService.class));
-		plugins.addPlugin(new PluginInfo<>(
-				ColumnInputMappingKnimePreprocessor.class,
-				PreprocessorPlugin.class));
-		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
-
 		/* manually load services */
 		new ServiceHelper(m_context)
 				.loadService(ColumnToModuleItemMappingService.class);

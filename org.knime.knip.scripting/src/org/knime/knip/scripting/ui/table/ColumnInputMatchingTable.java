@@ -58,29 +58,6 @@ public class ColumnInputMatchingTable extends JTable {
 		updateModel(spec, info);
 	}
 
-	/*
-	 * Combo Box for rendering column names
-	 */
-	private class ModuleItemComboBox extends JComboBox<ModuleItem<?>> {
-		/**
-		 * Generated serial version id
-		 */
-		private static final long serialVersionUID = -4928567867334045540L;
-
-		public ModuleItemComboBox(ModuleItem<?>[] array) {
-			super(array);
-		}
-
-		@Override
-		public void setSelectedItem(Object anObject) {
-			if (anObject instanceof String) {
-				anObject = m_info.getInput((String) anObject);
-				// if null, nothing will be selected.
-			}
-			super.setSelectedItem(anObject);
-		}
-	}
-
 	/**
 	 * Set the cell editors as the created Components.
 	 * 

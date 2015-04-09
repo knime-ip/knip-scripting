@@ -1,16 +1,12 @@
 package org.knime.knip.scripting.ui.table;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.EventObject;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.table.TableCellEditor;
 
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
@@ -24,8 +20,12 @@ import org.scijava.module.ModuleItem;
  *
  * @param <T>
  */
-public class ColumnInputMappingTableCellEditor implements TableCellEditor,
-		ActionListener {
+public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
+
+	/**
+	 * Generated serial version uid
+	 */
+	private static final long serialVersionUID = 2891092868179415358L;
 
 	public enum EditorMode {
 		COLUMN, INPUT
@@ -33,115 +33,49 @@ public class ColumnInputMappingTableCellEditor implements TableCellEditor,
 
 	private EditorMode m_mode;
 
-	private JComboBox<? extends Object> m_comboBox;
-	private Object m_oldValue = null;
-
-	private ArrayList<CellEditorListener> m_listeners = new ArrayList<CellEditorListener>();
-
 	private DataTableSpec m_spec;
 	private ModuleInfo m_info;
 
 	public ColumnInputMappingTableCellEditor(DataTableSpec spec) {
+		super(new JComboBox<DataColumnSpec>(dataTableSpecToArray(spec)));
 		m_mode = EditorMode.COLUMN;
 
 		m_spec = spec;
 		m_info = null;
-
-		m_comboBox = new JComboBox<DataColumnSpec>(dataTableSpecToArray(spec));
-		m_comboBox.addActionListener(this);
 	}
 
 	public ColumnInputMappingTableCellEditor(ModuleInfo info) {
+		super(new JComboBox<ModuleItem<?>>(moduleToArray(info)));
 		m_mode = EditorMode.INPUT;
 
 		m_spec = null;
 		m_info = info;
-
-		m_comboBox = new JComboBox<ModuleItem<?>>(
-				moduleToArray(info));
-		m_comboBox.addActionListener(this);
 	}
-
-	@Override
-	public void actionPerformed(ActionEvent ae) {
-		if (m_comboBox.getSelectedIndex() == -1) {
-			cancelCellEditing();
-		} else {
-			stopCellEditing();
-		}
-	}
-
+	
 	@Override
 	public Object getCellEditorValue() {
-		Object item = m_comboBox.getSelectedItem();
-
-		if (item == null) {
-			item = m_oldValue;
-		} else {
-			// try to get the name from the selected item
-			if (item instanceof ModuleItem) {
-				item = ((ModuleItem<?>) item).getName();
-			} else if (item instanceof DataColumnSpec) {
-				item = ((DataColumnSpec) item).getName();
-			}
-		}
-		return item;
-	}
-
-	@Override
-	public boolean isCellEditable(EventObject anEvent) {
-		return true;
-	}
-
-	@Override
-	public boolean shouldSelectCell(EventObject anEvent) {
-		return true;
-	}
-
-	@Override
-	public boolean stopCellEditing() {
-		m_oldValue = null;
+		Object value = super.getCellEditorValue();
 		
-		ChangeEvent e = new ChangeEvent(this);
-		for (CellEditorListener l : m_listeners) {
-			l.editingStopped(e);
+		if (value instanceof DataColumnSpec) {
+			value = ((DataColumnSpec) value).getName();
+		} else if (value instanceof ModuleItem<?>) {
+			value = ((ModuleItem<?>) value).getName();
 		}
 		
-		return true;
+		return value;
 	}
-
-	@Override
-	public void cancelCellEditing() {
-		ChangeEvent e = new ChangeEvent(this);
-		for (CellEditorListener l : m_listeners) {
-			l.editingCanceled(e);
-		}
-	}
-
-	@Override
-	public void addCellEditorListener(CellEditorListener l) {
-		m_listeners.add(l);
-	}
-
-	@Override
-	public void removeCellEditorListener(CellEditorListener l) {
-		m_listeners.remove(l);
-	}
-
+	
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value,
 			boolean isSelected, int row, int column) {
-		// convert the string into an actual columnspec or moduleitem
-		if (value instanceof String) {
-			if (m_mode == EditorMode.COLUMN) {
-				value = m_spec.getColumnSpec((String) value);
-			} else if (m_mode == EditorMode.INPUT) {
-				value = m_info.getInput((String) value);
-			}
+		
+		if (m_mode == EditorMode.COLUMN) {
+			value = m_spec.getColumnSpec((String) value);
+		} else if (m_mode == EditorMode.INPUT){
+			value = m_info.getInput((String) value);
 		}
-		m_comboBox.setSelectedItem(value);
-		m_comboBox.invalidate();
-		return m_comboBox;
+		
+		return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 	}
 
 	/*

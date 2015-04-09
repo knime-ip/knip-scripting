@@ -68,16 +68,12 @@ public class ColumnInputMatchingTable extends JTable {
 		
 		model.getColumn(ColumnInputMatchingTableModel.COLUMN).setCellEditor(
 				new ColumnInputMappingTableCellEditor(m_spec));
-		model.getColumn(ColumnInputMatchingTableModel.COLUMN).setCellRenderer(
-				new ColumnFieldMappingTableCellRenderer());
 		
 		model.getColumn(ColumnInputMatchingTableModel.ACTIVE).setCellEditor(
 				new DefaultCellEditor(new JCheckBox()));
 		
 		model.getColumn(ColumnInputMatchingTableModel.INPUT).setCellEditor(
 				new ColumnInputMappingTableCellEditor(m_info));
-		model.getColumn(ColumnInputMatchingTableModel.INPUT).setCellRenderer(
-				new InputFieldMappingTableCellRenderer());
 		
 	}
 
@@ -93,10 +89,8 @@ public class ColumnInputMatchingTable extends JTable {
 
 		m_spec = spec;
 		m_info = info;
-
-		setCellEditors();
 		
-		super.updateUI();
+		setCellEditors();
 	}
 
 	/**
@@ -105,67 +99,5 @@ public class ColumnInputMatchingTable extends JTable {
 	@Override
 	public ColumnInputMatchingTableModel getModel() {
 		return (ColumnInputMatchingTableModel) super.getModel();
-	}
-
-	/**
-	 * TableCellRenderer for Tables containing a column with DataColumnSpecs.
-	 * 
-	 * @author Jonathan Hale (University of Konstanz)
-	 *
-	 */
-	private class ColumnFieldMappingTableCellRenderer extends
-			DefaultTableCellRenderer {
-
-		/**
-		 * Generated serialVersionUID
-		 */
-		private static final long serialVersionUID = -5599066681704425666L;
-
-		@Override
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-			if (value instanceof String) {
-				/* get the column */
-				DataColumnSpec spec = m_spec.getColumnSpec((String) value);
-
-				if (spec != null) {
-					value = spec;
-				}
-			}
-
-			return new JLabel((String) value);
-		}
-	}
-
-	/**
-	 * TableCellRenderer for Tables containing a column with DataColumnSpecs.
-	 * 
-	 * @author Jonathan Hale (University of Konstanz)
-	 *
-	 */
-	private class InputFieldMappingTableCellRenderer extends
-			DefaultTableCellRenderer {
-
-		/**
-		 * Generated serialVersionUID
-		 */
-		private static final long serialVersionUID = -5599066681704425666L;
-
-		@Override
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-			if (value instanceof String) {
-				/* get the column */
-				DataColumnSpec spec = m_spec.getColumnSpec((String) value);
-
-				if (spec != null) {
-					value = spec;
-				}
-			}
-
-			return new JLabel((String) value);
-		}
 	}
 }

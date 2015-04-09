@@ -36,9 +36,6 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	@Parameter
 	private ColumnToModuleItemMappingService m_cimService;
 
-	private DataTableSpec m_tableSpec;
-	private ModuleInfo m_moduleInfo;
-
 	// reference to the m_cimServices mappings list. Should only be used for
 	// read.
 	private List<ColumnToModuleItemMapping> m_mappingsList;
@@ -50,11 +47,10 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	}
 
 	public void updateModel(DataTableSpec spec, ModuleInfo info) {
-		m_tableSpec = spec;
-		m_moduleInfo = info;
-
 		// reference should stay valid as long as m_cimService exists
 		m_mappingsList = m_cimService.getMappingsList();
+		
+		fireTableDataChanged();
 	}
 
 	@Override
@@ -136,7 +132,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 		if (columnIndex == ACTIVE) {
 			return Boolean.class;
 		} else if (columnIndex == COLUMN || columnIndex == INPUT) {
-			return String.class;
+			return Object.class;
 		} else {
 			return Void.class;
 		}

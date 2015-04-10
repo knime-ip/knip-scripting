@@ -5,8 +5,6 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.config.Config;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
 import org.scijava.Context;
@@ -161,13 +159,6 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 		} else {
 			return Void.class;
 		}
-	}
-
-	public void loadSettingsFrom(final Config config)
-			throws InvalidSettingsException {
-	}
-
-	public void saveSettingsTo(final Config config) {
 	}
 
 };

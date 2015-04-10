@@ -62,7 +62,7 @@ import org.knime.core.node.NodeView;
 public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
 
 	static int MAX_ID = 0;
-	
+
 	@Override
 	protected int getNrNodeViews() {
 		return 0;

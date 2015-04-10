@@ -45,7 +45,7 @@ public class DefaultColumnToModuleItemMappingService extends
 	@Override
 	public ColumnToModuleItemMapping getMappingForModuleItemName(
 			String inputName) {
-		return m_mappingsByColumn.get(inputName);
+		return m_mappingsByItem.get(inputName);
 	}
 
 	@Override

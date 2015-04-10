@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
 import org.knime.knip.scijava.commands.KnimeExecutionService;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
@@ -67,8 +66,8 @@ public class ScriptingGateway {
 	 */
 	protected ScriptingGateway() {
 
-		m_classLoader = new ResourceAwareClassLoader(
-				(DefaultClassLoader) getClass().getClassLoader());
+		m_classLoader = new ResourceAwareClassLoader(getClass()
+				.getClassLoader(), getClass());
 
 		m_pluginIndex = new PluginIndex(new DefaultPluginFinder(m_classLoader));
 
@@ -137,10 +136,10 @@ public class ScriptingGateway {
 			c = m_contexts.get(id);
 		} else {
 			// we will need to expand m_contexts size
-			
+
 			// expand capacity first for faster adding later
 			m_contexts.ensureCapacity(id + 1);
-			
+
 			// expand size of m_contexts with null objects
 			for (int i = (id - m_contexts.size() + 1); i > 0; --i) {
 				m_contexts.add(null);

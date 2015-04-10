@@ -40,7 +40,6 @@ public class ColumnInputMappingKnimePreprocessor extends
 
 	@Override
 	public void process(Module module) {
-
 		// get the DataTableSpec to later find column indices
 		DataTableSpec spec = m_inputTable.getInputDataTableSpec();
 
@@ -60,7 +59,7 @@ public class ColumnInputMappingKnimePreprocessor extends
 			// preprocessor.
 			if (!module.isResolved(inputName)) {
 				// get a column to input mapping
-				mapping = m_cimService.getMappingForModuleItem(i);
+				mapping = m_cimService.getMappingForModuleItemName(inputName);
 
 				// there might be no mapping for this input
 				if (mapping == null) {

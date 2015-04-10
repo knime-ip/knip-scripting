@@ -328,6 +328,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
 		m_columnMatchingTable.setFillsViewportHeight(true);
+		// make sure cell editing stops before rows are removed
+		m_columnMatchingTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 		m_columnMatchingTable.setPreferredScrollableViewportSize(new Dimension(
 				100, 150));
 		m_editorPanel.add(scrollPane, gbc_cim);

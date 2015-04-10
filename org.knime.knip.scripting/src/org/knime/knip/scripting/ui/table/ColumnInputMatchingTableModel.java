@@ -91,19 +91,44 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 		}
 	}
 
+	/**
+	 * Add an item from the model and the underlying
+	 * {@link ColumnToModuleItemMappingService}.
+	 * 
+	 * @param columnName
+	 *            column name to map
+	 * @param inputName
+	 *            input name to map to
+	 */
 	public void addItem(String columnName, String inputName) {
 		m_cimService.addMapping(columnName, inputName);
 		this.fireTableDataChanged();
 	}
 
+	/**
+	 * Remove an item from the model and the underlying
+	 * {@link ColumnToModuleItemMappingService}.
+	 * 
+	 * Please make sure that all cell editors cancel edit before calling this
+	 * method.
+	 * 
+	 * @param row
+	 *            row index to remove
+	 */
 	public void removeItem(int row) {
 		m_cimService.removeMapping(m_mappingsList.get(row));
-		this.fireTableDataChanged();
+		this.fireTableRowsDeleted(row, row);
 	}
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		// all cells can be edited
+		if (columnIndex > 2 || columnIndex < 0) {
+			return false;
+		}
+		if (rowIndex >= m_mappingsList.size() || rowIndex < 0) {
+			return false;
+		}
+		// all existing cells can be edited
 		return true;
 	}
 

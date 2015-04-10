@@ -29,7 +29,7 @@
  * #L%
  */
 
-package org.knime.knip.scripting.base;
+package org.knime.knip.scripting.java;
 
 import java.util.concurrent.ExecutionException;
 

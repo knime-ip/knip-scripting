@@ -12,6 +12,7 @@ import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.commands.widget.DialogWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
+import org.knime.knip.scripting.java.BlockingCommandJavaRunner;
 import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
 import org.knime.knip.scripting.matching.DefaultColumnToModuleItemMappingService;

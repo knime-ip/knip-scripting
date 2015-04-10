@@ -14,6 +14,8 @@ import org.scijava.plugin.Parameter;
 /**
  * TableModel for the ColumnFieldMatchingTable.
  * 
+ * TODO: prevent multiple mapping to input.
+ * 
  * @author Jonathan Hale (University of Konstanz)
  */
 public class ColumnInputMatchingTableModel extends AbstractTableModel {
@@ -99,8 +101,18 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	 *            input name to map to
 	 */
 	public void addItem(String columnName, String inputName) {
+		int row = m_mappingsList.size();
 		m_cimService.addMapping(columnName, inputName);
-		this.fireTableDataChanged();
+
+		if (row != m_mappingsList.size()) {
+			// adding the mapping changed the size of the table, therefore it
+			// was added to the end of the list.
+			this.fireTableRowsInserted(row, row);
+		} else {
+			// we cannot simply determine which row changed.
+			// TODO: prevent multiple mapping to input.
+			this.fireTableDataChanged();
+		}
 	}
 
 	/**

@@ -30,7 +30,7 @@
 				will not be used and can easily be reactivated later, if needed
 				again.
 			</option>
-			<option " Input Column List ">
+			<option name="Input Column List">
 				The input column list shows the
 				currently available columns in the table assigned to the
 				ScriptingNode input port. You can easily add column to input

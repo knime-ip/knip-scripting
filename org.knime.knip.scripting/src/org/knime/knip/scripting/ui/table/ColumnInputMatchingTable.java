@@ -1,14 +1,9 @@
 package org.knime.knip.scripting.ui.table;
 
-import java.awt.Component;
-import java.util.ArrayList;
-
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
-import javax.swing.JLabel;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 import org.knime.core.data.DataColumnSpec;

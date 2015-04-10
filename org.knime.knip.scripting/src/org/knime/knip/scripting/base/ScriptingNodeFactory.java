@@ -50,39 +50,55 @@ package org.knime.knip.scripting.base;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeView;
 
 /**
- * TODO
+ * NodeFactory for {@link ScriptingNodeModel}.
+ * 
+ * Creates {@link ScriptingNodeModel}s and {@link ScriptingNodeDialog}s.
  * 
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
 public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
 
-	static int MAX_ID = 0;
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected int getNrNodeViews() {
 		return 0;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @return null (ScriptingNode does not have views.)
+	 */
 	@Override
-	public NodeView createNodeView(int viewIndex, ScriptingNodeModel nodeModel) {
+	public NodeView<ScriptingNodeModel> createNodeView(int viewIndex,
+			ScriptingNodeModel nodeModel) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected boolean hasDialog() {
 		return true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected NodeDialogPane createNodeDialogPane() {
 		return new ScriptingNodeDialog();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ScriptingNodeModel createNodeModel() {
 		return new ScriptingNodeModel();

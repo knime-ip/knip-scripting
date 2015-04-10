@@ -55,6 +55,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
@@ -111,7 +113,7 @@ import org.scijava.ui.swing.widget.SwingInputPanel;
  * @see ScriptingNodeFactory
  */
 public class ScriptingNodeDialog extends NodeDialogPane implements
-		ActionListener {
+		ActionListener, MouseListener {
 
 	/* settings: SettingsModels/Config IDs etc */
 	private final SettingsModelString m_codeModel = ScriptingNodeModel
@@ -310,6 +312,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		m_columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_columnList.setUserSelectionAllowed(true);
+		m_columnList.addMouseListener(this);
 
 		JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
 		columnSelectionPanel.add(LBL_COLUMN,
@@ -544,6 +547,54 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			int row = m_columnMatchingTable.getSelectedRow();
 			m_columnMatchingTable.getModel().removeItem(row);
 		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		if (e.getSource() == m_columnList) {
+			// check for doubleclick
+			if (e.getClickCount() == 2) {
+				int index = m_columnList.locationToIndex(e.getPoint());
+				if (index >= 0) {
+					Object o = m_columnList.getModel().getElementAt(index);
+					
+					if (o instanceof DataColumnSpec) {
+						// better safe then sorry, should always be the case, though
+						DataColumnSpec cspec = (DataColumnSpec) o;
+						
+						ModuleItem<?> i = null;
+						try {
+							i = m_lastCompiledModule.getInfo().inputs().iterator().next();
+						} catch (NoSuchElementException exc) {
+							getLogger().error("No input found.");
+							return;
+						}
+						
+						m_columnMatchingTable.getModel().addItem(cspec.getName(), i.getName());
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// unsused
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// unsused
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// unsused
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// unsused
 	};
 
 }

@@ -2,15 +2,12 @@ package org.knime.knip.scripting.ui.table;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;
 
-import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.scijava.Context;
 import org.scijava.module.ModuleInfo;
-import org.scijava.module.ModuleItem;
 
 /**
  * A JTable for matching Columns to ModuleInputs.
@@ -22,9 +19,6 @@ public class ColumnInputMatchingTable extends JTable {
 	/**
 	 */
 	private static final long serialVersionUID = -5405520683074706886L;
-
-	private JComboBox<DataColumnSpec> columnComboBox;
-	private JComboBox<ModuleItem<?>> inputsComboBox;
 
 	private DataTableSpec m_spec;
 	private ModuleInfo m_info;

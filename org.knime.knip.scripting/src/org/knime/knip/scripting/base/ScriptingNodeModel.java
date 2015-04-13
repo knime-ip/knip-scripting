@@ -1,18 +1,14 @@
 package org.knime.knip.scripting.base;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.script.ScriptException;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
@@ -36,28 +32,19 @@ import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
-import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
-import org.knime.knip.scripting.matching.Util;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
-import org.knime.knip.scripting.matching.DefaultColumnToModuleItemMappingService;
+import org.knime.knip.scripting.matching.Util;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
-import org.scijava.display.DisplayPostprocessor;
 import org.scijava.module.ModuleItem;
-import org.scijava.module.process.PreprocessorPlugin;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.plugin.PluginInfo;
-import org.scijava.plugin.PluginService;
 import org.scijava.plugins.scripting.java.JavaEngine;
-import org.scijava.plugins.scripting.java.JavaRunner;
 import org.scijava.plugins.scripting.java.JavaScriptLanguage;
 import org.scijava.plugins.scripting.java.JavaService;
-import org.scijava.script.ScriptLanguage;
-import org.scijava.service.ServiceHelper;
 
 /**
  * NodeModel of the ScriptingNode
@@ -66,14 +53,26 @@ import org.scijava.service.ServiceHelper;
  */
 public class ScriptingNodeModel extends NodeModel {
 
+	/*
+	 * This node uses own node ids for every instance during the nodes existance
+	 * (node ids are not saved to file). The next id to be given to a newly
+	 * created node is stored in MAX_NODE_ID.
+	 * 
+	 * The node id is required so that Dialog and Model can both work with the
+	 * same Scijava Context.
+	 */
 	private static int MAX_NODE_ID = 0;
 
+	/* contains the scripts code */
 	private final SettingsModelString m_codeModel = createCodeSettingsModel();
 
+	/* contains the column to input mappings */
 	private final SettingsModelStringArray m_columnInputMappingSettignsModel = createColumnInputMappingSettingsModel();
 
+	/* contains the nodeID. Only used during runtime. */
 	private final SettingsModelInteger m_nodeId = createIDSettingsModel();
 
+	/* This nodes logger, a shortcut */
 	private final NodeLogger log;
 
 	/* scijava context stuff */
@@ -102,27 +101,21 @@ public class ScriptingNodeModel extends NodeModel {
 	@Parameter
 	private NodeSettingsService m_settingsService;
 
-	/*
-	 * Service for converting module inputs into KNIME datatable cells vice
-	 * versa
-	 */
+	/* Service for mapping column names to module inputs */
 	@Parameter
 	private ColumnToModuleItemMappingService m_cimService;
 
-	final ScriptLanguage m_java;
+	/* The class which compiles java code */
 	final JavaEngine m_javaEngine;
 
-	/* Store the last used DataTableSpec here */
-	private DataTableSpec m_inputSpec;
-
-	/* Current compiled command and info */
+	/* Current compiled command and its command info */
 	private Class<? extends Command> m_commandClass;
 	private CommandInfo m_commandInfo;
 
 	/**
 	 * Create column to input mapping settings model.
 	 * 
-	 * @return
+	 * @return SettingsModel for the column to input mappings
 	 */
 	public static SettingsModelStringArray createColumnInputMappingSettingsModel() {
 		return new SettingsModelStringArray("ColumnInputMappings",
@@ -132,7 +125,7 @@ public class ScriptingNodeModel extends NodeModel {
 	/**
 	 * Create Code SettingsModel with some default example code.
 	 * 
-	 * @return
+	 * @return SettignsModel for the script code
 	 */
 	public static SettingsModelString createCodeSettingsModel() {
 		return new SettingsModelString("Code",
@@ -168,6 +161,11 @@ public class ScriptingNodeModel extends NodeModel {
 		return new SettingsModelInteger("NodeId", -1);
 	}
 
+	/**
+	 * Constructor. Should only be called by {@link ScriptingNodeFactory}.
+	 * 
+	 * @see ScriptingNodeFactory
+	 */
 	protected ScriptingNodeModel() {
 		super(1, 1);
 
@@ -176,18 +174,24 @@ public class ScriptingNodeModel extends NodeModel {
 		m_nodeId.setIntValue(MAX_NODE_ID++);
 		m_context = ScriptingGateway.get().getContext(m_nodeId.getIntValue());
 
+		// populate @Parameter members
 		m_context.inject(this);
 
-		m_java = m_objectService.getObjects(JavaScriptLanguage.class).get(0);
-		m_javaEngine = (JavaEngine) m_java.getScriptEngine();
+		JavaScriptLanguage javaLanguage = m_objectService.getObjects(
+				JavaScriptLanguage.class).get(0);
+		m_javaEngine = (JavaEngine) javaLanguage.getScriptEngine();
 	}
 
+	/* DataTableSpec of the output data table, created from module outputs */
 	private DataTableSpec[] m_outSpec;
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
 			throws InvalidSettingsException {
+
+		// get the Service for output adapters, which convert module items to
+		// Knime DataCells
 		OutputAdapterService outAdapters = m_context
 				.getService(OutputAdapterService.class);
 
@@ -195,6 +199,7 @@ public class ScriptingNodeModel extends NodeModel {
 			throw new InvalidSettingsException("Code could not be compiled!");
 		}
 
+		// list to contain the output DataColumnSpecs
 		List<DataColumnSpec> columnSpecs = new ArrayList<DataColumnSpec>();
 
 		// create a output data table spec for every module output that can be
@@ -204,6 +209,8 @@ public class ScriptingNodeModel extends NodeModel {
 					.getType());
 
 			if (oa != null) {
+				// there is a adapter to convert the contents of "output",
+				// a column will be created which will contain its contents
 				columnSpecs.add(new DataColumnSpecCreator(output.getName(), oa
 						.getDataCellType()).createSpec());
 			}
@@ -218,17 +225,18 @@ public class ScriptingNodeModel extends NodeModel {
 			m_settingsService.createSettingsModel(i);
 		}
 
-		// shortcut to specs
-		m_inputSpec = inSpecs[0];
-
 		return m_outSpec;
 	}
 
 	@SuppressWarnings("unchecked")
 	public static Class<? extends Command> compile(JavaEngine engine,
 			String code) {
+		// the ResourceAwareClassLoader has access to required bundles of this
+		// bundle
 		ResourceAwareClassLoader racl = ScriptingGateway.get().getClassLoader();
 
+		// This is required for the compiler to find classes on classpath
+		// (scijava-common for example)
 		Thread.currentThread().setContextClassLoader(
 				new URLClassLoader(racl.getFileURLs().toArray(new URL[] {}),
 						racl));
@@ -295,16 +303,20 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void validateSettings(NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		// TODO: Always add settings models here too.
 		m_codeModel.validateSettings(settings);
+
+		m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
+		if (m_commandClass == null) {
+			throw new InvalidSettingsException("Could not compile Code.");
+		}
 	}
 
 	@Override
 	protected void loadValidatedSettingsFrom(NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		// TODO: Always add settings models here too.
 		m_codeModel.loadSettingsFrom(settings);
 
+		// compile to work with script-dependent settings
 		m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
 
 		if (m_commandClass == null) {
@@ -349,22 +361,21 @@ public class ScriptingNodeModel extends NodeModel {
 
 	@Override
 	protected void saveSettingsTo(NodeSettingsWO settings) {
-		// TODO: Always add settings models here too. TODO: Better: Add a List!
-		// the node id only needs to be stored for the node dialog.
+		// store node ID for ScriptingNodeDialog
 		m_nodeId.saveSettingsTo(settings);
 
+		// store other settings
 		m_codeModel.saveSettingsTo(settings);
 		m_settingsService.saveSettingsTo(settings);
 
 		Util.fillStringArraySettingsModel(m_cimService,
 				m_columnInputMappingSettignsModel);
 		m_columnInputMappingSettignsModel.saveSettingsTo(settings);
-
 	}
 
 	@Override
 	protected void reset() {
-
+		// unused
 	}
 
 }

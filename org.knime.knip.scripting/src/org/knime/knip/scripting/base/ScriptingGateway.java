@@ -11,7 +11,7 @@ import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
 import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
-import org.knime.knip.scijava.commands.widget.DialogWidgetService;
+import org.knime.knip.scijava.commands.widget.impl.KnimeWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scripting.java.BlockingCommandJavaRunner;
 import org.knime.knip.scripting.matching.ColumnInputMappingKnimePreprocessor;
@@ -31,6 +31,7 @@ import org.scijava.plugins.scripting.java.JavaRunner;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
 import org.scijava.service.ServiceHelper;
+import org.scijava.ui.UIService;
 import org.scijava.widget.DefaultWidgetService;
 
 /**
@@ -71,8 +72,8 @@ public class ScriptingGateway {
 					DefaultJavaService.class, KnimeInputDataTableService.class,
 					KnimeOutputDataTableService.class,
 					KnimeExecutionService.class, NodeSettingsService.class,
-					ObjectService.class, DefaultWidgetService.class,
-					DialogWidgetService.class, InputAdapterService.class,
+					ObjectService.class, DefaultWidgetService.class, KnimeWidgetService.class,
+					InputAdapterService.class, UIService.class,
 					OutputAdapterService.class, CommandService.class);
 
 	/**

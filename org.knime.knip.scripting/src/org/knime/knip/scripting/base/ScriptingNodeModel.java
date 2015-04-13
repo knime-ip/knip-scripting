@@ -318,14 +318,12 @@ public class ScriptingNodeModel extends NodeModel {
 
 		try {
 			m_settingsService.loadSettingsFrom(settings);
-			// m_cimService.loadSettingsFrom(
-			// settings.getConfig(ScriptingNodeDialog.CFG_CIM_TABLE),
-			// m_inputSpec, m_commandInfo);
 		} catch (InvalidSettingsException e) {
 			// this will just not work sometimes, if new compilation contains
 			// new inputs etc
 		}
 
+		// load column input mappings
 		m_columnInputMappingSettignsModel.loadSettingsFrom(settings);
 		m_cimService.clear();
 		Util.fillColumnToModuleItemMappingService(

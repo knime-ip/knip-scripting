@@ -297,8 +297,6 @@ public class ScriptingNodeModel extends NodeModel {
 			throws InvalidSettingsException {
 		// TODO: Always add settings models here too.
 		m_codeModel.validateSettings(settings);
-		// TODO: Doesn't really make sense until m_codeModel is loaded and
-		// compiled: m_settingsService.validateSettings(settings);
 	}
 
 	@Override
@@ -314,6 +312,25 @@ public class ScriptingNodeModel extends NodeModel {
 		} else {
 			m_commandInfo = new CommandInfo(m_commandClass,
 					m_commandClass.getAnnotation(Plugin.class));
+		}
+
+		// Create settings models for module inputs which do not have a
+		// ColumnToModuleInputMapping that maps to them
+		for (ModuleItem<?> i : m_commandInfo.inputs()) {
+			String inputName = i.getName();
+			boolean needsSettings = true;
+
+			// try to find a mapping
+			ColumnToModuleItemMapping mapping = m_cimService
+					.getMappingForModuleItemName(inputName);
+			if (mapping != null) {
+				// possibly found an active mapping.
+				needsSettings = !mapping.isActive();
+			}
+
+			if (needsSettings) {
+				m_settingsService.createSettingsModel(i);
+			}
 		}
 
 		try {

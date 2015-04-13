@@ -41,13 +41,16 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginService;
 import org.scijava.plugins.scripting.java.AbstractJavaRunner;
+import org.scijava.plugins.scripting.java.CommandJavaRunner;
 import org.scijava.plugins.scripting.java.JavaRunner;
 
 /**
- * Runs the given {@link Command} class.
+ * Runs the given {@link Command} class and waits for it's execution to finish.
  * 
  * @author Curtis Rueden
  * @author Jonathan Hale
+ * 
+ * @see CommandJavaRunner
  */
 @Plugin(type = JavaRunner.class, priority = Priority.FIRST_PRIORITY)
 public class BlockingCommandJavaRunner extends AbstractJavaRunner {
@@ -69,6 +72,7 @@ public class BlockingCommandJavaRunner extends AbstractJavaRunner {
 		pluginService.addPlugin(info);
 
 		try {
+			// run the command and wait for it to finish
 			commandService.run(info, true).get();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new RuntimeException(e);

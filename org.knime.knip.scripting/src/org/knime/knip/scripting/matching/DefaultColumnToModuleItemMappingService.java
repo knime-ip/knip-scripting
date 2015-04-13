@@ -1,21 +1,10 @@
 package org.knime.knip.scripting.matching;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
-import org.knime.core.data.DataColumnSpec;
-import org.knime.core.data.DataTableSpec;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.config.Config;
-import org.knime.core.util.Pair;
-import org.scijava.module.ModuleInfo;
-import org.scijava.module.ModuleItem;
 import org.scijava.plugin.Plugin;
-import org.scijava.service.AbstractService;
 
 /**
  * Service which handles {@link ColumnToModuleInputMapping}s. They are used by
@@ -23,14 +12,22 @@ import org.scijava.service.AbstractService;
  * column should fill the value of a module input.
  * 
  * @author Jonathan Hale (University of Konstanz)
+ * 
+ * @see ColumnToModuleItemMapping
+ * @see ColumnToModuleItemMappingService
  */
 @Plugin(type = ColumnToModuleItemMappingService.class)
 public class DefaultColumnToModuleItemMappingService extends
 		AbstractColumnToModuleItemMappingService {
 
-	ArrayList<ColumnToModuleItemMapping> m_mappings = new ArrayList<ColumnToModuleItemMapping>();
-	WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByColumn = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
-	WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByItem = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
+	/** list containing all mappings of this service */
+	private ArrayList<ColumnToModuleItemMapping> m_mappings = new ArrayList<ColumnToModuleItemMapping>();
+	
+	/** mappings optimized for {@link #getMappingForColumnName(String)} */
+	private WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByColumn = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
+	
+	/** mappings optimized for {@link #getMappingForModuleItemName(String)} */
+	private WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByItem = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
 
 	@Override
 	public List<ColumnToModuleItemMapping> getMappingsList() {
@@ -60,6 +57,7 @@ public class DefaultColumnToModuleItemMappingService extends
 			ColumnToModuleItemMapping mapping) {
 
 		if (m_mappings.remove(mapping)) {
+			// a mapping has been removed, we need to update the hash maps
 			m_mappingsByColumn.remove(mapping.getColumnName());
 			m_mappingsByItem.remove(mapping.getItemName());
 
@@ -68,11 +66,14 @@ public class DefaultColumnToModuleItemMappingService extends
 			return mapping;
 		}
 
+		// given mapping was not found
 		return null;
 	}
 
 	@Override
 	public void onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent e) {
+		// a column name has changed, we need to update the has maps to reflect
+		// that change
 		m_mappingsByColumn.remove(e.getPreviousValue());
 
 		ColumnToModuleItemMapping mapping = e.getSourceMapping();
@@ -81,6 +82,8 @@ public class DefaultColumnToModuleItemMappingService extends
 
 	@Override
 	public void onMappingItemChanged(ColumnToModuleItemMappingChangeEvent e) {
+		// a module input name has changed, we need to update the has maps to reflect
+		// that change
 		m_mappingsByItem.remove(e.getPreviousValue());
 
 		ColumnToModuleItemMapping mapping = e.getSourceMapping();
@@ -89,6 +92,8 @@ public class DefaultColumnToModuleItemMappingService extends
 
 	@Override
 	public void clear() {
+		// remove all mappings
+		
 		m_mappings.clear();
 		m_mappingsByColumn.clear();
 		m_mappingsByItem.clear();

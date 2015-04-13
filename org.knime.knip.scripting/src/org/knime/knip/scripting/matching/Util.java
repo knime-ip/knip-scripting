@@ -6,6 +6,15 @@ import java.util.List;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
 
+/**
+ * Utility methods for column input mappings.
+ * 
+ * This class contains static methods to serialize and deserialize
+ * {@link ColumnToModuleItemMapping}s as {@link SettingsModelStringArray}.
+ * 
+ * @author Jonathan Hale (University of Konstanz)
+ *
+ */
 public class Util {
 
 	/**
@@ -27,7 +36,7 @@ public class Util {
 
 		for (ColumnToModuleItemMapping m : mappings) {
 			out.add(m.getColumnName() + "\n"
-					+ (m.isActive() ? "true" : "false") + "\n" 
+					+ (m.isActive() ? "true" : "false") + "\n"
 					+ m.getItemName());
 		}
 
@@ -56,12 +65,19 @@ public class Util {
 				// Invalid format!
 				return false;
 			} else {
-				ColumnToModuleItemMapping mapping = service.addMapping(names[0], names[2]);
+				// format is
+				// [0] column name
+				// [1] active, either "true" or "false"
+				// [2] module input name
+				ColumnToModuleItemMapping mapping = service.addMapping(
+						names[0], names[2]);
+
 				if (names[1].equals("false")) {
 					mapping.setActive(false);
-				} // else: keep default true
+				} // else: keep active default true
 			}
 		}
+		// done, no problems
 		return true;
 	}
 

@@ -329,7 +329,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
 		m_columnMatchingTable.setFillsViewportHeight(true);
 		// make sure cell editing stops before rows are removed
-		m_columnMatchingTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+		m_columnMatchingTable.putClientProperty("terminateEditOnFocusLost",
+				Boolean.TRUE);
 		m_columnMatchingTable.setPreferredScrollableViewportSize(new Dimension(
 				100, 150));
 		m_editorPanel.add(scrollPane, gbc_cim);
@@ -553,26 +554,32 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		/*
+		 * Create a column input mapping on column list double click
+		 */
 		if (e.getSource() == m_columnList) {
 			// check for doubleclick
 			if (e.getClickCount() == 2) {
 				int index = m_columnList.locationToIndex(e.getPoint());
 				if (index >= 0) {
 					Object o = m_columnList.getModel().getElementAt(index);
-					
+
 					if (o instanceof DataColumnSpec) {
-						// better safe then sorry, should always be the case, though
+						// better safe then sorry, should always be the case,
+						// though
 						DataColumnSpec cspec = (DataColumnSpec) o;
-						
+
 						ModuleItem<?> i = null;
 						try {
-							i = m_lastCompiledModule.getInfo().inputs().iterator().next();
+							i = m_lastCompiledModule.getInfo().inputs()
+									.iterator().next();
 						} catch (NoSuchElementException exc) {
 							getLogger().error("No input found.");
 							return;
 						}
-						
-						m_columnMatchingTable.getModel().addItem(cspec.getName(), i.getName());
+
+						m_columnMatchingTable.getModel().addItem(
+								cspec.getName(), i.getName());
 					}
 				}
 			}

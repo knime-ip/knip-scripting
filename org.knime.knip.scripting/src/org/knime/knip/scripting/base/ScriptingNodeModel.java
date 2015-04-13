@@ -275,7 +275,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 		/* reset knime context services */
 		container.close();
-		// m_inService.setInputDataTable(null); // TODO: why not?
+		m_inService.setInputDataTable(null);
 		m_outService.setOutputContainer(null);
 		m_outService.setOutputDataRow(null);
 

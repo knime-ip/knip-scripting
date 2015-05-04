@@ -2,13 +2,18 @@ package org.knime.knip.scripting.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.script.ScriptException;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
@@ -128,27 +133,30 @@ public class ScriptingNodeModel extends NodeModel {
 	 * @return SettignsModel for the script code
 	 */
 	public static SettingsModelString createCodeSettingsModel() {
-		return new SettingsModelString("Code",
-		/* default value */
-		"package script;\n\n"
+		return new SettingsModelString(
+				"Code",
+				fileAsString("platform:/plugin/org.knime.knip.scripting.base/res/DefaultScript.txt"));
+	}
 
-		+ "import org.scijava.plugin.Parameter;\n"
-				+ "import org.scijava.plugin.Plugin;\n"
-				+ "import org.scijava.ItemIO;\n"
-				+ "import org.scijava.command.Command;\n\n"
-
-				+ "@Plugin(type = Command.class)\n"
-				+ "public class MyClass implements Command {\n"
-				+ "		@Parameter(type = ItemIO.BOTH)\n"
-				+ "		private String string;\n\n"
-
-				+ " 	@Parameter(type = ItemIO.BOTH)\n"
-				+ " 	private Integer integer;\n\n"
-
-				+ "		public void run() {\n"
-				+ "			string = \"Here's some custom output!: \" + string;\n"
-				+ "			integer = integer * integer;\n" + "			return;\n"
-				+ "		}\n" + "}\n");
+	/**
+	 * Get the entire contents of an URL as String.
+	 * 
+	 * @param path
+	 *            url to the file to get the contents of
+	 * @return contents of path as url
+	 */
+	private static String fileAsString(final String path) {
+		byte[] encoded;
+		try {
+			encoded = Files.readAllBytes(Paths.get(FileLocator.resolve(
+					new URL(path)).toURI()));
+			return new String(encoded, Charset.defaultCharset());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	/**

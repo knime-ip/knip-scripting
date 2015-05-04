@@ -8,11 +8,26 @@ import org.scijava.command.Command;
 @Plugin(type = Command.class)
 public class Script implements Command {
 	
-	// Parameters 
+	/*
+	 * Parameters
+	 * 
+	 * Define inputs and/or outputs of your script.
+	 * By annotating a member with
+	 *  -> @Parameter(type = ItemIO.INPUT) you define an input
+	 *	-> @Parameter(type = ItemIO.OUTPUT) you define an output
+	 *	-> @Parameter(type = ItemIO.BOTH) you define a member to
+	 *	   be both input and output.
+	 */
 	
 	public void run() {
 	
-		// Do something with parameters
+		/*
+		 * Put code which evaluates the parameters here.
+		 * 
+		 * To output something to a table row, you merely need to
+		 * set output parameters. They will be automatically result
+		 * in column in the output table.
+		 */
 		
 	}
 }

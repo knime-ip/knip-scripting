@@ -76,10 +76,9 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 
 	@Override
 	protected void validateSettingsBeforeSave() throws InvalidSettingsException {
-		String text = m_textArea.getText();
-		m_codeModel.setStringValue(text);
+		updateModel();
 	}
-	
+
 	@Override
 	protected void checkConfigurabilityBeforeLoad(PortObjectSpec[] specs)
 			throws NotConfigurableException {
@@ -107,7 +106,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == m_textArea) {
-			m_codeModel.setStringValue(m_textArea.getText());
+			updateModel();
 			// m_provider.updateCompletions(m_codeModel.getStringValue());
 		}
 	}
@@ -119,5 +118,13 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	 */
 	public String getCode() {
 		return m_textArea.getText();
+	}
+
+	/**
+	 * Update the underlying SettingsModel to contain the text of this editor
+	 * component.
+	 */
+	public void updateModel() {
+		m_codeModel.setStringValue(m_textArea.getText());
 	}
 }

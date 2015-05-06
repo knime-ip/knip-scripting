@@ -137,7 +137,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
 
 	/* options for easy debugging */
-	public final static boolean DEBUG_UI = true;
+	public final static boolean DEBUG_UI = false;
 
 	// scijava context
 	private Context m_context;

@@ -110,4 +110,13 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 			// m_provider.updateCompletions(m_codeModel.getStringValue());
 		}
 	}
+
+	/**
+	 * Get the contained code of the editor as String.
+	 * 
+	 * @return the code in the editor as {@link String}
+	 */
+	public String getCode() {
+		return m_textArea.getText();
+	}
 }

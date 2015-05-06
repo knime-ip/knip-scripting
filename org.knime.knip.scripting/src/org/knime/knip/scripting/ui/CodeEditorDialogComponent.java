@@ -18,13 +18,25 @@ import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
 
+/**
+ * DialogComponent which uses a {@link RSyntaxTextArea} to edit Java Code.
+ * 
+ * @author Jonathan Hale (University of Konstanz)
+ */
 public class CodeEditorDialogComponent extends DialogComponent implements
 		ChangeListener {
-	RSyntaxTextArea m_textArea;
-	SettingsModelString m_codeModel;
+
+	private final RSyntaxTextArea m_textArea;
+	private final SettingsModelString m_codeModel;
 
 	// JavaCompletionProvider m_provider = new JavaCompletionProvider();
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param sm
+	 *            {@link SettingsModelString} of the code to edit
+	 */
 	public CodeEditorDialogComponent(SettingsModelString sm) {
 		super(sm);
 
@@ -43,7 +55,10 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 		panel.add(sp, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
 				GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH,
 				new Insets(0, 0, 0, 0), 0, 0));
+
+		// make tab key not jump to the next component
 		panel.setFocusTraversalKeysEnabled(false);
+
 		// m_provider.updateCompletions(m_codeModel.getStringValue());
 		// new AutoCompletion(m_provider).install(m_textArea);
 
@@ -77,6 +92,15 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	@Override
 	public void setToolTipText(String text) {
 		m_textArea.setToolTipText(text);
+	}
+
+	/**
+	 * Get the underlying {@link RSyntaxTextArea}.
+	 * 
+	 * @return the text area
+	 */
+	public RSyntaxTextArea getTextArea() {
+		return m_textArea;
 	}
 
 	@Override

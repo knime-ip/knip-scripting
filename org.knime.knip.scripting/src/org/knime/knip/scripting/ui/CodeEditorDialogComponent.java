@@ -76,9 +76,10 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 
 	@Override
 	protected void validateSettingsBeforeSave() throws InvalidSettingsException {
-		m_codeModel.setStringValue(m_textArea.getText());
+		String text = m_textArea.getText();
+		m_codeModel.setStringValue(text);
 	}
-
+	
 	@Override
 	protected void checkConfigurabilityBeforeLoad(PortObjectSpec[] specs)
 			throws NotConfigurableException {

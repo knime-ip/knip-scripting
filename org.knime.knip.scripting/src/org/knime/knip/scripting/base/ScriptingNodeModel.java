@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.script.ScriptException;
 
@@ -51,12 +52,16 @@ import org.scijava.plugins.scripting.java.JavaEngine;
 import org.scijava.plugins.scripting.java.JavaScriptLanguage;
 import org.scijava.plugins.scripting.java.JavaService;
 
+import sun.tools.tree.CheckContext;
+
 /**
  * NodeModel of the ScriptingNode
  * 
  * @author Jonathan Hale (University of Konstanz)
  */
 public class ScriptingNodeModel extends NodeModel {
+
+	private static final String SM_KEY_CODE = "Code";
 
 	/*
 	 * This node uses own node ids for every instance during the nodes existance
@@ -134,7 +139,7 @@ public class ScriptingNodeModel extends NodeModel {
 	 */
 	public static SettingsModelString createCodeSettingsModel() {
 		return new SettingsModelString(
-				"Code",
+				SM_KEY_CODE,
 				fileAsString("platform:/plugin/org.knime.knip.scripting.base/res/DefaultScript.txt"));
 	}
 
@@ -204,7 +209,7 @@ public class ScriptingNodeModel extends NodeModel {
 				.getService(OutputAdapterService.class);
 
 		if (m_commandClass == null) {
-			throw new InvalidSettingsException("Code could not be compiled!");
+			throw new InvalidSettingsException("Code did not compile!");
 		}
 
 		// list to contain the output DataColumnSpecs
@@ -238,7 +243,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 	@SuppressWarnings("unchecked")
 	public static Class<? extends Command> compile(JavaEngine engine,
-			String code) {
+			String code) throws ScriptException {
 		// the ResourceAwareClassLoader has access to required bundles of this
 		// bundle
 		ResourceAwareClassLoader racl = ScriptingGateway.get().getClassLoader();
@@ -249,18 +254,17 @@ public class ScriptingNodeModel extends NodeModel {
 				new URLClassLoader(racl.getFileURLs().toArray(new URL[] {}),
 						racl));
 
-		try {
-			return (Class<? extends Command>) engine.compile(code);
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
-
-		return null;
+		return (Class<? extends Command>) engine.compile(code);
 	}
 
 	protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
 			final ExecutionContext exec) throws Exception {
 
+		// fail if the module was not compilen in configure()
+		if (m_commandClass == null) {
+			throw new Exception("Code did not compile!");
+		}
+		
 		final BufferedDataTable inTable = inData[0];
 
 		BufferedDataContainer container = exec
@@ -278,6 +282,9 @@ public class ScriptingNodeModel extends NodeModel {
 		/* compile an run script for all rows */
 		try {
 			while (m_inService.hasNext()) {
+				// check if user canceled execution of node
+				exec.checkCanceled();
+				
 				m_inService.next();
 				m_javaRunner.run(m_commandClass);
 				m_outService.appendRow();
@@ -311,11 +318,12 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void validateSettings(NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		m_codeModel.validateSettings(settings);
-
-		m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
-		if (m_commandClass == null) {
-			throw new InvalidSettingsException("Could not compile Code.");
+		try {
+			// check if the code compiles
+			m_commandClass = compile(m_javaEngine,
+					settings.getString(SM_KEY_CODE));
+		} catch (ScriptException e) {
+			m_commandClass = null;
 		}
 	}
 
@@ -325,14 +333,15 @@ public class ScriptingNodeModel extends NodeModel {
 		m_codeModel.loadSettingsFrom(settings);
 
 		// compile to work with script-dependent settings
-		m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
-
-		if (m_commandClass == null) {
-			log.error("Compile Error!");
-		} else {
-			m_commandInfo = new CommandInfo(m_commandClass,
-					m_commandClass.getAnnotation(Plugin.class));
+		try {
+			m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
+		} catch (ScriptException e) {
+			m_commandClass = null;
+			return;
 		}
+
+		m_commandInfo = new CommandInfo(m_commandClass,
+				m_commandClass.getAnnotation(Plugin.class));
 
 		// Create settings models for module inputs which do not have a
 		// ColumnToModuleInputMapping that maps to them

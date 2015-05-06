@@ -42,7 +42,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 
 		m_codeModel = sm;
 
-		m_textArea = new RSyntaxTextArea(20, 60);
+		m_textArea = new RSyntaxTextArea(20, 95);
 
 		m_textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
 		m_textArea.setCodeFoldingEnabled(true);

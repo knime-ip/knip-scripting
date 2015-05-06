@@ -137,7 +137,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
 
 	/* options for easy debugging */
-	public final static boolean DEBUG_UI = false;
+	public final static boolean DEBUG_UI = true;
 
 	// scijava context
 	private Context m_context;
@@ -302,19 +302,19 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 				FILL_NONE);
 		final GridBagConstraints gbc_lbl_lang = createGBC(2, 0, 1, 1, EAST,
 				FILL_NONE);
-		final GridBagConstraints gbc_lbl_cim = createGBC(0, 2, 1, 1, EAST,
+		final GridBagConstraints gbc_lbl_cim = createGBC(1, 2, 1, 1, EAST,
 				FILL_NONE);
 
 		final GridBagConstraints gbc_ls = createGBC(3, 0, 2, 1, EAST, FILL_HORI);
 		gbc_ls.insets = new Insets(3, 3, 3, 0);
 
-		final GridBagConstraints gbc_ep = createGBC(1, 1, 4, 1,
+		final GridBagConstraints gbc_ep = createGBC(0, 1, 5, 1,
 				FIRST_LINE_START, FILL_BOTH, 1.0, 1.0);
 		gbc_ep.insets = new Insets(0, 3, 0, 0);
-		final GridBagConstraints gbc_csl = createGBC(0, 1, 1, 1, WEST,
+		final GridBagConstraints gbc_csl = createGBC(0, 2, 1, 2, WEST,
 				FILL_VERT);
-		final GridBagConstraints gbc_cim = createGBC(0, 3, 5, 1,
-				FIRST_LINE_START, FILL_HORI, 1.0, 0.0);
+		final GridBagConstraints gbc_cim = createGBC(1, 3, 4, 1,
+				FIRST_LINE_START, FILL_BOTH, 1.0, 0.0);
 
 		final GridBagConstraints gbc_add = createGBC(3, 2, 1, 1, WEST,
 				FILL_HORI);

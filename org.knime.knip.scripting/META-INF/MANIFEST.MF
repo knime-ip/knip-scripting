@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-Name: KNIME Image Processing Scripting Nodes
 Bundle-SymbolicName: org.knime.knip.scripting.base;singleton:=true
 Bundle-ManifestVersion: 2
-Bundle-Version: 0.8.2.qualifier
+Bundle-Version: 0.9.0.qualifier
 Bundle-Vendor: University of Konstanz
 Eclipse-RegisterBuddy: org.knime.knip.scijava.commands, org.knime.knip.base
 Require-Bundle: org.knime.workbench.repository;bundle-version="2.10.0",
@@ -30,7 +30,7 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="2.10.0",
  imglib2-roi;bundle-version="0.2.1",
  imagej-common;bundle-version="0.12.0",
  scripting-java;bundle-version="0.3.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_scripting.jar,
  lib/tools.jar,
  lib/autocomplete.jar,

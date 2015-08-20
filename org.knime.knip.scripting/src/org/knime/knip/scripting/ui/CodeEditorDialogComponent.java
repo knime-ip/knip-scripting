@@ -5,13 +5,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.imagej.ui.swing.script.EditorPane;
+
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rtextarea.RTextScrollPane;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
@@ -19,14 +21,14 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
 
 /**
- * DialogComponent which uses a {@link RSyntaxTextArea} to edit Java Code.
+ * DialogComponent which uses a {@link EditorPane} to edit Java Code.
  * 
  * @author Jonathan Hale (University of Konstanz)
  */
 public class CodeEditorDialogComponent extends DialogComponent implements
 		ChangeListener {
 
-	private final RSyntaxTextArea m_textArea;
+	private final EditorPane m_textArea;
 	private final SettingsModelString m_codeModel;
 
 	// JavaCompletionProvider m_provider = new JavaCompletionProvider();
@@ -42,19 +44,17 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 
 		m_codeModel = sm;
 
-		m_textArea = new RSyntaxTextArea(20, 95);
+		m_textArea = new EditorPane();
 
 		m_textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
 		m_textArea.setCodeFoldingEnabled(true);
 		m_textArea.setAntiAliasingEnabled(true);
 
-		RTextScrollPane sp = new RTextScrollPane(m_textArea);
-
 		JPanel panel = getComponentPanel();
 		panel.setLayout(new GridBagLayout());
-		panel.add(sp, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
-				GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH,
-				new Insets(0, 0, 0, 0), 0, 0));
+		panel.add(m_textArea.wrappedInScrollbars(), new GridBagConstraints(0,
+				0, 1, 1, 1.0, 1.0, GridBagConstraints.FIRST_LINE_START,
+				GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 
 		// make tab key not jump to the next component
 		panel.setFocusTraversalKeysEnabled(false);

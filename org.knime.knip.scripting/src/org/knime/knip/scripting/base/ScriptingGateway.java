@@ -37,18 +37,18 @@ import org.scijava.widget.DefaultWidgetService;
 /**
  * ScriptingGateway is a singleton class which creates the scijava contexts for
  * Scripting nodes of KNIME Image Processing.
- * 
+ *
  * This Gateway internally uses {@link WeakReference} to determine if a context
  * can be destroyed. Since node model instances are created once and then only
  * reclaimed by garbage collector when workflow is closed or the node is
  * destroyed, one reference will always be held by the node model and the
  * Context reference will stay valid.
- * 
+ *
  * I the created contexts are not stored safely, they will be recreated at every
  * {@link #getContext(int)} call.
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
- * 
+ *
  * @see ScriptingNodeModel
  * @see ScriptingNodeDialog
  */
@@ -60,7 +60,10 @@ public class ScriptingGateway {
 	/** the gateways class loader */
 	protected ResourceAwareClassLoader m_classLoader = null;
 
-	/** the cached plugin index. Building the plugin index only needs to be done once. */
+	/**
+	 * the cached plugin index. Building the plugin index only needs to be done
+	 * once.
+	 */
 	protected PluginIndex m_pluginIndex = null;
 
 	/** {@link Context} for id */
@@ -72,9 +75,10 @@ public class ScriptingGateway {
 					DefaultJavaService.class, KnimeInputDataTableService.class,
 					KnimeOutputDataTableService.class,
 					KnimeExecutionService.class, NodeSettingsService.class,
-					ObjectService.class, DefaultWidgetService.class, KnimeWidgetService.class,
-					InputAdapterService.class, UIService.class,
-					OutputAdapterService.class, CommandService.class);
+					ObjectService.class, DefaultWidgetService.class,
+					KnimeWidgetService.class, InputAdapterService.class,
+					UIService.class, OutputAdapterService.class,
+					CommandService.class);
 
 	/**
 	 * Constructor. Only to be called from {@link #get()}.
@@ -91,14 +95,14 @@ public class ScriptingGateway {
 	/**
 	 * Return a new {@link Context} with the required Services and custom
 	 * plugins.
-	 * 
+	 *
 	 * @return the created context
 	 */
 	protected Context createNewContext() {
-		Context context = new Context(requiredServices, m_pluginIndex);
+		final Context context = new Context(requiredServices, m_pluginIndex);
 
 		/* add custom plugins */
-		PluginService plugins = context.getService(PluginService.class);
+		final PluginService plugins = context.getService(PluginService.class);
 		plugins.addPlugin(new PluginInfo<>(BlockingCommandJavaRunner.class,
 				JavaRunner.class));
 		plugins.addPlugin(new PluginInfo<>(
@@ -118,7 +122,7 @@ public class ScriptingGateway {
 
 	/**
 	 * Get the Gateway instance.
-	 * 
+	 *
 	 * @return the singletons instance
 	 */
 	public static ScriptingGateway get() {
@@ -134,14 +138,14 @@ public class ScriptingGateway {
 	 * {@link ScriptingGateway} does keep a strong reference to the Context, the
 	 * returned reference needs to be referenced by the caller, otherwise a new
 	 * Context will be created every call.
-	 * 
+	 *
 	 * @param id
 	 *            ID of the context to get
 	 * @return if id is valid (positive integer), a context will be returned
 	 *         which may have been newly created, if none existed for id yet.
 	 *         Otherwise returns null
 	 */
-	public Context getContext(int id) {
+	public Context getContext(final int id) {
 		if (id < 0) {
 			// invalid id
 			return null;
@@ -176,7 +180,7 @@ public class ScriptingGateway {
 
 	/**
 	 * Get the {@link ResourceAwareClassLoader} used by this Gateways contexts.
-	 * 
+	 *
 	 * @return class loader for the contexts
 	 */
 	public ResourceAwareClassLoader getClassLoader() {

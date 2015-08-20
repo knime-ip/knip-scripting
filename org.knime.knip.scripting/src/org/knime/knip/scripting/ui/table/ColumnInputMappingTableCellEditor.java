@@ -14,10 +14,8 @@ import org.scijava.module.ModuleItem;
 
 /**
  * A table cell editor which is capable of sharing one Component for editing.
- * 
- * @author Jonathan Hale (University of Konstanz)
  *
- * @param <T>
+ * @author Jonathan Hale (University of Konstanz)
  */
 public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 
@@ -30,12 +28,12 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 		COLUMN, INPUT
 	}
 
-	private EditorMode m_mode;
+	private final EditorMode m_mode;
 
-	private DataTableSpec m_spec;
-	private ModuleInfo m_info;
+	private final DataTableSpec m_spec;
+	private final ModuleInfo m_info;
 
-	public ColumnInputMappingTableCellEditor(DataTableSpec spec) {
+	public ColumnInputMappingTableCellEditor(final DataTableSpec spec) {
 		super(new JComboBox<DataColumnSpec>(dataTableSpecToArray(spec)));
 		m_mode = EditorMode.COLUMN;
 
@@ -43,7 +41,7 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 		m_info = null;
 	}
 
-	public ColumnInputMappingTableCellEditor(ModuleInfo info) {
+	public ColumnInputMappingTableCellEditor(final ModuleInfo info) {
 		super(new JComboBox<ModuleItem<?>>(moduleToArray(info)));
 		m_mode = EditorMode.INPUT;
 
@@ -65,16 +63,18 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 	}
 
 	@Override
-	public Component getTableCellEditorComponent(JTable table, Object value,
-			boolean isSelected, int row, int column) {
-
+	public Component getTableCellEditorComponent(final JTable table,
+			final Object value, final boolean isSelected, final int row,
+			final int column) {
+		Object val = value;
+		
 		if (m_mode == EditorMode.COLUMN) {
-			value = m_spec.getColumnSpec((String) value);
+			val = m_spec.getColumnSpec((String) value);
 		} else if (m_mode == EditorMode.INPUT) {
-			value = m_info.getInput((String) value);
+			val = m_info.getInput((String) value);
 		}
 
-		return super.getTableCellEditorComponent(table, value, isSelected, row,
+		return super.getTableCellEditorComponent(table, val, isSelected, row,
 				column);
 	}
 
@@ -82,11 +82,12 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 	 * Converts a given DataTableSpec into an array of DataColumnSpecs by
 	 * iterating through the DataTableSpec.
 	 */
-	private static DataColumnSpec[] dataTableSpecToArray(DataTableSpec spec) {
-		DataColumnSpec[] specs = new DataColumnSpec[spec.getNumColumns()];
+	private static DataColumnSpec[] dataTableSpecToArray(
+			final DataTableSpec spec) {
+		final DataColumnSpec[] specs = new DataColumnSpec[spec.getNumColumns()];
 
 		int i = 0;
-		for (DataColumnSpec s : spec) {
+		for (final DataColumnSpec s : spec) {
 			specs[i++] = s;
 		}
 
@@ -97,14 +98,14 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 	 * Converts a given Iterable<ModuleItem<?>> into an array of ModuleItems by
 	 * iterating through the Iterable.
 	 */
-	private static ModuleItem<?>[] moduleToArray(ModuleInfo items) {
+	private static ModuleItem<?>[] moduleToArray(final ModuleInfo items) {
 		if (items == null) {
 			return new ModuleItem<?>[] {};
 		}
 
-		ArrayList<ModuleItem<?>> list = new ArrayList<ModuleItem<?>>();
+		final ArrayList<ModuleItem<?>> list = new ArrayList<ModuleItem<?>>();
 
-		for (ModuleItem<?> item : items.inputs()) {
+		for (final ModuleItem<?> item : items.inputs()) {
 			list.add(item);
 		}
 

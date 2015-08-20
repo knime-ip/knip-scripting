@@ -7,12 +7,12 @@ import java.util.WeakHashMap;
 import org.scijava.plugin.Plugin;
 
 /**
- * Service which handles {@link ColumnToModuleInputMapping}s. They are used by
+ * Service which handles {@link ColumnToModuleItemMapping}s. They are used by
  * {@link ColumnInputMappingKnimePreprocessor} to determine which data table
  * column should fill the value of a module input.
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
- * 
+ *
  * @see ColumnToModuleItemMapping
  * @see ColumnToModuleItemMappingService
  */
@@ -21,13 +21,11 @@ public class DefaultColumnToModuleItemMappingService extends
 		AbstractColumnToModuleItemMappingService {
 
 	/** list containing all mappings of this service */
-	private ArrayList<ColumnToModuleItemMapping> m_mappings = new ArrayList<ColumnToModuleItemMapping>();
-	
+	private final ArrayList<ColumnToModuleItemMapping> m_mappings = new ArrayList<ColumnToModuleItemMapping>();
+
 	/** mappings optimized for {@link #getMappingForColumnName(String)} */
-	private WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByColumn = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
-	
-	/** mappings optimized for {@link #getMappingForModuleItemName(String)} */
-	private WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByItem = new WeakHashMap<String, ColumnToModuleItemMappingService.ColumnToModuleItemMapping>();
+	private final WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByColumn = new WeakHashMap<String, ColumnToModuleItemMapping>();
+	private final WeakHashMap<String, ColumnToModuleItemMapping> m_mappingsByItem = new WeakHashMap<String, ColumnToModuleItemMapping>();
 
 	@Override
 	public List<ColumnToModuleItemMapping> getMappingsList() {
@@ -35,18 +33,19 @@ public class DefaultColumnToModuleItemMappingService extends
 	}
 
 	@Override
-	public ColumnToModuleItemMapping getMappingForColumnName(String columnName) {
+	public ColumnToModuleItemMapping getMappingForColumnName(
+			final String columnName) {
 		return m_mappingsByColumn.get(columnName);
 	}
 
 	@Override
 	public ColumnToModuleItemMapping getMappingForModuleItemName(
-			String inputName) {
+			final String inputName) {
 		return m_mappingsByItem.get(inputName);
 	}
 
 	@Override
-	protected void addMapping(ColumnToModuleItemMapping mapping) {
+	protected void addMapping(final ColumnToModuleItemMapping mapping) {
 		m_mappings.add(mapping);
 		m_mappingsByColumn.put(mapping.getColumnName(), mapping);
 		m_mappingsByItem.put(mapping.getItemName(), mapping);
@@ -54,7 +53,7 @@ public class DefaultColumnToModuleItemMappingService extends
 
 	@Override
 	public ColumnToModuleItemMapping removeMapping(
-			ColumnToModuleItemMapping mapping) {
+			final ColumnToModuleItemMapping mapping) {
 
 		if (m_mappings.remove(mapping)) {
 			// a mapping has been removed, we need to update the hash maps
@@ -71,29 +70,32 @@ public class DefaultColumnToModuleItemMappingService extends
 	}
 
 	@Override
-	public void onMappingColumnChanged(ColumnToModuleItemMappingChangeEvent e) {
+	public void onMappingColumnChanged(
+			final ColumnToModuleItemMappingChangeEvent e) {
 		// a column name has changed, we need to update the has maps to reflect
 		// that change
 		m_mappingsByColumn.remove(e.getPreviousValue());
 
-		ColumnToModuleItemMapping mapping = e.getSourceMapping();
+		final ColumnToModuleItemMapping mapping = e.getSourceMapping();
 		m_mappingsByColumn.put(mapping.getColumnName(), mapping);
 	}
 
 	@Override
-	public void onMappingItemChanged(ColumnToModuleItemMappingChangeEvent e) {
-		// a module input name has changed, we need to update the has maps to reflect
+	public void onMappingItemChanged(
+			final ColumnToModuleItemMappingChangeEvent e) {
+		// a module input name has changed, we need to update the has maps to
+		// reflect
 		// that change
 		m_mappingsByItem.remove(e.getPreviousValue());
 
-		ColumnToModuleItemMapping mapping = e.getSourceMapping();
+		final ColumnToModuleItemMapping mapping = e.getSourceMapping();
 		m_mappingsByItem.put(mapping.getItemName(), mapping);
 	}
 
 	@Override
 	public void clear() {
 		// remove all mappings
-		
+
 		m_mappings.clear();
 		m_mappingsByColumn.clear();
 		m_mappingsByItem.clear();

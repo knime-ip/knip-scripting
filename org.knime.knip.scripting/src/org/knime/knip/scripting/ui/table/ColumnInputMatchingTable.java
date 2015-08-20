@@ -11,7 +11,7 @@ import org.scijava.module.ModuleInfo;
 
 /**
  * A JTable for matching Columns to ModuleInputs.
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
  */
 public class ColumnInputMatchingTable extends JTable {
@@ -25,7 +25,7 @@ public class ColumnInputMatchingTable extends JTable {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param spec
 	 *            data table spec to get additional information for column names
 	 *            from
@@ -35,9 +35,9 @@ public class ColumnInputMatchingTable extends JTable {
 	 * @param context
 	 *            ScijavaContext to get Services from
 	 */
-	public ColumnInputMatchingTable(DataTableSpec spec, ModuleInfo info,
-			Context context) {
-		super(new ColumnInputMatchingTableModel(spec, info, context));
+	public ColumnInputMatchingTable(final DataTableSpec spec,
+			final ModuleInfo info, final Context context) {
+		super(new ColumnInputMatchingTableModel(context));
 
 		context.inject(this);
 
@@ -49,11 +49,9 @@ public class ColumnInputMatchingTable extends JTable {
 
 	/**
 	 * Set the cell editors as the created Components.
-	 * 
-	 * @see #createComponents()
 	 */
 	private void setCellEditors() {
-		TableColumnModel model = getColumnModel();
+		final TableColumnModel model = getColumnModel();
 
 		model.getColumn(ColumnInputMatchingTableModel.COLUMN).setCellEditor(
 				new ColumnInputMappingTableCellEditor(m_spec));
@@ -69,12 +67,12 @@ public class ColumnInputMatchingTable extends JTable {
 	/**
 	 * Update this Tables model to represent a given DataTableSpec and
 	 * ModuleInfo.
-	 * 
+	 *
 	 * @param spec
 	 *            the DataTableSpec.
 	 */
-	public void updateModel(DataTableSpec spec, ModuleInfo info) {
-		((ColumnInputMatchingTableModel) getModel()).updateModel(spec, info);
+	public void updateModel(final DataTableSpec spec, final ModuleInfo info) {
+		getModel().updateModel();
 
 		m_spec = spec;
 		m_info = info;

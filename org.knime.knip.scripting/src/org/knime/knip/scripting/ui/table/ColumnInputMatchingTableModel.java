@@ -4,18 +4,16 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.knime.core.data.DataTableSpec;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
 import org.scijava.Context;
-import org.scijava.module.ModuleInfo;
 import org.scijava.plugin.Parameter;
 
 /**
  * TableModel for the ColumnFieldMatchingTable.
- * 
+ *
  * TODO: prevent multiple mapping to input.
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
  */
 public class ColumnInputMatchingTableModel extends AbstractTableModel {
@@ -40,13 +38,12 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	// read.
 	private List<ColumnToModuleItemMapping> m_mappingsList;
 
-	public ColumnInputMatchingTableModel(DataTableSpec spec, ModuleInfo info,
-			Context context) {
+	public ColumnInputMatchingTableModel(final Context context) {
 		context.inject(this);
-		updateModel(spec, info);
+		updateModel();
 	}
 
-	public void updateModel(DataTableSpec spec, ModuleInfo info) {
+	public void updateModel() {
 		// reference should stay valid as long as m_cimService exists
 		m_mappingsList = m_cimService.getMappingsList();
 
@@ -64,7 +61,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	}
 
 	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
+	public Object getValueAt(final int rowIndex, final int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
 			return m_mappingsList.get(rowIndex).getColumnName();
@@ -78,7 +75,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	}
 
 	@Override
-	public String getColumnName(int column) {
+	public String getColumnName(final int column) {
 		switch (column) {
 		case COLUMN:
 			return "Column";
@@ -94,14 +91,14 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	/**
 	 * Add an item from the model and the underlying
 	 * {@link ColumnToModuleItemMappingService}.
-	 * 
+	 *
 	 * @param columnName
 	 *            column name to map
 	 * @param inputName
 	 *            input name to map to
 	 */
-	public void addItem(String columnName, String inputName) {
-		int row = m_mappingsList.size();
+	public void addItem(final String columnName, final String inputName) {
+		final int row = m_mappingsList.size();
 		m_cimService.addMapping(columnName, inputName);
 
 		if (row != m_mappingsList.size()) {
@@ -118,20 +115,20 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	/**
 	 * Remove an item from the model and the underlying
 	 * {@link ColumnToModuleItemMappingService}.
-	 * 
+	 *
 	 * Please make sure that all cell editors cancel edit before calling this
 	 * method.
-	 * 
+	 *
 	 * @param row
 	 *            row index to remove
 	 */
-	public void removeItem(int row) {
+	public void removeItem(final int row) {
 		m_cimService.removeMapping(m_mappingsList.get(row));
 		this.fireTableRowsDeleted(row, row);
 	}
 
 	@Override
-	public boolean isCellEditable(int rowIndex, int columnIndex) {
+	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
 		if (columnIndex > 2 || columnIndex < 0) {
 			return false;
 		}
@@ -143,7 +140,8 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	}
 
 	@Override
-	public void setValueAt(Object value, int rowIndex, int columnIndex) {
+	public void setValueAt(final Object value, final int rowIndex,
+			final int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
 			m_mappingsList.get(rowIndex).setColumnName((String) value);
@@ -163,7 +161,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	}
 
 	@Override
-	public Class<?> getColumnClass(int columnIndex) {
+	public Class<?> getColumnClass(final int columnIndex) {
 		if (columnIndex == ACTIVE) {
 			return Boolean.class;
 		} else if (columnIndex == COLUMN || columnIndex == INPUT) {
@@ -173,4 +171,4 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 		}
 	}
 
-};
+}

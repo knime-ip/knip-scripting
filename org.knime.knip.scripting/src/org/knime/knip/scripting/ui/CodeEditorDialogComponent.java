@@ -5,7 +5,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -22,7 +21,7 @@ import org.knime.core.node.port.PortObjectSpec;
 
 /**
  * DialogComponent which uses a {@link EditorPane} to edit Java Code.
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
  */
 public class CodeEditorDialogComponent extends DialogComponent implements
@@ -31,15 +30,13 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	private final EditorPane m_textArea;
 	private final SettingsModelString m_codeModel;
 
-	// JavaCompletionProvider m_provider = new JavaCompletionProvider();
-
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param sm
 	 *            {@link SettingsModelString} of the code to edit
 	 */
-	public CodeEditorDialogComponent(SettingsModelString sm) {
+	public CodeEditorDialogComponent(final SettingsModelString sm) {
 		super(sm);
 
 		m_codeModel = sm;
@@ -50,7 +47,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 		m_textArea.setCodeFoldingEnabled(true);
 		m_textArea.setAntiAliasingEnabled(true);
 
-		JPanel panel = getComponentPanel();
+		final JPanel panel = getComponentPanel();
 		panel.setLayout(new GridBagLayout());
 		panel.add(m_textArea.wrappedInScrollbars(), new GridBagConstraints(0,
 				0, 1, 1, 1.0, 1.0, GridBagConstraints.FIRST_LINE_START,
@@ -59,10 +56,9 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 		// make tab key not jump to the next component
 		panel.setFocusTraversalKeysEnabled(false);
 
-		// m_provider.updateCompletions(m_codeModel.getStringValue());
-		// new AutoCompletion(m_provider).install(m_textArea);
-
 		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
 			public void run() {
 				m_textArea.setVisible(true);
 			}
@@ -80,23 +76,24 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	}
 
 	@Override
-	protected void checkConfigurabilityBeforeLoad(PortObjectSpec[] specs)
+	protected void checkConfigurabilityBeforeLoad(final PortObjectSpec[] specs)
 			throws NotConfigurableException {
+		/* nothing to do */
 	}
 
 	@Override
-	protected void setEnabledComponents(boolean enabled) {
+	protected void setEnabledComponents(final boolean enabled) {
 		m_textArea.setEnabled(enabled);
 	}
 
 	@Override
-	public void setToolTipText(String text) {
+	public void setToolTipText(final String text) {
 		m_textArea.setToolTipText(text);
 	}
 
 	/**
 	 * Get the underlying {@link RSyntaxTextArea}.
-	 * 
+	 *
 	 * @return the text area
 	 */
 	public RSyntaxTextArea getTextArea() {
@@ -104,7 +101,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	}
 
 	@Override
-	public void stateChanged(ChangeEvent e) {
+	public void stateChanged(final ChangeEvent e) {
 		if (e.getSource() == m_textArea) {
 			updateModel();
 			// m_provider.updateCompletions(m_codeModel.getStringValue());
@@ -113,7 +110,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 
 	/**
 	 * Get the contained code of the editor as String.
-	 * 
+	 *
 	 * @return the code in the editor as {@link String}
 	 */
 	public String getCode() {

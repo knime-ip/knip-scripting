@@ -54,9 +54,9 @@ import org.knime.core.node.NodeView;
 
 /**
  * NodeFactory for {@link ScriptingNodeModel}.
- * 
+ *
  * Creates {@link ScriptingNodeModel}s and {@link ScriptingNodeDialog}s.
- * 
+ *
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
@@ -72,11 +72,12 @@ public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @return null (ScriptingNode does not have views.)
 	 */
 	@Override
-	public NodeView<ScriptingNodeModel> createNodeView(int viewIndex,
-			ScriptingNodeModel nodeModel) {
+	public NodeView<ScriptingNodeModel> createNodeView(final int viewIndex,
+			final ScriptingNodeModel nodeModel) {
 		return null;
 	}
 

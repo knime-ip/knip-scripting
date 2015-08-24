@@ -100,8 +100,8 @@ public class ScriptingNodeSetFactory implements NodeSetFactory {
 			return (Class<? extends NodeFactory<? extends NodeModel>>) Class
 					.forName(id);
 		} catch (final ClassNotFoundException e) {
+			return null;
 		}
-		return null;
 	}
 
 	/**

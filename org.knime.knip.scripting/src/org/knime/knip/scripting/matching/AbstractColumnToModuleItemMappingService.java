@@ -12,9 +12,9 @@ import org.scijava.service.AbstractService;
 
 /**
  * Abstract Service implementing some simple methods via other methods and the
- * {@link ColumnToModuleItemMapping} interface as
- * {@link DefaultColumnToModuleItemMapping}.
- * 
+ * {@link ColumnToModuleItemMapping}
+ * interface as {@link DefaultColumnToModuleItemMapping}.
+ *
  * @author Jonathan Hale (University of Konstanz)
  */
 @Plugin(type = ColumnToModuleItemMappingService.class)
@@ -30,8 +30,8 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 		protected boolean m_active;
 		protected ArrayList<ColumnToModuleItemMappingChangeListener> m_listeners;
 
-		public DefaultColumnToModuleItemMapping(String columnName,
-				String itemName) {
+		public DefaultColumnToModuleItemMapping(final String columnName,
+				final String itemName) {
 			m_columnName = columnName;
 			m_itemName = itemName;
 			m_active = true;
@@ -49,17 +49,17 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 		}
 
 		@Override
-		public DataColumnSpec getColumnSpec(DataTableSpec spec) {
+		public DataColumnSpec getColumnSpec(final DataTableSpec spec) {
 			return spec.getColumnSpec(m_columnName);
 		}
 
 		@Override
-		public Integer getColumnIndex(DataTableSpec spec) {
+		public Integer getColumnIndex(final DataTableSpec spec) {
 			return spec.findColumnIndex(m_columnName);
 		}
 
 		@Override
-		public ModuleItem<?> getModuleItem(Module module) {
+		public ModuleItem<?> getModuleItem(final Module module) {
 			return module.getInfo().getInput(m_itemName);
 		}
 
@@ -69,59 +69,59 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 		}
 
 		@Override
-		public void setActive(boolean flag) {
+		public void setActive(final boolean flag) {
 			m_active = flag;
 		}
 
 		@Override
 		public void addMappingChangeListener(
-				ColumnToModuleItemMappingChangeListener listener) {
+				final ColumnToModuleItemMappingChangeListener listener) {
 			m_listeners.add(listener);
 		}
 
 		@Override
 		public void removeMappingChangeListener(
-				ColumnToModuleItemMappingChangeListener listener) {
+				final ColumnToModuleItemMappingChangeListener listener) {
 			m_listeners.remove(listener);
 		}
 
 		@Override
-		public void fireMappingColumnChanged(String oldValue) {
-			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
+		public void fireMappingColumnChanged(final String oldValue) {
+			final ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
 					this, oldValue);
-			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
+			for (final ColumnToModuleItemMappingChangeListener l : m_listeners) {
 				l.onMappingColumnChanged(e);
 			}
 		}
 
 		@Override
-		public void fireMappingItemChanged(String oldValue) {
-			ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
+		public void fireMappingItemChanged(final String oldValue) {
+			final ColumnToModuleItemMappingChangeEvent e = new ColumnToModuleItemMappingChangeEvent(
 					this, oldValue);
-			for (ColumnToModuleItemMappingChangeListener l : m_listeners) {
+			for (final ColumnToModuleItemMappingChangeListener l : m_listeners) {
 				l.onMappingItemChanged(e);
 			}
 		}
 
 		@Override
-		public void setColumnName(String columnName) {
+		public void setColumnName(final String columnName) {
 			if (columnName == null) {
 				return;
 			}
 			if (!columnName.equals(m_columnName)) {
-				String oldName = m_columnName;
+				final String oldName = m_columnName;
 				m_columnName = columnName;
 				fireMappingColumnChanged(oldName);
 			}
 		}
 
 		@Override
-		public void setItemName(String itemName) {
+		public void setItemName(final String itemName) {
 			if (itemName == null) {
 				return;
 			}
 			if (!itemName.equals(m_itemName)) {
-				String oldName = m_itemName;
+				final String oldName = m_itemName;
 				m_itemName = itemName;
 				fireMappingItemChanged(oldName);
 			}
@@ -130,19 +130,21 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 	}
 
 	@Override
-	public ColumnToModuleItemMapping getMappingForColumn(DataColumnSpec column) {
+	public ColumnToModuleItemMapping getMappingForColumn(
+			final DataColumnSpec column) {
 		return getMappingForColumnName(column.getName());
 	}
 
 	@Override
-	public ColumnToModuleItemMapping getMappingForModuleItem(ModuleItem<?> item) {
+	public ColumnToModuleItemMapping getMappingForModuleItem(
+			final ModuleItem<?> item) {
 		return getMappingForModuleItemName(item.getName());
 	}
 
 	@Override
-	public ColumnToModuleItemMapping addMapping(String columnName,
-			String itemName) {
-		ColumnToModuleItemMapping m = new DefaultColumnToModuleItemMapping(
+	public ColumnToModuleItemMapping addMapping(final String columnName,
+			final String itemName) {
+		final ColumnToModuleItemMapping m = new DefaultColumnToModuleItemMapping(
 				columnName, itemName);
 		m.addMappingChangeListener(this);
 		addMapping(m);
@@ -153,7 +155,7 @@ public abstract class AbstractColumnToModuleItemMappingService extends
 	/**
 	 * Add a pre created {@link ColumnToModuleItemMapping} to the Service. This
 	 * method is called by {@link #addMapping(String, String)}.
-	 * 
+	 *
 	 * @param mapping
 	 *            {@link ColumnToModuleItemMapping} to add
 	 */

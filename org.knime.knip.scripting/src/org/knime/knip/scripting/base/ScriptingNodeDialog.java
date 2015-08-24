@@ -71,10 +71,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
-import javax.swing.text.BadLocationException;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
@@ -90,8 +87,8 @@ import org.knime.core.node.util.ColumnSelectionList;
 import org.knime.knip.scijava.commands.adapter.InputAdapterPlugin;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.Util;
 import org.knime.knip.scripting.ui.CodeEditorDialogComponent;
 import org.knime.knip.scripting.ui.table.ColumnInputMatchingTable;
@@ -113,10 +110,10 @@ import org.scijava.ui.swing.widget.SwingInputPanel;
 
 /**
  * Dialog for the Scripting Node.
- * 
+ *
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
- * 
+ *
  * @see ScriptingNodeModel
  * @see ScriptingNodeFactory
  */
@@ -219,19 +216,18 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		if (m_constructed) {
 			// already called the constructor!
 			return;
-		} else {
-			// now the constructor has been called.
-			m_constructed = true;
 		}
-		m_context = ScriptingGateway.get().getContext(m_nodeId.getIntValue());
+		// now the constructor has been called.
+		m_constructed = true;
 
+		m_context = ScriptingGateway.get().getContext(m_nodeId.getIntValue());
 		m_context.inject(this);
 
 		m_columnMatchingTable = new ColumnInputMatchingTable(
 				new DataTableSpec(), null, m_context);
 
-		ArrayList<String> languages = new ArrayList<String>();
-		for (ScriptLanguage s : m_objectService
+		final ArrayList<String> languages = new ArrayList<String>();
+		for (final ScriptLanguage s : m_objectService
 				.getObjects(ScriptLanguage.class)) {
 			if (languages.contains(s.getLanguageName())) {
 				continue;
@@ -249,8 +245,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	}
 
 	/* utility functions for creating GridBagConstraints */
-	private static final GridBagConstraints createGBC(int x, int y, int w,
-			int h, int anchor, int fill) {
+	private static final GridBagConstraints createGBC(final int x, final int y,
+			final int w, final int h, final int anchor, final int fill) {
 		float weightx = 1.0f;
 		float weighty = 1.0f;
 
@@ -266,8 +262,9 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 				fill, new Insets(0, 0, 0, 0), 0, 0);
 	}
 
-	private static final GridBagConstraints createGBC(int x, int y, int w,
-			int h, int anchor, int fill, double weightx, double weighty) {
+	private static final GridBagConstraints createGBC(final int x, final int y,
+			final int w, final int h, final int anchor, final int fill,
+			final double weightx, final double weighty) {
 		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
 				fill, new Insets(0, 0, 0, 0), 0, 0);
 	}
@@ -283,7 +280,6 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		final int FIRST_LINE_START = GridBagConstraints.FIRST_LINE_START;
 		final int WEST = GridBagConstraints.WEST;
 		final int EAST = GridBagConstraints.EAST;
-		final Insets NO_INSETS = new Insets(0, 0, 0, 0);
 
 		/*
 		 * Script Editor Tab
@@ -292,9 +288,9 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		/*
 		 * Default values: gridx = RELATIVE; gridy = RELATIVE; gridwidth = 1;
 		 * gridheight = 1;
-		 * 
+		 *
 		 * weightx = 0; weighty = 0; anchor = CENTER; fill = NONE;
-		 * 
+		 *
 		 * insets = new Insets(0, 0, 0, 0); ipadx = 0; ipady = 0;
 		 */
 
@@ -330,7 +326,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		m_columnList.setUserSelectionAllowed(true);
 		m_columnList.addMouseListener(this);
 
-		JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
+		final JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
 		columnSelectionPanel.add(LBL_COLUMN,
 				createGBC(0, 0, 1, 1, FIRST_LINE_START, FILL_HORI, 1.0, 0.0));
 		columnSelectionPanel.add(m_columnList,
@@ -339,10 +335,10 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		// instead
 		// columnSelectionPanel.setBorder(UIManager.getBorder("Table.scrollPaneBorder"));
 		columnSelectionPanel.setPreferredSize(new Dimension(180, 0));
-		JScrollPane sp = new JScrollPane(columnSelectionPanel);
+		final JScrollPane sp = new JScrollPane(columnSelectionPanel);
 		m_editorPanel.add(sp, gbc_csl);
 
-		JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
+		final JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
 		m_columnMatchingTable.setFillsViewportHeight(true);
 		// make sure cell editing stops before rows are removed
 		m_columnMatchingTable.putClientProperty("terminateEditOnFocusLost",
@@ -354,7 +350,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		/*
 		 * "Add column/input matching" button
 		 */
-		JButton addBtn = new JButton("+");
+		final JButton addBtn = new JButton("+");
 		addBtn.setActionCommand(CMD_ADD);
 		addBtn.addActionListener(this);
 		addBtn.setToolTipText("Add column/input matching.");
@@ -363,7 +359,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		/*
 		 * "Remove column/input matching" button
 		 */
-		JButton remBtn = new JButton("-");
+		final JButton remBtn = new JButton("-");
 		remBtn.setActionCommand(CMD_REM);
 		remBtn.addActionListener(this);
 		remBtn.setToolTipText("Remove selected column/input matching.");
@@ -390,8 +386,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 * is filling out a cell of a GridBagLayout.
 	 */
 	private void applyDebugColors() {
-		Color PINKISH = new Color(100, 150, 100);
-		Color PEACHY = new Color(255, 200, 128);
+		final Color PINKISH = new Color(100, 150, 100);
+		final Color PEACHY = new Color(255, 200, 128);
 
 		LBL_HEADER.setBackground(PINKISH);
 		LBL_HEADER.setOpaque(true);
@@ -405,8 +401,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 * Utility function to add a DialogComponent to a panel and the
 	 * m_dialogComponents container for loading and saving.
 	 */
-	private void addDialogComponent(JPanel panel, DialogComponent comp,
-			Object constraints) {
+	private void addDialogComponent(final JPanel panel,
+			final DialogComponent comp, final Object constraints) {
 		panel.add(comp.getComponentPanel(), constraints);
 		m_dialogComponents.add(comp);
 	}
@@ -415,12 +411,12 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void saveSettingsTo(NodeSettingsWO settings)
+	protected void saveSettingsTo(final NodeSettingsWO settings)
 			throws InvalidSettingsException {
-		for (DialogComponent c : m_dialogComponents) {
+		for (final DialogComponent c : m_dialogComponents) {
 			c.saveSettingsTo(settings);
 		}
-		
+
 		// save settings for autogenerated components
 		m_settingsService.saveSettingsTo(settings);
 
@@ -429,7 +425,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		m_columnInputMappingSettignsModel.saveSettingsTo(settings);
 
 		m_lastCompiledModule = compile();
-		
+
 		// update autogen panel
 		createAutogenPanel();
 	}
@@ -438,13 +434,14 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void loadSettingsFrom(NodeSettingsRO settings,
-			DataTableSpec[] specs) throws NotConfigurableException {
+	protected void loadSettingsFrom(final NodeSettingsRO settings,
+			final DataTableSpec[] specs) throws NotConfigurableException {
 		try {
 			// load node id. Does not need to be saved!
 			m_nodeId.loadSettingsFrom(settings);
 			ScriptingNodeDialogDelayed(); // try to call the delayed constructor
-		} catch (Exception e) {
+		} catch (final Exception e) {
+			/* ignore */
 		}
 
 		// / DEBUG CODE ///
@@ -461,12 +458,12 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			m_cimService.clear();
 			Util.fillColumnToModuleItemMappingService(
 					m_columnInputMappingSettignsModel, m_cimService);
-		} catch (InvalidSettingsException e) {
+		} catch (final InvalidSettingsException e) {
 			e.printStackTrace();
 		}
 
 		// load Settings for common DialogComponents
-		for (DialogComponent c : m_dialogComponents) {
+		for (final DialogComponent c : m_dialogComponents) {
 			c.loadSettingsFrom(settings, specs);
 		}
 
@@ -488,14 +485,14 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		try {
 			// load settings for autogenerated components
 			m_settingsService.loadSettingsFrom(settings);
-		} catch (InvalidSettingsException e) {
+		} catch (final InvalidSettingsException e) {
 			// can happen frequently when inputs are added/removed
 		}
 	}
 
 	/*
 	 * Generate the contents of m_autogenPanel from the compiled module
-	 * 
+	 *
 	 * pre-cond: m_lastCompiledModule != null
 	 */
 	private void createAutogenPanel() {
@@ -505,19 +502,20 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			return;
 		}
 
-		SwingInputHarvester builder = new SwingInputHarvester();
+		final SwingInputHarvester builder = new SwingInputHarvester();
 
 		m_context.inject(builder);
 
-		SwingInputPanel inputPanel = builder.createInputPanel();
+		final SwingInputPanel inputPanel = builder.createInputPanel();
 
 		try {
-			for (ModuleItem<?> i : m_lastCompiledModule.getInfo().inputs()) {
-				String inputName = i.getName();
+			for (final ModuleItem<?> i : m_lastCompiledModule.getInfo()
+					.inputs()) {
+				final String inputName = i.getName();
 
 				boolean noUI = false;
 
-				ColumnToModuleItemMapping mapping = m_cimService
+				final ColumnToModuleItemMapping mapping = m_cimService
 						.getMappingForModuleItemName(inputName);
 				if (mapping != null) {
 					noUI = mapping.isActive();
@@ -529,7 +527,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 				m_lastCompiledModule.setResolved(inputName, noUI);
 			}
 			builder.buildPanel(inputPanel, m_lastCompiledModule);
-		} catch (ModuleException e) {
+		} catch (final ModuleException e) {
 			e.printStackTrace();
 		}
 		m_autogenPanel.add(inputPanel.getComponent());
@@ -538,25 +536,24 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	/*
 	 * Compile contents of m_codeModel into a Module.
 	 */
-	@SuppressWarnings("unchecked")
 	private Module compile() {
 		Class<? extends Command> commandClass = null;
 		try {
 			commandClass = ScriptingNodeModel.compile(m_javaEngine,
 					m_codeModel.getStringValue());
-		} catch (ScriptException e) {
-//			if (m_codeEditor != null) {
-//				RSyntaxTextArea textArea = m_codeEditor.getTextArea();
-//				int startIndex;
-//				try {
-//					startIndex = textArea.getLineStartOffset(e.getLineNumber())
-//							+ e.getColumnNumber();
-//					textArea.getHighlighter().addHighlight(startIndex,
-//							startIndex + 3,
-//							new SquiggleUnderlineHighlightPainter(Color.RED));
-//				} catch (BadLocationException e1) {
-//				}
-//			}
+		} catch (final ScriptException e) {
+			// if (m_codeEditor != null) {
+			// RSyntaxTextArea textArea = m_codeEditor.getTextArea();
+			// int startIndex;
+			// try {
+			// startIndex = textArea.getLineStartOffset(e.getLineNumber())
+			// + e.getColumnNumber();
+			// textArea.getHighlighter().addHighlight(startIndex,
+			// startIndex + 3,
+			// new SquiggleUnderlineHighlightPainter(Color.RED));
+			// } catch (BadLocationException e1) {
+			// }
+			// }
 			return null;
 		}
 
@@ -569,18 +566,18 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 		if (e.getActionCommand().equals(CMD_ADD)) {
 
 			ModuleItem<?> i = null;
 			try {
 				i = m_lastCompiledModule.getInfo().inputs().iterator().next();
-			} catch (NoSuchElementException exc) {
+			} catch (final NoSuchElementException exc) {
 				getLogger().error("No input found.");
 				return;
 			}
 
-			DataColumnSpec cs = m_lastDataTableSpec.iterator().next();
+			final DataColumnSpec cs = m_lastDataTableSpec.iterator().next();
 
 			if (cs == null) {
 				getLogger().error("No column found.");
@@ -591,29 +588,30 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		}
 
 		if (e.getActionCommand().equals(CMD_REM)) {
-			int row = m_columnMatchingTable.getSelectedRow();
+			final int row = m_columnMatchingTable.getSelectedRow();
 			m_columnMatchingTable.getModel().removeItem(row);
 		}
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void mouseClicked(final MouseEvent e) {
 		/*
 		 * Create a column input mapping on column list double click
 		 */
 		if (e.getSource() == m_columnList) {
 			// check for doubleclick
 			if (e.getClickCount() == 2) {
-				int index = m_columnList.locationToIndex(e.getPoint());
+				final int index = m_columnList.locationToIndex(e.getPoint());
 				if (index >= 0) {
-					Object o = m_columnList.getModel().getElementAt(index);
+					final Object o = m_columnList.getModel()
+							.getElementAt(index);
 
 					if (o instanceof DataColumnSpec) {
 						// better safe then sorry, should always be the case,
 						// though
-						DataColumnSpec cspec = (DataColumnSpec) o;
+						final DataColumnSpec cspec = (DataColumnSpec) o;
 
-						String columnName = cspec.getName();
+						final String columnName = cspec.getName();
 						String memberName = Character.toLowerCase(columnName
 								.charAt(0)) + columnName.substring(1);
 
@@ -626,7 +624,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 						memberName = chosen;
 
 						// get the Name of the first createable type
-						Iterator<InputAdapterPlugin> itor = m_inputAdapters
+						@SuppressWarnings("rawtypes")
+						final Iterator<InputAdapterPlugin> itor = m_inputAdapters
 								.getMatchingInputAdapters(cspec.getType())
 								.iterator();
 						String typeName;
@@ -644,17 +643,17 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 						}
 
 						// find position for inserting @Paramter declaration
-						int pos = m_codeEditor.getCode().indexOf('{') + 1;
+						final int pos = m_codeEditor.getCode().indexOf('{') + 1;
 						final String parameterCode = "\n\t@Parameter(type = ItemIO.INPUT)\n\tprivate "
 								+ typeName + " " + memberName + ";\n";
 
 						m_codeEditor.getTextArea().insert(parameterCode, pos);
 						m_codeEditor.updateModel();
-						
+
 						// add a mapping for the newly created parameter
 						m_columnMatchingTable.getModel().addItem(columnName,
 								memberName);
-						
+
 						m_lastCompiledModule = compile();
 					}
 				}
@@ -663,23 +662,23 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	}
 
 	@Override
-	public void mousePressed(MouseEvent e) {
+	public void mousePressed(final MouseEvent e) {
 		// unsused
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
+	public void mouseReleased(final MouseEvent e) {
 		// unsused
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {
+	public void mouseEntered(final MouseEvent e) {
 		// unsused
 	}
 
 	@Override
-	public void mouseExited(MouseEvent e) {
+	public void mouseExited(final MouseEvent e) {
 		// unsused
-	};
+	}
 
 }

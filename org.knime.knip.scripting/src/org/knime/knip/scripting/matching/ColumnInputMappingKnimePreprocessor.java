@@ -3,11 +3,11 @@ package org.knime.knip.scripting.matching;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataValue;
 import org.knime.knip.scijava.commands.KnimePreprocessor;
 import org.knime.knip.scijava.commands.adapter.InputAdapter;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
 import org.scijava.Priority;
 import org.scijava.log.LogService;
 import org.scijava.module.Module;
@@ -18,7 +18,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 /**
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
  *
  */
@@ -39,9 +39,9 @@ public class ColumnInputMappingKnimePreprocessor extends
 	LogService m_log;
 
 	@Override
-	public void process(Module module) {
+	public void process(final Module module) {
 		// get the DataTableSpec to later find column indices
-		DataTableSpec spec = m_inputTable.getInputDataTableSpec();
+		final DataTableSpec spec = m_inputTable.getInputDataTableSpec();
 
 		// some local variables set and used in the following loop
 		ColumnToModuleItemMapping mapping = null;
@@ -49,10 +49,10 @@ public class ColumnInputMappingKnimePreprocessor extends
 
 		// DataRow will remain the same while processing, this is a shortcut to
 		// it.
-		DataRow row = m_inputTable.getInputDataRow();
+		final DataRow row = m_inputTable.getInputDataRow();
 
 		// try to set module input values from the current DataRow
-		for (ModuleItem<?> i : module.getInfo().inputs()) {
+		for (final ModuleItem<?> i : module.getInfo().inputs()) {
 			inputName = i.getName();
 
 			// the input may have already been filled by a previous
@@ -81,7 +81,7 @@ public class ColumnInputMappingKnimePreprocessor extends
 				DataCell cell = null;
 				try {
 					cell = row.getCell(mapping.getColumnIndex(spec));
-				} catch (IndexOutOfBoundsException e) {
+				} catch (final IndexOutOfBoundsException e) {
 					// getColumnIndex() might return -1 or a index greater the
 					// column count
 					m_log.warn("Couldn't find column \""
@@ -92,8 +92,9 @@ public class ColumnInputMappingKnimePreprocessor extends
 
 				// find a input adapter which can convert the cells value to the
 				// a type required by the input
-				InputAdapter ia = m_inputAdapters.getMatchingInputAdapter(
-						cell.getClass(), i.getType());
+				@SuppressWarnings("unchecked")
+				final InputAdapter<? extends DataValue, ?> ia = m_inputAdapters
+						.getMatchingInputAdapter(cell.getClass(), i.getType());
 
 				if (ia == null) {
 					cancel("No InputAdapter for: " + cell.getClass() + " > "

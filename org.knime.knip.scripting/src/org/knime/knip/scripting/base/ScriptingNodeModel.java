@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import javax.script.ScriptException;
 
@@ -24,7 +23,6 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -38,8 +36,8 @@ import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
+import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.Util;
 import org.scijava.Context;
 import org.scijava.command.Command;
@@ -52,11 +50,9 @@ import org.scijava.plugins.scripting.java.JavaEngine;
 import org.scijava.plugins.scripting.java.JavaScriptLanguage;
 import org.scijava.plugins.scripting.java.JavaService;
 
-import sun.tools.tree.CheckContext;
-
 /**
  * NodeModel of the ScriptingNode
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
  */
 public class ScriptingNodeModel extends NodeModel {
@@ -67,7 +63,7 @@ public class ScriptingNodeModel extends NodeModel {
 	 * This node uses own node ids for every instance during the nodes existance
 	 * (node ids are not saved to file). The next id to be given to a newly
 	 * created node is stored in MAX_NODE_ID.
-	 * 
+	 *
 	 * The node id is required so that Dialog and Model can both work with the
 	 * same Scijava Context.
 	 */
@@ -81,9 +77,6 @@ public class ScriptingNodeModel extends NodeModel {
 
 	/* contains the nodeID. Only used during runtime. */
 	private final SettingsModelInteger m_nodeId = createIDSettingsModel();
-
-	/* This nodes logger, a shortcut */
-	private final NodeLogger log;
 
 	/* scijava context stuff */
 	final Context m_context;
@@ -124,7 +117,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 	/**
 	 * Create column to input mapping settings model.
-	 * 
+	 *
 	 * @return SettingsModel for the column to input mappings
 	 */
 	public static SettingsModelStringArray createColumnInputMappingSettingsModel() {
@@ -134,7 +127,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 	/**
 	 * Create Code SettingsModel with some default example code.
-	 * 
+	 *
 	 * @return SettignsModel for the script code
 	 */
 	public static SettingsModelString createCodeSettingsModel() {
@@ -145,7 +138,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 	/**
 	 * Get the entire contents of an URL as String.
-	 * 
+	 *
 	 * @param path
 	 *            url to the file to get the contents of
 	 * @return contents of path as url
@@ -156,9 +149,9 @@ public class ScriptingNodeModel extends NodeModel {
 			encoded = Files.readAllBytes(Paths.get(FileLocator.resolve(
 					new URL(path)).toURI()));
 			return new String(encoded, Charset.defaultCharset());
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 		return "";
@@ -166,7 +159,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 	/**
 	 * Create a SettingsModel for the unique ID of this NodeModel.
-	 * 
+	 *
 	 * @return the SettingsModelInteger which refers to the ID of this
 	 *         NodeModel.
 	 */
@@ -176,13 +169,11 @@ public class ScriptingNodeModel extends NodeModel {
 
 	/**
 	 * Constructor. Should only be called by {@link ScriptingNodeFactory}.
-	 * 
+	 *
 	 * @see ScriptingNodeFactory
 	 */
 	protected ScriptingNodeModel() {
 		super(1, 1);
-
-		log = getLogger();
 
 		m_nodeId.setIntValue(MAX_NODE_ID++);
 		m_context = ScriptingGateway.get().getContext(m_nodeId.getIntValue());
@@ -190,13 +181,14 @@ public class ScriptingNodeModel extends NodeModel {
 		// populate @Parameter members
 		m_context.inject(this);
 
-		JavaScriptLanguage javaLanguage = m_objectService.getObjects(
+		final JavaScriptLanguage javaLanguage = m_objectService.getObjects(
 				JavaScriptLanguage.class).get(0);
 		m_javaEngine = (JavaEngine) javaLanguage.getScriptEngine();
 	}
 
 	/* DataTableSpec of the output data table, created from module outputs */
 	private DataTableSpec[] m_outSpec;
+
 
 	@SuppressWarnings({ "rawtypes" })
 	@Override
@@ -205,7 +197,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 		// get the Service for output adapters, which convert module items to
 		// Knime DataCells
-		OutputAdapterService outAdapters = m_context
+		final OutputAdapterService outAdapters = m_context
 				.getService(OutputAdapterService.class);
 
 		if (m_commandClass == null) {
@@ -213,13 +205,13 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 
 		// list to contain the output DataColumnSpecs
-		List<DataColumnSpec> columnSpecs = new ArrayList<DataColumnSpec>();
+		final List<DataColumnSpec> columnSpecs = new ArrayList<DataColumnSpec>();
 
 		// create a output data table spec for every module output that can be
 		// adapted.
-		for (ModuleItem<?> output : m_commandInfo.outputs()) {
-			OutputAdapter oa = outAdapters.getMatchingOutputAdapter(output
-					.getType());
+		for (final ModuleItem<?> output : m_commandInfo.outputs()) {
+			final OutputAdapter oa = outAdapters
+					.getMatchingOutputAdapter(output.getType());
 
 			if (oa != null) {
 				// there is a adapter to convert the contents of "output",
@@ -229,12 +221,12 @@ public class ScriptingNodeModel extends NodeModel {
 			}
 		}
 		// create output table specs from column specs
-		DataTableSpec outSpec = new DataTableSpec(
+		final DataTableSpec outSpec = new DataTableSpec(
 				columnSpecs.toArray(new DataColumnSpec[] {}));
 		m_outSpec = new DataTableSpec[] { outSpec };
 
 		// create SettingsModels for autogenerated Settings
-		for (ModuleItem<?> i : m_commandInfo.inputs()) {
+		for (final ModuleItem<?> i : m_commandInfo.inputs()) {
 			m_settingsService.createSettingsModel(i);
 		}
 
@@ -242,11 +234,12 @@ public class ScriptingNodeModel extends NodeModel {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static Class<? extends Command> compile(JavaEngine engine,
-			String code) throws ScriptException {
+	public static Class<? extends Command> compile(final JavaEngine engine,
+			final String code) throws ScriptException {
 		// the ResourceAwareClassLoader has access to required bundles of this
 		// bundle
-		ResourceAwareClassLoader racl = ScriptingGateway.get().getClassLoader();
+		final ResourceAwareClassLoader racl = ScriptingGateway.get()
+				.getClassLoader();
 
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
@@ -257,6 +250,7 @@ public class ScriptingNodeModel extends NodeModel {
 		return (Class<? extends Command>) engine.compile(code);
 	}
 
+	@Override
 	protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
 			final ExecutionContext exec) throws Exception {
 
@@ -264,10 +258,10 @@ public class ScriptingNodeModel extends NodeModel {
 		if (m_commandClass == null) {
 			throw new Exception("Code did not compile!");
 		}
-		
+
 		final BufferedDataTable inTable = inData[0];
 
-		BufferedDataContainer container = exec
+		final BufferedDataContainer container = exec
 				.createDataContainer(m_outSpec[0]);
 
 		/* provide the KNIME data via Scijava services */
@@ -275,7 +269,7 @@ public class ScriptingNodeModel extends NodeModel {
 		m_outService.setOutputContainer(container);
 		m_execService.setExecutionContex(exec);
 
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		final ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(
 				ScriptingGateway.get().getClassLoader());
 
@@ -284,12 +278,12 @@ public class ScriptingNodeModel extends NodeModel {
 			while (m_inService.hasNext()) {
 				// check if user canceled execution of node
 				exec.checkCanceled();
-				
+
 				m_inService.next();
 				m_javaRunner.run(m_commandClass);
 				m_outService.appendRow();
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 			System.out.println(e);
 		}
@@ -306,36 +300,40 @@ public class ScriptingNodeModel extends NodeModel {
 	}
 
 	@Override
-	protected void loadInternals(File nodeInternDir, ExecutionMonitor exec)
-			throws IOException, CanceledExecutionException {
+	protected void loadInternals(final File nodeInternDir,
+			final ExecutionMonitor exec) throws IOException,
+			CanceledExecutionException {
+		/* nothing to do */
 	}
 
 	@Override
-	protected void saveInternals(File nodeInternDir, ExecutionMonitor exec)
-			throws IOException, CanceledExecutionException {
+	protected void saveInternals(final File nodeInternDir,
+			final ExecutionMonitor exec) throws IOException,
+			CanceledExecutionException {
+		/* nothing to do */
 	}
 
 	@Override
-	protected void validateSettings(NodeSettingsRO settings)
+	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		try {
 			// check if the code compiles
 			m_commandClass = compile(m_javaEngine,
 					settings.getString(SM_KEY_CODE));
-		} catch (ScriptException e) {
+		} catch (final ScriptException e) {
 			m_commandClass = null;
 		}
 	}
 
 	@Override
-	protected void loadValidatedSettingsFrom(NodeSettingsRO settings)
+	protected void loadValidatedSettingsFrom(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		m_codeModel.loadSettingsFrom(settings);
 
 		// compile to work with script-dependent settings
 		try {
 			m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
-		} catch (ScriptException e) {
+		} catch (final ScriptException e) {
 			m_commandClass = null;
 			return;
 		}
@@ -345,12 +343,12 @@ public class ScriptingNodeModel extends NodeModel {
 
 		// Create settings models for module inputs which do not have a
 		// ColumnToModuleInputMapping that maps to them
-		for (ModuleItem<?> i : m_commandInfo.inputs()) {
-			String inputName = i.getName();
+		for (final ModuleItem<?> i : m_commandInfo.inputs()) {
+			final String inputName = i.getName();
 			boolean needsSettings = true;
 
 			// try to find a mapping
-			ColumnToModuleItemMapping mapping = m_cimService
+			final ColumnToModuleItemMapping mapping = m_cimService
 					.getMappingForModuleItemName(inputName);
 			if (mapping != null) {
 				// possibly found an active mapping.
@@ -364,7 +362,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 		try {
 			m_settingsService.loadSettingsFrom(settings);
-		} catch (InvalidSettingsException e) {
+		} catch (final InvalidSettingsException e) {
 			// this will just not work sometimes, if new compilation contains
 			// new inputs etc
 		}
@@ -377,7 +375,7 @@ public class ScriptingNodeModel extends NodeModel {
 	}
 
 	@Override
-	protected void saveSettingsTo(NodeSettingsWO settings) {
+	protected void saveSettingsTo(final NodeSettingsWO settings) {
 		// store node ID for ScriptingNodeDialog
 		m_nodeId.saveSettingsTo(settings);
 

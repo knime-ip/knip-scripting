@@ -33,5 +33,5 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="2.10.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_scripting.jar,
  lib/tools.jar,
- lib/autocomplete.jar,
- lib/rsyntaxtextarea.jar
+ lib/imagej-ui-swing-0.12.1-SNAPSHOT.jar,
+ lib/rsyntaxtextarea-2.5.7.jar

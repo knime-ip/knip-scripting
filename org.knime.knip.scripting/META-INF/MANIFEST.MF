@@ -17,7 +17,6 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="2.10.0",
  scijava-plugins-text-plain;bundle-version="0.1.1",
  scijava-ui-awt;bundle-version="0.1.3",
  scijava-ui-swing;bundle-version="0.3.0",
- scripting-jython;bundle-version="0.1.4",
  org.knime.knip.scijava.core;bundle-version="0.1.0",
  org.knime.knip.scijava.commands;bundle-version="0.1.0",
  imglib2;bundle-version="2.2.0",
@@ -29,7 +28,9 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="2.10.0",
  imglib2-realtransform;bundle-version="2.0.0",
  imglib2-roi;bundle-version="0.2.1",
  imagej-common;bundle-version="0.12.0",
- scripting-java;bundle-version="0.3.0"
+ 
+ scripting-java;bundle-version="0.3.0",
+ scripting-jython;bundle-version="0.1.4"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_scripting.jar,
  lib/tools.jar,

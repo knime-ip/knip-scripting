@@ -59,9 +59,6 @@ import org.scijava.script.ScriptService;
  */
 public class ScriptingNodeModel extends NodeModel {
 
-	private static final String SM_KEY_CODE = "Code";
-	private static final String SM_KEY_LANGUAGE = "ScriptLanguage";
-
 	/*
 	 * This node uses own node ids for every instance during the nodes existance
 	 * (node ids are not saved to file). The next id to be given to a newly
@@ -72,17 +69,8 @@ public class ScriptingNodeModel extends NodeModel {
 	 */
 	private static int MAX_NODE_ID = 0;
 
-	/* contains the scripts code */
-	private final SettingsModelString m_codeModel = createCodeSettingsModel();
-
-	/* contains the column to input mappings */
-	private final SettingsModelStringArray m_columnInputMappingSettingsModel = createColumnInputMappingSettingsModel();
-
-	/* contains the nodeID. Only used during runtime. */
-	private final SettingsModelInteger m_nodeId = createIDSettingsModel();
-
-	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
-
+	private final ScriptingNodeSettings m_settings = new ScriptingNodeSettings();
+	
 	/* scijava context stuff */
 	final Context m_context;
 
@@ -125,67 +113,6 @@ public class ScriptingNodeModel extends NodeModel {
 	private CommandInfo m_commandInfo;
 
 	/**
-	 * Create column to input mapping settings model.
-	 *
-	 * @return SettingsModel for the column to input mappings
-	 */
-	public static SettingsModelStringArray createColumnInputMappingSettingsModel() {
-		return new SettingsModelStringArray("ColumnInputMappings",
-				new String[] {});
-	}
-
-	/**
-	 * Create Code SettingsModel with some default example code.
-	 *
-	 * @return SettignsModel for the script code
-	 */
-	public static SettingsModelString createCodeSettingsModel() {
-		return new SettingsModelString(
-				SM_KEY_CODE,
-				fileAsString("platform:/plugin/org.knime.knip.scripting.base/res/DefaultScript.txt"));
-	}
-
-	/**
-	 * Create column to input mapping settings model.
-	 *
-	 * @return SettingsModel for the column to input mappings
-	 */
-	public static SettingsModelString createScriptLanguageSettingsModel() {
-		return new SettingsModelString(SM_KEY_LANGUAGE, "Java");
-	}
-
-	/**
-	 * Get the entire contents of an URL as String.
-	 *
-	 * @param path
-	 *            url to the file to get the contents of
-	 * @return contents of path as url
-	 */
-	private static String fileAsString(final String path) {
-		byte[] encoded;
-		try {
-			encoded = Files.readAllBytes(Paths.get(FileLocator.resolve(
-					new URL(path)).toURI()));
-			return new String(encoded, Charset.defaultCharset());
-		} catch (final URISyntaxException e) {
-			e.printStackTrace();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
-
-	/**
-	 * Create a SettingsModel for the unique ID of this NodeModel.
-	 *
-	 * @return the SettingsModelInteger which refers to the ID of this
-	 *         NodeModel.
-	 */
-	public static SettingsModelInteger createIDSettingsModel() {
-		return new SettingsModelInteger("NodeId", -1);
-	}
-
-	/**
 	 * Constructor. Should only be called by {@link ScriptingNodeFactory}.
 	 *
 	 * @see ScriptingNodeFactory
@@ -193,13 +120,13 @@ public class ScriptingNodeModel extends NodeModel {
 	protected ScriptingNodeModel() {
 		super(1, 1);
 
-		m_nodeId.setIntValue(MAX_NODE_ID++);
-		m_context = ScriptingGateway.get().getContext(m_nodeId.getIntValue());
+		m_settings.setNodeId(MAX_NODE_ID++);
+		m_context = ScriptingGateway.get().getContext(m_settings.getNodeId());
 
 		// populate @Parameter members
 		m_context.inject(this);
 
-		setScriptLanguage(m_scriptLanguageModel.getStringValue());
+		setScriptLanguage(m_settings.getScriptLanguageName());
 	}
 	
 	private void setScriptLanguage(String languageName) {
@@ -341,13 +268,13 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		setScriptLanguage(settings.getString(SM_KEY_LANGUAGE));
+		setScriptLanguage(settings.getString(ScriptingNodeSettings.SM_KEY_LANGUAGE));
 		
 		try {
 			// check if the code compiles
 			if (m_scriptEngine instanceof JavaEngine) {
 				m_commandClass = compile((JavaEngine) m_scriptEngine,
-						settings.getString(SM_KEY_CODE));
+						settings.getString(ScriptingNodeSettings.SM_KEY_CODE));
 			}
 		} catch (final ScriptException e) {
 			m_commandClass = null;
@@ -357,17 +284,16 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void loadValidatedSettingsFrom(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		m_scriptLanguageModel.loadSettingsFrom(settings);
-		m_codeModel.loadSettingsFrom(settings);
+		m_settings.loadSettingsFrom(settings);
 
-		setScriptLanguage(m_scriptLanguageModel.getStringValue());
+		setScriptLanguage(m_settings.getScriptLanguageName());
 		
 		// compile to work with script-dependent settings
 		try {
 			// check if the code compiles
 			if (m_scriptEngine instanceof JavaEngine) {
 				m_commandClass = compile((JavaEngine) m_scriptEngine,
-						m_codeModel.getStringValue());
+						m_settings.getScriptCode());
 			}
 		} catch (final ScriptException e) {
 			m_commandClass = null;
@@ -404,25 +330,17 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 
 		// load column input mappings
-		m_columnInputMappingSettingsModel.loadSettingsFrom(settings);
 		m_cimService.clear();
 		Util.fillColumnToModuleItemMappingService(
-				m_columnInputMappingSettingsModel, m_cimService);
+				m_settings.getColumnInputMapping(), m_cimService);
 	}
 
 	@Override
 	protected void saveSettingsTo(final NodeSettingsWO settings) {
-		// store node ID for ScriptingNodeDialog
-		m_nodeId.saveSettingsTo(settings);
-
-		// store other settings
-		m_scriptLanguageModel.saveSettingsTo(settings);
-		m_codeModel.saveSettingsTo(settings);
-		m_settingsService.saveSettingsTo(settings);
-
 		Util.fillStringArraySettingsModel(m_cimService,
-				m_columnInputMappingSettingsModel);
-		m_columnInputMappingSettingsModel.saveSettingsTo(settings);
+				m_settings.columnInputMappingModel());
+		
+		m_settings.saveSettingsTo(settings);
 	}
 
 	@Override

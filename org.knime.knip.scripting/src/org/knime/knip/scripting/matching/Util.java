@@ -48,17 +48,17 @@ public class Util {
 	 * Add contents of a {@link SettingsModelStringArray} to a
 	 * {@link ColumnToModuleItemMappingService}.
 	 *
-	 * @param model
-	 *            model to get the contents from
+	 * @param modelValue
+	 *            value of the model to get the contents from
 	 * @param service
 	 *            service to add the contents of model to
 	 * @return true on success, false if model contained a String not in the
 	 *         format "columnName\nactive\ninputName".
 	 */
 	public static boolean fillColumnToModuleItemMappingService(
-			final SettingsModelStringArray model,
+			final String[] modelValue,
 			final ColumnToModuleItemMappingService service) {
-		for (final String s : model.getStringArrayValue()) {
+		for (final String s : modelValue) {
 			final String[] names = s.split("\n");
 
 			if (names.length != 3) {

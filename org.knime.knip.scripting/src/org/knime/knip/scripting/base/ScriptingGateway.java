@@ -73,7 +73,7 @@ public class ScriptingGateway {
 	protected static List<Class<? extends Service>> requiredServices = Arrays
 			.<Class<? extends Service>> asList(ScriptService.class,
 					DefaultJavaService.class, KnimeInputDataTableService.class,
-					KnimeOutputDataTableService.class,
+					KnimeOutputDataTableService.class, ScriptService.class,
 					KnimeExecutionService.class, NodeSettingsService.class,
 					ObjectService.class, DefaultWidgetService.class,
 					KnimeWidgetService.class, InputAdapterService.class,

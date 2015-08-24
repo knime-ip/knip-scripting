@@ -93,7 +93,7 @@ public class ColumnInputMappingKnimePreprocessor extends
 				// find a input adapter which can convert the cells value to the
 				// a type required by the input
 				@SuppressWarnings("unchecked")
-				final InputAdapter<? extends DataValue, ?> ia = m_inputAdapters
+				final InputAdapter<DataCell, ?> ia = m_inputAdapters
 						.getMatchingInputAdapter(cell.getClass(), i.getType());
 
 				if (ia == null) {

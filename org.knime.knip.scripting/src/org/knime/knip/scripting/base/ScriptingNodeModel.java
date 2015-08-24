@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -47,8 +48,9 @@ import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugins.scripting.java.JavaEngine;
-import org.scijava.plugins.scripting.java.JavaScriptLanguage;
 import org.scijava.plugins.scripting.java.JavaService;
+import org.scijava.script.ScriptLanguage;
+import org.scijava.script.ScriptService;
 
 /**
  * NodeModel of the ScriptingNode
@@ -58,12 +60,13 @@ import org.scijava.plugins.scripting.java.JavaService;
 public class ScriptingNodeModel extends NodeModel {
 
 	private static final String SM_KEY_CODE = "Code";
+	private static final String SM_KEY_LANGUAGE = "ScriptLanguage";
 
 	/*
 	 * This node uses own node ids for every instance during the nodes existance
 	 * (node ids are not saved to file). The next id to be given to a newly
 	 * created node is stored in MAX_NODE_ID.
-	 *
+	 * 
 	 * The node id is required so that Dialog and Model can both work with the
 	 * same Scijava Context.
 	 */
@@ -73,10 +76,12 @@ public class ScriptingNodeModel extends NodeModel {
 	private final SettingsModelString m_codeModel = createCodeSettingsModel();
 
 	/* contains the column to input mappings */
-	private final SettingsModelStringArray m_columnInputMappingSettignsModel = createColumnInputMappingSettingsModel();
+	private final SettingsModelStringArray m_columnInputMappingSettingsModel = createColumnInputMappingSettingsModel();
 
 	/* contains the nodeID. Only used during runtime. */
 	private final SettingsModelInteger m_nodeId = createIDSettingsModel();
+
+	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
 
 	/* scijava context stuff */
 	final Context m_context;
@@ -108,8 +113,12 @@ public class ScriptingNodeModel extends NodeModel {
 	@Parameter
 	private ColumnToModuleItemMappingService m_cimService;
 
+	/* Service providing access to ScriptLanguages plugins */
+	@Parameter
+	private ScriptService m_scriptService;
+
 	/* The class which compiles java code */
-	final JavaEngine m_javaEngine;
+	private ScriptEngine m_scriptEngine = null;
 
 	/* Current compiled command and its command info */
 	private Class<? extends Command> m_commandClass;
@@ -134,6 +143,15 @@ public class ScriptingNodeModel extends NodeModel {
 		return new SettingsModelString(
 				SM_KEY_CODE,
 				fileAsString("platform:/plugin/org.knime.knip.scripting.base/res/DefaultScript.txt"));
+	}
+
+	/**
+	 * Create column to input mapping settings model.
+	 *
+	 * @return SettingsModel for the column to input mappings
+	 */
+	public static SettingsModelString createScriptLanguageSettingsModel() {
+		return new SettingsModelString(SM_KEY_LANGUAGE, "Java");
 	}
 
 	/**
@@ -181,15 +199,22 @@ public class ScriptingNodeModel extends NodeModel {
 		// populate @Parameter members
 		m_context.inject(this);
 
-		final JavaScriptLanguage javaLanguage = m_objectService.getObjects(
-				JavaScriptLanguage.class).get(0);
-		m_javaEngine = (JavaEngine) javaLanguage.getScriptEngine();
+		setScriptLanguage(m_scriptLanguageModel.getStringValue());
+	}
+	
+	private void setScriptLanguage(String languageName) {
+		final ScriptLanguage language = m_scriptService
+				.getLanguageByName(languageName);
+		if (language == null) {
+			throw new NullPointerException(
+					"Could not load default language for Scripting node.");
+		}
+
+		m_scriptEngine = language.getScriptEngine();
 	}
 
 	/* DataTableSpec of the output data table, created from module outputs */
 	private DataTableSpec[] m_outSpec;
-
-
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
@@ -316,10 +341,14 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
+		setScriptLanguage(settings.getString(SM_KEY_LANGUAGE));
+		
 		try {
 			// check if the code compiles
-			m_commandClass = compile(m_javaEngine,
-					settings.getString(SM_KEY_CODE));
+			if (m_scriptEngine instanceof JavaEngine) {
+				m_commandClass = compile((JavaEngine) m_scriptEngine,
+						settings.getString(SM_KEY_CODE));
+			}
 		} catch (final ScriptException e) {
 			m_commandClass = null;
 		}
@@ -328,11 +357,18 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void loadValidatedSettingsFrom(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
+		m_scriptLanguageModel.loadSettingsFrom(settings);
 		m_codeModel.loadSettingsFrom(settings);
 
+		setScriptLanguage(m_scriptLanguageModel.getStringValue());
+		
 		// compile to work with script-dependent settings
 		try {
-			m_commandClass = compile(m_javaEngine, m_codeModel.getStringValue());
+			// check if the code compiles
+			if (m_scriptEngine instanceof JavaEngine) {
+				m_commandClass = compile((JavaEngine) m_scriptEngine,
+						m_codeModel.getStringValue());
+			}
 		} catch (final ScriptException e) {
 			m_commandClass = null;
 			return;
@@ -368,10 +404,10 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 
 		// load column input mappings
-		m_columnInputMappingSettignsModel.loadSettingsFrom(settings);
+		m_columnInputMappingSettingsModel.loadSettingsFrom(settings);
 		m_cimService.clear();
 		Util.fillColumnToModuleItemMappingService(
-				m_columnInputMappingSettignsModel, m_cimService);
+				m_columnInputMappingSettingsModel, m_cimService);
 	}
 
 	@Override
@@ -380,12 +416,13 @@ public class ScriptingNodeModel extends NodeModel {
 		m_nodeId.saveSettingsTo(settings);
 
 		// store other settings
+		m_scriptLanguageModel.saveSettingsTo(settings);
 		m_codeModel.saveSettingsTo(settings);
 		m_settingsService.saveSettingsTo(settings);
 
 		Util.fillStringArraySettingsModel(m_cimService,
-				m_columnInputMappingSettignsModel);
-		m_columnInputMappingSettignsModel.saveSettingsTo(settings);
+				m_columnInputMappingSettingsModel);
+		m_columnInputMappingSettingsModel.saveSettingsTo(settings);
 	}
 
 	@Override

@@ -31,7 +31,9 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="2.10.0",
  scripting-java;bundle-version="0.3.3",
  scripting-jython;bundle-version="0.2.2",
  com.fifesoft.rsyntaxtextarea;bundle-version="2.5.7",
- imagej-ui-swing;bundle-version="0.15.0"
+ imagej-ui-swing;bundle-version="0.15.0",
+ com.fifesoft.autocomplete;bundle-version="2.5.7",
+ com.fifesoft.languagesupport;bundle-version="2.5.7"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_scripting.jar,
  lib/tools.jar

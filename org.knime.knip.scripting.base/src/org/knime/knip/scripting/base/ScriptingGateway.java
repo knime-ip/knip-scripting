@@ -15,24 +15,21 @@ import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.commands.widget.impl.KnimeWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
-import org.knime.knip.scripting.java.BlockingCommandJavaRunner;
-import org.knime.knip.scripting.matching.AbstractColumnToModuleItemMappingService.DefaultColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
-import org.knime.knip.scripting.matching.DefaultColumnToModuleItemMappingService;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.DisplayPostprocessor;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.DefaultPluginFinder;
 import org.scijava.plugin.PluginIndex;
-import org.scijava.plugin.PluginInfo;
 import org.scijava.plugin.PluginService;
 import org.scijava.plugins.scripting.java.DefaultJavaService;
 import org.scijava.prefs.PrefService;
 import org.scijava.script.ScriptHeaderService;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
-import org.scijava.service.ServiceHelper;
+import org.scijava.ui.UIService;
+import org.scijava.widget.DefaultWidgetService;
 
 /**
  * ScriptingGateway is a singleton class which creates the scijava contexts for
@@ -72,9 +69,9 @@ public class ScriptingGateway {
 					DefaultJavaService.class, KnimeInputDataTableService.class,
 					KnimeOutputDataTableService.class, PrefService.class,
 					KnimeExecutionService.class, NodeSettingsService.class,
-					ObjectService.class, /* DefaultWidgetService.class, */
+					ObjectService.class, DefaultWidgetService.class,
 					KnimeWidgetService.class, InputAdapterService.class,
-					/* UIService.class, */ OutputAdapterService.class,
+					UIService.class, OutputAdapterService.class,
 					CommandService.class, LanguageSupportService.class,
 					ScriptHeaderService.class, ColumnToModuleItemMappingService.class);
 

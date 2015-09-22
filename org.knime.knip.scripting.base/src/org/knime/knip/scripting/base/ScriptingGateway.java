@@ -28,6 +28,7 @@ import org.scijava.prefs.PrefService;
 import org.scijava.script.ScriptHeaderService;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
+import org.scijava.service.ServiceHelper;
 import org.scijava.ui.UIService;
 import org.scijava.widget.DefaultWidgetService;
 
@@ -98,10 +99,6 @@ public class ScriptingGateway {
 		/* Make sure custom plugins have been added */
 		final PluginService plugins = context.getService(PluginService.class);
 		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
-
-		/* manually load services */
-//		new ServiceHelper(context).loadServices(); TODO: Decide!!!!
-//				.loadService(ColumnToModuleItemMappingService.class);
 
 		return context;
 	}

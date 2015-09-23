@@ -28,21 +28,17 @@ import org.scijava.prefs.PrefService;
 import org.scijava.script.ScriptHeaderService;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
-import org.scijava.service.ServiceHelper;
 import org.scijava.ui.UIService;
 import org.scijava.widget.DefaultWidgetService;
 
 /**
  * ScriptingGateway is a singleton class which creates the scijava contexts for
- * Scripting nodes of KNIME Image Processing.
- *
- * This Gateway internally uses {@link WeakReference} to determine if a context
- * can be destroyed. Since node model instances are created once and then only
- * reclaimed by garbage collector when workflow is closed or the node is
- * destroyed, one reference will always be held by the node model and the
- * Context reference will stay valid.
- *
- * I the created contexts are not stored safely, they will be recreated at every
+ * Scripting nodes of KNIME Image Processing. This Gateway internally uses
+ * {@link WeakReference} to determine if a context can be destroyed. Since node
+ * model instances are created once and then only reclaimed by garbage collector
+ * when workflow is closed or the node is destroyed, one reference will always
+ * be held by the node model and the Context reference will stay valid. I the
+ * created contexts are not stored safely, they will be recreated at every
  * {@link #getContext(int)} call.
  *
  * @author Jonathan Hale (University of Konstanz)
@@ -74,7 +70,8 @@ public class ScriptingGateway {
 					KnimeWidgetService.class, InputAdapterService.class,
 					UIService.class, OutputAdapterService.class,
 					CommandService.class, LanguageSupportService.class,
-					ScriptHeaderService.class, ColumnToModuleItemMappingService.class);
+					ScriptHeaderService.class,
+					ColumnToModuleItemMappingService.class);
 
 	/**
 	 * Constructor. Only to be called from {@link #get()}.

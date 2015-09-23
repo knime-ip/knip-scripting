@@ -43,20 +43,6 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 		m_codeModel = sm;
 
 		m_textArea = new EditorPane();
-		try {
-			for (PluginInfo<?> s : context.getPluginIndex().getAll()) {
-				String name = s.toString();
-				
-				if (name.contains("script") || name.contains("Script")) {
-					System.out.println("Has Service: " + name);
-				}
-			}
-			context.inject(m_textArea);
-		} catch (IllegalStateException | IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
 		m_textArea.setCodeFoldingEnabled(true);
 		m_textArea.setAntiAliasingEnabled(true);
 

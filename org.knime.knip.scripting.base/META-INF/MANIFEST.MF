@@ -4,10 +4,9 @@ Bundle-Name: KNIME Image Processing Scripting Base Library
 Bundle-SymbolicName: org.knime.knip.scripting.base;singleton:=true
 Bundle-Version: 0.9.0.qualifier
 Bundle-Vendor: University of Konstanz
-Eclipse-RegisterBuddy: org.knime.knip.scijava.commands
+Eclipse-RegisterBuddy: org.knime.knip.scijava.commands, org.knime.knip.scijava.core, org.scijava.scijava-common
 Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  scripting-java;bundle-version="0.3.3",
- scripting-jython;bundle-version="0.2.2",
  org.knime.base;bundle-version="3.0.0",
  org.knime.knip.base;bundle-version="1.4.0",
  org.knime.knip.core;bundle-version="1.4.0",
@@ -29,7 +28,8 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  imglib2-ij;bundle-version="2.0.31",
  imglib2-realtransform;bundle-version="2.0.29",
  imglib2-roi;bundle-version="0.3.2",
- imagej-common;bundle-version="0.18.0"
+ imagej-common;bundle-version="0.18.0",
+ scripting-jython;bundle-version="0.2.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_scripting_base.jar,
  lib/autocomplete-2.5.7.jar,

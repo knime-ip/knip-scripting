@@ -2,8 +2,6 @@ package org.knime.knip.scripting.node;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +26,6 @@ import org.knime.knip.scijava.commands.impl.DefaultKnimeExecutionService;
 import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
-import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;

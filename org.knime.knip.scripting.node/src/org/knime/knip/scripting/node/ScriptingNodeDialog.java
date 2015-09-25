@@ -61,8 +61,6 @@ import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -96,6 +94,7 @@ import org.knime.core.node.util.ColumnSelectionList;
 import org.knime.knip.scijava.commands.adapter.InputAdapterPlugin;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
+import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
@@ -240,16 +239,16 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		m_constructed = true;
 
 		m_context = ScriptingGateway.get().getContext(m_settings.getNodeId());
+
+		ResourceAwareClassLoader racl = ScriptingGateway.get().getClassLoader();
 		
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
-		Thread.currentThread().setContextClassLoader(
-				new URLClassLoader(ScriptingGateway.get().getClassLoader()
-						.getFileURLs().toArray(new URL[] {}), ScriptingGateway
-						.get().getClassLoader()));
+		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().createUrlClassLoader());
+
 		m_context.inject(this);
 
-		// Get syntax highliting plugins
+		// Get syntax hilighting plugins
 		AbstractTokenMakerFactory tokenMakerFactory = (AbstractTokenMakerFactory) TokenMakerFactory
 				.getDefaultInstance();
 		for (final PluginInfo<SyntaxHighlighter> info : m_pluginService
@@ -267,7 +266,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		buildDialog();
 
-		final ScriptLanguageIndex index = m_scriptService.getIndex();
+		final ScriptLanguageIndex index = m_context.getService(
+				ScriptService.class).getIndex();
 		final String[] languages = index.parallelStream().map((lang) -> {
 			System.out.println(" -- Found language: " + lang.toString());
 			return lang.toString();
@@ -299,7 +299,7 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		// hack to set language of the EditorPane: TODO Fix in imagej-ui-swing!
 		m_codeEditor.getEditorPane().setFileName(
-				new File(m_scriptLanguage.getExtensions().get(0)));
+				new File("." + m_scriptLanguage.getExtensions().get(0)));
 	}
 
 	/* utility functions for creating GridBagConstraints */

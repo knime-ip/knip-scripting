@@ -62,6 +62,8 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 				m_textArea.setVisible(true);
 			}
 		});
+		
+		context.inject(m_textArea);
 	}
 
 	@Override

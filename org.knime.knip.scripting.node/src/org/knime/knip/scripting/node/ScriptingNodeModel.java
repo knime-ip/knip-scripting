@@ -167,16 +167,10 @@ public class ScriptingNodeModel extends NodeModel {
 	public static Class<? extends Command> compile(ScriptService scriptService,
 			final String code, final String languageName)
 			throws ScriptException, NullPointerException {
-		// the ResourceAwareClassLoader has access to required bundles of this
-		// bundle
-		final ResourceAwareClassLoader racl = ScriptingGateway.get()
-				.getClassLoader();
-
+		
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
-		Thread.currentThread().setContextClassLoader(
-				new URLClassLoader(racl.getFileURLs().toArray(new URL[] {}),
-						racl));
+		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().createUrlClassLoader());
 
 		final ScriptLanguage language = scriptService
 				.getLanguageByName(languageName);

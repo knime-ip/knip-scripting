@@ -1,8 +1,12 @@
 package org.knime.knip.scripting.base;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 
 import net.imagej.ui.swing.script.LanguageSupportService;
@@ -26,6 +30,7 @@ import org.scijava.plugin.PluginService;
 import org.scijava.plugins.scripting.java.DefaultJavaService;
 import org.scijava.prefs.PrefService;
 import org.scijava.script.ScriptHeaderService;
+import org.scijava.script.ScriptLanguageIndex;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
 import org.scijava.ui.UIService;
@@ -165,6 +170,30 @@ public class ScriptingGateway {
 	 */
 	public ResourceAwareClassLoader getClassLoader() {
 		return m_classLoader;
+	}
+
+	/**
+	 * Create a {@link URLClassLoader} which contains scijava plugins and
+	 * services.
+	 * 
+	 * @return the class laoder
+	 */
+	public ClassLoader createUrlClassLoader() {
+		ArrayList<URL> arr = new ArrayList<>();
+
+		Enumeration<URL> resources = null;
+		try {
+			resources = getClassLoader().getResources(
+					"META-INF/json/org.scijava.plugin.Plugin");
+			while (resources.hasMoreElements()) {
+				arr.add(resources.nextElement());
+			}
+		} catch (IOException exc) {
+			// unable to get resource
+			exc.printStackTrace();
+		}
+
+		return new URLClassLoader(arr.toArray(new URL[] {}), getClassLoader());
 	}
 
 }

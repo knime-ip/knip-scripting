@@ -1,7 +1,9 @@
 package org.knime.knip.scripting.node;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.util.FileUtil;
 import org.knime.knip.scijava.commands.adapter.OutputAdapter;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
 import org.knime.knip.scijava.commands.impl.DefaultKnimeExecutionService;
@@ -169,22 +172,28 @@ public class ScriptingNodeModel extends NodeModel {
 
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
-		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().createUrlClassLoader());
+		ClassLoader backup = Thread.currentThread().getContextClassLoader();
 
-		final ScriptLanguage language = scriptService
-				.getLanguageByName(languageName);
-		if (language == null) {
-			throw new NullPointerException("Could not load language "
-					+ languageName + " for Scripting node.");
+		Thread.currentThread().setContextClassLoader(
+				ScriptingGateway.get().createUrlClassLoader());
+		try {
+			final ScriptLanguage language = scriptService
+					.getLanguageByName(languageName);
+			if (language == null) {
+				throw new NullPointerException("Could not load language "
+						+ languageName + " for Scripting node.");
+			}
+
+			ScriptEngine engine = language.getScriptEngine();
+
+			if (engine instanceof JavaEngine) {
+				return (Class<? extends Command>) ((JavaEngine) engine)
+						.compile(code);
+			}
+			return (Class<? extends Command>) engine.eval(code);
+		} finally {
+			Thread.currentThread().setContextClassLoader(backup); //TODO maybe remove sometime?
 		}
-
-		ScriptEngine engine = language.getScriptEngine();
-
-		if (engine instanceof JavaEngine) {
-			return (Class<? extends Command>) ((JavaEngine) engine)
-					.compile(code);
-		}
-		return (Class<? extends Command>) engine.eval(code);
 	}
 
 	@Override
@@ -206,7 +215,7 @@ public class ScriptingNodeModel extends NodeModel {
 		m_outService.setOutputContainer(container);
 		m_execService.setExecutionContex(exec);
 
-		final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		final ClassLoader previousClassLoader = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(
 				ScriptingGateway.get().getClassLoader());
 
@@ -223,9 +232,9 @@ public class ScriptingNodeModel extends NodeModel {
 		} catch (final Exception e) {
 			e.printStackTrace();
 			System.out.println(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(previousClassLoader);
 		}
-
-		Thread.currentThread().setContextClassLoader(cl);
 
 		/* reset knime context services */
 		container.close();
@@ -253,42 +262,68 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
-//		try {
-//			// check if the code compiles
-//			if (m_scriptEngine instanceof JavaEngine) {
-//				m_commandClass = compile(
-//						m_scriptService,
-//						settings.getString(ScriptingNodeSettings.SM_KEY_CODE),
-//						settings.getString(ScriptingNodeSettings.SM_KEY_LANGUAGE));
-//			}
-//		} catch (final ScriptException e) {
-//			m_commandClass = null;
-//		}
+		// try {
+		// // check if the code compiles
+		// if (m_scriptEngine instanceof JavaEngine) {
+		// m_commandClass = compile(
+		// m_scriptService,
+		// settings.getString(ScriptingNodeSettings.SM_KEY_CODE),
+		// settings.getString(ScriptingNodeSettings.SM_KEY_LANGUAGE));
+		// }
+		// } catch (final ScriptException e) {
+		// m_commandClass = null;
+		// }
 	}
 
 	@Override
 	protected void loadValidatedSettingsFrom(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		m_settings.loadSettingsFrom(settings);
+		
+		// FIXME: Ugly workaround to getting script plugins loaded.
+		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().createUrlClassLoader());
 
-//		// compile to work with script-dependent settings
-//		try {
-//			// check if the code compiles
-//			if (m_scriptEngine instanceof JavaEngine) {
-//				m_commandClass = compile(m_scriptService,
-//						m_settings.getScriptCode(),
-//						m_settings.getScriptLanguageName());
-//			}
-//		} catch (final ScriptException e) {
-//			m_commandClass = null;
-//			e.printStackTrace(); // TODO
-//			return;
-//		}
+		ScriptLanguage lang = m_scriptService.getLanguageByName(m_settings
+				.getScriptLanguageName());
 
-		if(m_commandClass == null) { 
+		if (lang == null) {
+			getLogger().error(
+					"Language " + m_settings.getScriptLanguageName()
+							+ " could not be found.");
 			return;
 		}
-		
+
+		try {
+			File tempDir = FileUtil.createTempDir("ScriptingNode"
+					+ m_settings.getNodeId());
+			File scriptFile = new File(tempDir, "script."
+					+ lang.getExtensions().get(0));
+
+			Writer w = new FileWriter(scriptFile);
+			w.write(m_settings.getScriptCode());
+			w.close();
+		} catch (IOException exc) {
+			exc.printStackTrace();
+		}
+
+		// // compile to work with script-dependent settings
+		// try {
+		// // check if the code compiles
+		// if (m_scriptEngine instanceof JavaEngine) {
+		// m_commandClass = compile(m_scriptService,
+		// m_settings.getScriptCode(),
+		// m_settings.getScriptLanguageName());
+		// }
+		// } catch (final ScriptException e) {
+		// m_commandClass = null;
+		// e.printStackTrace(); // TODO
+		// return;
+		// }
+
+		if (m_commandClass == null) {
+			return;
+		}
+
 		m_commandInfo = new CommandInfo(m_commandClass,
 				m_commandClass.getAnnotation(Plugin.class));
 

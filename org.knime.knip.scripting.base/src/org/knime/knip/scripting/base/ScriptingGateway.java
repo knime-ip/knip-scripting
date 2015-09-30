@@ -179,21 +179,8 @@ public class ScriptingGateway {
 	 * @return the class laoder
 	 */
 	public ClassLoader createUrlClassLoader() {
-		ArrayList<URL> arr = new ArrayList<>();
-
-		Enumeration<URL> resources = null;
-		try {
-			resources = getClassLoader().getResources(
-					"META-INF/json/org.scijava.plugin.Plugin");
-			while (resources.hasMoreElements()) {
-				arr.add(resources.nextElement());
-			}
-		} catch (IOException exc) {
-			// unable to get resource
-			exc.printStackTrace();
-		}
-
-		return new URLClassLoader(arr.toArray(new URL[] {}), getClassLoader());
+		return new URLClassLoader(m_classLoader.getBundleUrls().toArray(
+				new URL[] {}), getClassLoader());
 	}
 
 }

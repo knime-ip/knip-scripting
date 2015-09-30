@@ -29,7 +29,8 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  imglib2-realtransform;bundle-version="2.0.29",
  imglib2-roi;bundle-version="0.3.2",
  imagej-common;bundle-version="0.18.0",
- scripting-jython;bundle-version="0.2.2"
+ scripting-jython;bundle-version="0.2.2",
+ jython-shaded;bundle-version="2.5.3"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_scripting_base.jar,
  lib/autocomplete-2.5.7.jar,

@@ -29,6 +29,7 @@ import org.knime.knip.scijava.commands.impl.DefaultKnimeExecutionService;
 import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
+import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
@@ -172,11 +173,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
-		ClassLoader backup = Thread.currentThread().getContextClassLoader();
-
-		Thread.currentThread().setContextClassLoader(
-				ScriptingGateway.get().createUrlClassLoader());
-		try {
+		try(final TempClassLoader tempCl = new TempClassLoader(ScriptingGateway.get().createUrlClassLoader())) {
 			final ScriptLanguage language = scriptService
 					.getLanguageByName(languageName);
 			if (language == null) {
@@ -191,8 +188,6 @@ public class ScriptingNodeModel extends NodeModel {
 						.compile(code);
 			}
 			return (Class<? extends Command>) engine.eval(code);
-		} finally {
-			Thread.currentThread().setContextClassLoader(backup); //TODO maybe remove sometime?
 		}
 	}
 
@@ -215,12 +210,8 @@ public class ScriptingNodeModel extends NodeModel {
 		m_outService.setOutputContainer(container);
 		m_execService.setExecutionContex(exec);
 
-		final ClassLoader previousClassLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(
-				ScriptingGateway.get().getClassLoader());
-
 		/* compile an run script for all rows */
-		try {
+		try(final TempClassLoader tempCl = new TempClassLoader(ScriptingGateway.get().createUrlClassLoader())) {
 			while (m_inService.hasNext()) {
 				// check if user canceled execution of node
 				exec.checkCanceled();
@@ -232,8 +223,6 @@ public class ScriptingNodeModel extends NodeModel {
 		} catch (final Exception e) {
 			e.printStackTrace();
 			System.out.println(e);
-		} finally {
-			Thread.currentThread().setContextClassLoader(previousClassLoader);
 		}
 
 		/* reset knime context services */
@@ -280,83 +269,82 @@ public class ScriptingNodeModel extends NodeModel {
 			throws InvalidSettingsException {
 		m_settings.loadSettingsFrom(settings);
 		
-		// FIXME: Ugly workaround to getting script plugins loaded.
-		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().createUrlClassLoader());
+		try (final TempClassLoader tempCl = new TempClassLoader(ScriptingGateway.get().createUrlClassLoader())) {
+			ScriptLanguage lang = m_scriptService.getLanguageByName(m_settings
+					.getScriptLanguageName());
 
-		ScriptLanguage lang = m_scriptService.getLanguageByName(m_settings
-				.getScriptLanguageName());
-
-		if (lang == null) {
-			getLogger().error(
-					"Language " + m_settings.getScriptLanguageName()
-							+ " could not be found.");
-			return;
-		}
-
-		try {
-			File tempDir = FileUtil.createTempDir("ScriptingNode"
-					+ m_settings.getNodeId());
-			File scriptFile = new File(tempDir, "script."
-					+ lang.getExtensions().get(0));
-
-			Writer w = new FileWriter(scriptFile);
-			w.write(m_settings.getScriptCode());
-			w.close();
-		} catch (IOException exc) {
-			exc.printStackTrace();
-		}
-
-		// // compile to work with script-dependent settings
-		// try {
-		// // check if the code compiles
-		// if (m_scriptEngine instanceof JavaEngine) {
-		// m_commandClass = compile(m_scriptService,
-		// m_settings.getScriptCode(),
-		// m_settings.getScriptLanguageName());
-		// }
-		// } catch (final ScriptException e) {
-		// m_commandClass = null;
-		// e.printStackTrace(); // TODO
-		// return;
-		// }
-
-		if (m_commandClass == null) {
-			return;
-		}
-
-		m_commandInfo = new CommandInfo(m_commandClass,
-				m_commandClass.getAnnotation(Plugin.class));
-
-		// Create settings models for module inputs which do not have a
-		// ColumnToModuleInputMapping that maps to them
-		for (final ModuleItem<?> i : m_commandInfo.inputs()) {
-			final String inputName = i.getName();
-			boolean needsSettings = true;
-
-			// try to find a mapping
-			final ColumnToModuleItemMapping mapping = m_cimService
-					.getMappingForModuleItemName(inputName);
-			if (mapping != null) {
-				// possibly found an active mapping.
-				needsSettings = !mapping.isActive();
+			if (lang == null) {
+				getLogger().error(
+						"Language " + m_settings.getScriptLanguageName()
+								+ " could not be found.");
+				return;
 			}
 
-			if (needsSettings) {
-				m_settingsService.createSettingsModel(i);
+			try {
+				File tempDir = FileUtil.createTempDir("ScriptingNode"
+						+ m_settings.getNodeId());
+				File scriptFile = new File(tempDir, "script."
+						+ lang.getExtensions().get(0));
+
+				Writer w = new FileWriter(scriptFile);
+				w.write(m_settings.getScriptCode());
+				w.close();
+			} catch (IOException exc) {
+				exc.printStackTrace();
 			}
-		}
 
-		try {
-			m_settingsService.loadSettingsFrom(settings);
-		} catch (final InvalidSettingsException e) {
-			// this will just not work sometimes, if new compilation contains
-			// new inputs etc
-		}
+			// // compile to work with script-dependent settings
+			// try {
+			// // check if the code compiles
+			// if (m_scriptEngine instanceof JavaEngine) {
+			// m_commandClass = compile(m_scriptService,
+			// m_settings.getScriptCode(),
+			// m_settings.getScriptLanguageName());
+			// }
+			// } catch (final ScriptException e) {
+			// m_commandClass = null;
+			// e.printStackTrace(); // TODO
+			// return;
+			// }
 
-		// load column input mappings
-		m_cimService.clear();
-		Util.fillColumnToModuleItemMappingService(
-				m_settings.getColumnInputMapping(), m_cimService);
+			if (m_commandClass == null) {
+				return;
+			}
+
+			m_commandInfo = new CommandInfo(m_commandClass,
+					m_commandClass.getAnnotation(Plugin.class));
+
+			// Create settings models for module inputs which do not have a
+			// ColumnToModuleInputMapping that maps to them
+			for (final ModuleItem<?> i : m_commandInfo.inputs()) {
+				final String inputName = i.getName();
+				boolean needsSettings = true;
+
+				// try to find a mapping
+				final ColumnToModuleItemMapping mapping = m_cimService
+						.getMappingForModuleItemName(inputName);
+				if (mapping != null) {
+					// possibly found an active mapping.
+					needsSettings = !mapping.isActive();
+				}
+
+				if (needsSettings) {
+					m_settingsService.createSettingsModel(i);
+				}
+			}
+
+			try {
+				m_settingsService.loadSettingsFrom(settings);
+			} catch (final InvalidSettingsException e) {
+				// this will just not work sometimes, if new compilation contains
+				// new inputs etc
+			}
+
+			// load column input mappings
+			m_cimService.clear();
+			Util.fillColumnToModuleItemMappingService(
+					m_settings.getColumnInputMapping(), m_cimService);
+		}
 	}
 
 	@Override

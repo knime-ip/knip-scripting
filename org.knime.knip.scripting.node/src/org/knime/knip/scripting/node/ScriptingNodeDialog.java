@@ -95,6 +95,7 @@ import org.knime.knip.scijava.commands.adapter.InputAdapterPlugin;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
+import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
@@ -240,56 +241,55 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		m_context = ScriptingGateway.get().getContext(m_settings.getNodeId());
 
-		ResourceAwareClassLoader racl = ScriptingGateway.get().getClassLoader();
-		
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
-		Thread.currentThread().setContextClassLoader(ScriptingGateway.get().createUrlClassLoader());
-
-		m_context.inject(this);
-
-		// Get syntax hilighting plugins
-		AbstractTokenMakerFactory tokenMakerFactory = (AbstractTokenMakerFactory) TokenMakerFactory
-				.getDefaultInstance();
-		for (final PluginInfo<SyntaxHighlighter> info : m_pluginService
-				.getPluginsOfType(SyntaxHighlighter.class)) {
-			try {
-				tokenMakerFactory.putMapping("text/" + info.getName(),
-						info.getClassName());
-			} catch (final Throwable t) {
-				getLogger().warn("Could not register " + info.getName(), t);
+		try (final TempClassLoader tempCl = new TempClassLoader(ScriptingGateway.get().createUrlClassLoader())) {
+	
+			m_context.inject(this);
+	
+			// Get syntax hilighting plugins
+			AbstractTokenMakerFactory tokenMakerFactory = (AbstractTokenMakerFactory) TokenMakerFactory
+					.getDefaultInstance();
+			for (final PluginInfo<SyntaxHighlighter> info : m_pluginService
+					.getPluginsOfType(SyntaxHighlighter.class)) {
+				try {
+					tokenMakerFactory.putMapping("text/" + info.getName(),
+							info.getClassName());
+				} catch (final Throwable t) {
+					getLogger().warn("Could not register " + info.getName(), t);
+				}
 			}
-		}
-
-		m_columnMatchingTable = new ColumnInputMatchingTable(
-				new DataTableSpec(), null, m_context);
-
-		buildDialog();
-
-		final ScriptLanguageIndex index = m_context.getService(
-				ScriptService.class).getIndex();
-		final String[] languages = index.parallelStream().map((lang) -> {
-			System.out.println(" -- Found language: " + lang.toString());
-			return lang.toString();
-		}).toArray((length) -> {
-			return new String[length];
-		});
-
-		if (languages.length == 0) {
-			m_langSelection.setModel(new DefaultComboBoxModel<String>(
-					new String[] { "Java" }));
-		} else {
-			m_langSelection
-					.setModel(new DefaultComboBoxModel<String>(languages));
-		}
-
-		m_langSelection.addItemListener((event) -> {
-			m_settings.setScriptLanguageName((String) m_langSelection
-					.getSelectedItem());
+	
+			m_columnMatchingTable = new ColumnInputMatchingTable(
+					new DataTableSpec(), null, m_context);
+	
+			buildDialog();
+	
+			final ScriptLanguageIndex index = m_context.getService(
+					ScriptService.class).getIndex();
+			final String[] languages = index.parallelStream().map((lang) -> {
+				System.out.println(" -- Found language: " + lang.toString());
+				return lang.toString();
+			}).toArray((length) -> {
+				return new String[length];
+			});
+	
+			if (languages.length == 0) {
+				m_langSelection.setModel(new DefaultComboBoxModel<String>(
+						new String[] { "Java" }));
+			} else {
+				m_langSelection
+						.setModel(new DefaultComboBoxModel<String>(languages));
+			}
+	
+			m_langSelection.addItemListener((event) -> {
+				m_settings.setScriptLanguageName((String) m_langSelection
+						.getSelectedItem());
+				updateScriptLanguage();
+			});
+	
 			updateScriptLanguage();
-		});
-
-		updateScriptLanguage();
+		}
 	}
 
 	private void updateScriptLanguage() {

@@ -1,6 +1,7 @@
 package org.knime.knip.scripting.node;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -89,11 +90,10 @@ public class ScriptingNodeSettings {
 	 * @return contents of path as url
 	 */
 	protected static String fileAsString(final String path) {
-		byte[] encoded;
 		try {
-			encoded = Files.readAllBytes(Paths.get(FileLocator.resolve(
-					new URL(path)).toURI()));
-			return new String(encoded, Charset.defaultCharset());
+			URL resolvedUrl = FileLocator.resolve(new URL(path));
+			byte[] bytes = Files.readAllBytes(Paths.get(new URI(resolvedUrl.toString().replace(" ", "%20"))));
+			return new String(bytes, Charset.defaultCharset());
 		} catch (final URISyntaxException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {

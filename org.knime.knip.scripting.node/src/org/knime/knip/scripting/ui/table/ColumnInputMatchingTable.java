@@ -81,6 +81,22 @@ public class ColumnInputMatchingTable extends JTable {
 	}
 
 	/**
+	 * @return currently set DataTableSpec info.
+	 * @see #updateModel(DataTableSpec, ModuleInfo)
+	 */
+	public DataTableSpec getDataTableSpec() {
+		return m_spec;
+	}
+	
+	/**
+	 * @return currently set module info.
+	 * @see #updateModel(DataTableSpec, ModuleInfo)
+	 */
+	public ModuleInfo getModuleInfo() {
+		return m_info;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override

@@ -48,40 +48,20 @@
  */
 package org.knime.knip.scripting.node;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
-
-import net.imagej.ui.swing.script.SyntaxHighlighter;
+import javax.swing.SwingUtilities;
 
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
-import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
@@ -90,18 +70,13 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
-import org.knime.core.node.util.ColumnSelectionList;
-import org.knime.knip.scijava.commands.adapter.InputAdapterPlugin;
-import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
-import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
 import org.knime.knip.scripting.matching.Util;
-import org.knime.knip.scripting.ui.CodeEditorDialogComponent;
-import org.knime.knip.scripting.ui.table.ColumnInputMatchingTable;
+import org.knime.knip.scripting.ui.ScriptingNodeDialogPane;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
@@ -123,6 +98,8 @@ import org.scijava.script.ScriptService;
 import org.scijava.ui.swing.widget.SwingInputHarvester;
 import org.scijava.ui.swing.widget.SwingInputPanel;
 
+import net.imagej.ui.swing.script.SyntaxHighlighter;
+
 /**
  * Dialog for the Scripting Node.
  *
@@ -132,20 +109,16 @@ import org.scijava.ui.swing.widget.SwingInputPanel;
  * @see ScriptingNodeModel
  * @see ScriptingNodeFactory
  */
-public class ScriptingNodeDialog extends NodeDialogPane
-		implements ActionListener, MouseListener {
+public class ScriptingNodeDialog extends NodeDialogPane {
 
 	private final ScriptingNodeSettings m_settings = new ScriptingNodeSettings();
-
-	/* containers */
-	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
-
-	/* options for easy debugging */
-	public final static boolean DEBUG_UI = false;
 
 	/* script output and error writers */
 	Writer m_errorWriter;
 	Writer m_outputWriter;
+
+	/* panel generated from current script */
+	private final JPanel m_autogenPanel = new JPanel(new GridBagLayout());
 
 	// scijava context
 	private Context m_context;
@@ -159,59 +132,28 @@ public class ScriptingNodeDialog extends NodeDialogPane
 	@Parameter
 	private NodeSettingsService m_settingsService;
 	@Parameter
-	private InputAdapterService m_inputAdapters;
-	@Parameter
 	private ScriptService m_scriptService;
 	@Parameter
 	private PluginService m_pluginService;
 
 	private ScriptEngine m_scriptEngine;
 
-	/* UI Components */
-
-	// Table containing column/input matching.
-	private ColumnInputMatchingTable m_columnMatchingTable;
-
-	// Labels
-	private final JLabel LBL_HEADER = new JLabel("Script Editor");
-	private final JLabel LBL_LANG = new JLabel("Language: ");
-	private final JLabel LBL_COLUMN = new JLabel("Column:");
-	private final JLabel LBL_CIM = new JLabel("Column/Input Matchings:");
-
-	// ActionCommands for removing and adding column/input matchings
-	private final static String CMD_ADD = "add";
-	private final static String CMD_REM = "rem";
-
-	// Code Editor
-	CodeEditorDialogComponent m_codeEditor = null;
-
-	// tab panels
-	private final JPanel m_editorPanel = new JPanel(new GridBagLayout());
-	private final JPanel m_autogenPanel = new JPanel(new GridBagLayout());
-
-	// Language selection Combobox
-	private final JComboBox<String> m_langSelection = new JComboBox<String>(
-			new String[] { "Java" });
-
-	// column selection list for generating inputs with column matchings
-	private final ColumnSelectionList m_columnList = new ColumnSelectionList();
-
 	/* "cache" for data and compilation results */
-	private DataTableSpec m_lastDataTableSpec;
 	private Module m_lastCompiledModule;
 
 	/* whether the delayed constructor has been called */
 	private boolean m_constructed = false;
 
+	private final ScriptingNodeDialogPane m_gui;
+
 	/**
 	 * Default constructor
 	 */
 	public ScriptingNodeDialog() {
-		/* one time setup of some components */
-		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+		m_gui = new ScriptingNodeDialogPane(getLogger());
 
 		/* create tabs */
-		super.addTabAt(0, "Script Editor", m_editorPanel);
+		super.addTabAt(0, "Script Editor", m_gui.editorPane());
 		super.addTabAt(1, "<Autogenerated Tab>", m_autogenPanel);
 
 		m_errorWriter = new StringWriter();
@@ -260,218 +202,56 @@ public class ScriptingNodeDialog extends NodeDialogPane
 				}
 			}
 
-			m_columnMatchingTable = new ColumnInputMatchingTable(
-					new DataTableSpec(), null, m_context);
-
-			buildDialog();
-
-			detectLanguages();
+			m_gui.setContext(m_context);
+			m_gui.setSettings(m_settings);
+			m_gui.buildDialog();
 		}
-	}
 
-	/*
-	 * Find scijava ScriptLanguage plugins and add them to the UI for the user
-	 * to select.
-	 */
-	private void detectLanguages() {
-		final ScriptLanguageIndex index = m_context
-				.getService(ScriptService.class).getIndex();
+		/*
+		 * detect Scijava ScriptLanguage plugins and add to the combobox for the
+		 * user to select
+		 */
+		SwingUtilities.invokeLater(() -> {
+			try (TempClassLoader tempCl = new TempClassLoader(
+					ScriptingGateway.get().createUrlClassLoader())) {
+				final ScriptLanguageIndex index = m_context
+						.getService(ScriptService.class).getIndex();
 
-		String[] languages = index.parallelStream().map((lang) -> {
-			return lang.toString();
-		}).toArray((length) -> {
-			return new String[length];
+				String[] languages = index.parallelStream().map((lang) -> {
+					return lang.toString();
+				}).toArray((length) -> {
+					return new String[length];
+				});
+
+				if (languages.length != 0) {
+					m_gui.languageSelection().setModel(
+							new DefaultComboBoxModel<String>(languages));
+				} /* else, stays String[]{"Java"} */
+
+				m_gui.languageSelection().addItemListener((event) -> {
+					/*
+					 * Update settings and script language, if language is
+					 * selected via the combobox.
+					 */
+					m_settings.setScriptLanguageName((String) m_gui
+							.languageSelection().getSelectedItem());
+					updateScriptLanguage();
+				});
+
+				updateScriptLanguage();
+			}
 		});
 
-		if (languages.length != 0) {
-			m_langSelection
-					.setModel(new DefaultComboBoxModel<String>(languages));
-		} /* else, stays String[]{"Java"} */
-
-		m_langSelection.addItemListener((event) -> {
-			/* Update settings and script language, if language is selected via
-			 * the combobox. */
-			m_settings.setScriptLanguageName(
-					(String) m_langSelection.getSelectedItem());
-			updateScriptLanguage();
-		});
-
-		updateScriptLanguage();
 	}
 
-	private void updateScriptLanguage() {
-		final ScriptLanguage language = m_scriptService
-				.getLanguageByName((String) m_langSelection.getSelectedItem());
+	private synchronized void updateScriptLanguage() {
+		final ScriptLanguage language = m_scriptService.getLanguageByName(
+				(String) m_gui.languageSelection().getSelectedItem());
 		m_scriptEngine = language.getScriptEngine();
 
 		// hack to set language of the EditorPane: TODO Fix in imagej-ui-swing!
-		m_codeEditor.getEditorPane().setFileName(
-				new File("." + language.getExtensions().get(0)));
-	}
-
-	/* utility functions for creating GridBagConstraints */
-	private static final GridBagConstraints createGBC(final int x, final int y,
-			final int w, final int h, final int anchor, final int fill) {
-		float weightx = 1.0f;
-		float weighty = 1.0f;
-
-		if (fill == GridBagConstraints.NONE) {
-			weightx = weighty = 0.0f;
-		} else if (fill == GridBagConstraints.HORIZONTAL) {
-			weighty = 0.0f;
-		} else if (fill == GridBagConstraints.VERTICAL) {
-			weightx = 0.0f;
-		}
-
-		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
-				fill, new Insets(0, 0, 0, 0), 0, 0);
-	}
-
-	private static final GridBagConstraints createGBC(final int x, final int y,
-			final int w, final int h, final int anchor, final int fill,
-			final double weightx, final double weighty) {
-		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
-				fill, new Insets(0, 0, 0, 0), 0, 0);
-	}
-
-	/*
-	 * Add dialog components to tab panels.
-	 */
-	private void buildDialog() {
-		final int FILL_BOTH = GridBagConstraints.BOTH;
-		final int FILL_NONE = GridBagConstraints.NONE;
-		final int FILL_HORI = GridBagConstraints.HORIZONTAL;
-		final int FILL_VERT = GridBagConstraints.VERTICAL;
-		final int FIRST_LINE_START = GridBagConstraints.FIRST_LINE_START;
-		final int WEST = GridBagConstraints.WEST;
-		final int EAST = GridBagConstraints.EAST;
-
-		/*
-		 * Script Editor Tab
-		 */
-
-		/*
-		 * Default values: gridx = RELATIVE; gridy = RELATIVE; gridwidth = 1;
-		 * gridheight = 1;
-		 * 
-		 * weightx = 0; weighty = 0; anchor = CENTER; fill = NONE;
-		 * 
-		 * insets = new Insets(0, 0, 0, 0); ipadx = 0; ipady = 0;
-		 */
-
-		final GridBagConstraints gbc_lbl_header = createGBC(0, 0, 1, 1, WEST,
-				FILL_NONE);
-		final GridBagConstraints gbc_lbl_lang = createGBC(2, 0, 1, 1, EAST,
-				FILL_NONE);
-		final GridBagConstraints gbc_lbl_cim = createGBC(1, 2, 1, 1, EAST,
-				FILL_NONE);
-
-		final GridBagConstraints gbc_ls = createGBC(3, 0, 2, 1, EAST,
-				FILL_HORI);
-		gbc_ls.insets = new Insets(3, 3, 3, 0);
-
-		final GridBagConstraints gbc_ep = createGBC(0, 1, 5, 1,
-				FIRST_LINE_START, FILL_BOTH, 1.0, 1.0);
-		gbc_ep.insets = new Insets(0, 3, 0, 0);
-		final GridBagConstraints gbc_csl = createGBC(0, 2, 1, 2, WEST,
-				FILL_VERT);
-		final GridBagConstraints gbc_cim = createGBC(1, 3, 4, 1,
-				FIRST_LINE_START, FILL_BOTH, 1.0, 0.0);
-
-		final GridBagConstraints gbc_add = createGBC(3, 2, 1, 1, WEST,
-				FILL_HORI);
-		final GridBagConstraints gbc_rem = createGBC(4, 2, 1, 1, WEST,
-				FILL_HORI);
-
-		m_editorPanel.add(m_langSelection, gbc_ls);
-
-		m_codeEditor = new CodeEditorDialogComponent(m_context,
-				m_settings.scriptCodeModel());
-		addDialogComponent(m_editorPanel, m_codeEditor, gbc_ep);
-
-		m_columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		m_columnList.setUserSelectionAllowed(true);
-		m_columnList.addMouseListener(this);
-
-		final JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
-		columnSelectionPanel.add(LBL_COLUMN,
-				createGBC(0, 0, 1, 1, FIRST_LINE_START, FILL_HORI, 1.0, 0.0));
-		columnSelectionPanel.add(m_columnList,
-				createGBC(0, 1, 1, 1, FIRST_LINE_START, FILL_BOTH, 1.0, 1.0));
-		// FIXME lazy way of adding the neat border. Add scrollpane to list
-		// instead
-		// columnSelectionPanel.setBorder(UIManager.getBorder("Table.scrollPaneBorder"));
-		columnSelectionPanel.setPreferredSize(new Dimension(180, 0));
-		final JScrollPane sp = new JScrollPane(columnSelectionPanel);
-		m_editorPanel.add(sp, gbc_csl);
-
-		final JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
-		m_columnMatchingTable.setFillsViewportHeight(true);
-		// make sure cell editing stops before rows are removed
-		m_columnMatchingTable.putClientProperty("terminateEditOnFocusLost",
-				Boolean.TRUE);
-		m_columnMatchingTable
-				.setPreferredScrollableViewportSize(new Dimension(100, 150));
-		m_editorPanel.add(scrollPane, gbc_cim);
-
-		/*
-		 * "Add column/input matching" button
-		 */
-		final JButton addBtn = new JButton("+");
-		addBtn.setActionCommand(CMD_ADD);
-		addBtn.addActionListener(this);
-		addBtn.setToolTipText("Add column/input matching.");
-		m_editorPanel.add(addBtn, gbc_add);
-
-		/*
-		 * "Remove column/input matching" button
-		 */
-		final JButton remBtn = new JButton("-");
-		remBtn.setActionCommand(CMD_REM);
-		remBtn.addActionListener(this);
-		remBtn.setToolTipText("Remove selected column/input matching.");
-		m_editorPanel.add(remBtn, gbc_rem);
-
-		/*
-		 * Labels
-		 */
-		m_editorPanel.add(LBL_HEADER, gbc_lbl_header);
-		m_editorPanel.add(LBL_LANG, gbc_lbl_lang);
-		m_editorPanel.add(LBL_CIM, gbc_lbl_cim);
-
-		// / DEBUG CODE ///
-		if (DEBUG_UI) {
-			applyDebugColors();
-			getLogger().debug("Built Dialog!");
-		}
-
-	}
-
-	/*
-	 * Apply visible colors to some of the components. While debugging the ui
-	 * layout this can come in handy, since it allows to see whether a component
-	 * is filling out a cell of a GridBagLayout.
-	 */
-	private void applyDebugColors() {
-		final Color PINKISH = new Color(100, 150, 100);
-		final Color PEACHY = new Color(255, 200, 128);
-
-		LBL_HEADER.setBackground(PINKISH);
-		LBL_HEADER.setOpaque(true);
-		LBL_LANG.setBackground(Color.cyan);
-		LBL_LANG.setOpaque(true);
-		LBL_CIM.setBackground(PEACHY);
-		LBL_CIM.setOpaque(true);
-	}
-
-	/*
-	 * Utility function to add a DialogComponent to a panel and the
-	 * m_dialogComponents container for loading and saving.
-	 */
-	private void addDialogComponent(final JPanel panel,
-			final DialogComponent comp, final Object constraints) {
-		panel.add(comp.getComponentPanel(), constraints);
-		m_dialogComponents.add(comp);
+		m_gui.codeEditor().getEditorPane()
+				.setFileName(new File("." + language.getExtensions().get(0)));
 	}
 
 	/**
@@ -484,7 +264,7 @@ public class ScriptingNodeDialog extends NodeDialogPane
 			Util.fillStringArraySettingsModel(m_cimService,
 					m_settings.columnInputMappingModel());
 
-			for (final DialogComponent c : m_dialogComponents) {
+			for (final DialogComponent c : m_gui.dialogComponents()) {
 				c.saveSettingsTo(settings);
 			}
 
@@ -520,12 +300,10 @@ public class ScriptingNodeDialog extends NodeDialogPane
 
 		try { // some error reporting
 				// / DEBUG CODE ///
-			if (DEBUG_UI) {
+			if (ScriptingNodeDialogPane.DEBUG_UI) {
 				// rebuild panel to reflect possible changes
 				// 'hot code replaced'
-				m_editorPanel.removeAll();
-				m_dialogComponents.clear();
-				buildDialog();
+				m_gui.rebuildDialog();
 			}
 
 			m_cimService.clear();
@@ -533,20 +311,19 @@ public class ScriptingNodeDialog extends NodeDialogPane
 					m_settings.getColumnInputMapping(), m_cimService);
 
 			// load Settings for common DialogComponents
-			for (final DialogComponent c : m_dialogComponents) {
+			for (final DialogComponent c : m_gui.dialogComponents()) {
 				c.loadSettingsFrom(settings, specs);
 			}
 
 			// keep data for later use
-			m_lastDataTableSpec = specs[0];
 			m_lastCompiledModule = compile();
 
 			if (m_lastCompiledModule == null) {
 				return;
 			}
 
-			m_columnList.update(specs[0]);
-			m_columnMatchingTable.updateModel(specs[0],
+			m_gui.columnList().update(specs[0]);
+			m_gui.columnInputMatchingTable().updateModel(specs[0],
 					m_lastCompiledModule.getInfo());
 
 			// recreate autogen panel
@@ -585,21 +362,13 @@ public class ScriptingNodeDialog extends NodeDialogPane
 		final SwingInputPanel inputPanel = builder.createInputPanel();
 
 		try {
-			for (final ModuleItem<?> i : m_lastCompiledModule.getInfo()
+			for (final ModuleItem<?> input : m_lastCompiledModule.getInfo()
 					.inputs()) {
-				final String inputName = i.getName();
-
-				boolean noUI = false;
-
+				final String inputName = input.getName();
 				final ColumnToModuleItemMapping mapping = m_cimService
 						.getMappingForModuleItemName(inputName);
-				if (mapping != null) {
-					noUI = mapping.isActive();
-				} else {
-					noUI = true;
-				}
-
-				// if there is a mapping for that input, we do not require UI.
+				// is this input filled by a column mapping? Otherwise generate UI
+				final boolean noUI = (mapping != null) && mapping.isActive();
 				m_lastCompiledModule.setResolved(inputName, noUI);
 			}
 			builder.buildPanel(inputPanel, m_lastCompiledModule);
@@ -640,141 +409,10 @@ public class ScriptingNodeDialog extends NodeDialogPane
 			module.setErrorWriter(m_errorWriter);
 
 			return module;
-		} catch (final ScriptException e) {
-			// if (m_codeEditor != null) {
-			// RSyntaxTextArea textArea = m_codeEditor.getTextArea();
-			// int startIndex;
-			// try {
-			// startIndex = textArea.getLineStartOffset(e.getLineNumber())
-			// + e.getColumnNumber();
-			// textArea.getHighlighter().addHighlight(startIndex,
-			// startIndex + 3,
-			// new SquiggleUnderlineHighlightPainter(Color.RED));
-			// } catch (BadLocationException e1) {
-			// }
-			// }
-		} catch (ModuleException exc) {
-			exc.printStackTrace();
+		} catch (final ScriptException | ModuleException e) {
+			e.printStackTrace();
 		}
 		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void actionPerformed(final ActionEvent e) {
-		if (e.getActionCommand().equals(CMD_ADD)) {
-
-			ModuleItem<?> i = null;
-			try {
-				i = m_lastCompiledModule.getInfo().inputs().iterator().next();
-			} catch (final NoSuchElementException exc) {
-				getLogger().error("No input found.");
-				return;
-			}
-
-			final DataColumnSpec cs = m_lastDataTableSpec.iterator().next();
-
-			if (cs == null) {
-				getLogger().error("No column found.");
-				return;
-			}
-
-			m_columnMatchingTable.getModel().addItem(cs.getName(), i.getName());
-		}
-
-		if (e.getActionCommand().equals(CMD_REM)) {
-			final int row = m_columnMatchingTable.getSelectedRow();
-			m_columnMatchingTable.getModel().removeItem(row);
-		}
-	}
-
-	@Override
-	public void mouseClicked(final MouseEvent e) {
-		/*
-		 * Create a column input mapping on column list double click
-		 */
-		if (e.getSource() == m_columnList) {
-			// check for doubleclick
-			if (e.getClickCount() == 2) {
-				final int index = m_columnList.locationToIndex(e.getPoint());
-				if (index >= 0) {
-					final Object o = m_columnList.getModel()
-							.getElementAt(index);
-
-					if (o instanceof DataColumnSpec) {
-						// better safe than sorry, should always be the case,
-						// though
-						final DataColumnSpec cspec = (DataColumnSpec) o;
-
-						final String columnName = cspec.getName();
-						String memberName = Character.toLowerCase(
-								columnName.charAt(0)) + columnName.substring(1);
-
-						int i = 0;
-						String chosen = memberName;
-						while (m_lastCompiledModule.getInfo()
-								.getInput(chosen) != null) {
-							chosen = memberName + i;
-							++i;
-						}
-						memberName = chosen;
-
-						// get the Name of the first createable type
-						@SuppressWarnings("rawtypes")
-						final Iterator<InputAdapterPlugin> itor = m_inputAdapters
-								.getMatchingInputAdapters(cspec.getType())
-								.iterator();
-						String typeName;
-						if (itor.hasNext()) {
-							typeName = itor.next().getType().getName();
-						} else {
-							// no adapter found, error out
-							JOptionPane.showMessageDialog(null,
-									"The column you selected has a datatype which cannot be used in Scripts.",
-									"No matching adapter",
-									JOptionPane.ERROR_MESSAGE);
-							return;
-						}
-
-						// find position for inserting @Parameter declaration
-						final int pos = m_codeEditor.getCode().indexOf('{') + 1;
-						final String parameterCode = "\n\n\t@Parameter(type = ItemIO.INPUT)\n\tprivate "
-								+ typeName + " " + memberName + ";\n";
-
-						m_codeEditor.getEditorPane().insert(parameterCode, pos);
-						m_codeEditor.updateModel();
-
-						// add a mapping for the newly created parameter
-						m_columnMatchingTable.getModel().addItem(columnName,
-								memberName);
-
-						m_lastCompiledModule = compile();
-					}
-				}
-			}
-		}
-	}
-
-	@Override
-	public void mousePressed(final MouseEvent e) {
-		// unsused
-	}
-
-	@Override
-	public void mouseReleased(final MouseEvent e) {
-		// unsused
-	}
-
-	@Override
-	public void mouseEntered(final MouseEvent e) {
-		// unsused
-	}
-
-	@Override
-	public void mouseExited(final MouseEvent e) {
-		// unsused
 	}
 
 }

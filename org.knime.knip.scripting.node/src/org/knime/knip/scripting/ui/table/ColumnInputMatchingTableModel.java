@@ -49,7 +49,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 
 		fireTableDataChanged();
 	}
-
+	
 	@Override
 	public int getRowCount() {
 		return m_mappingsList.size();

@@ -80,7 +80,7 @@ public class ScriptingNodeDialogPane {
 		/* one time setup of some components */
 		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 
-		m_listener = new ScriptingNodeDialogListener(this, logger);
+		m_listener = new ScriptingNodeDialogListener(this, logger); // TODO move outside.
 	}
 
 	/* utility functions for creating GridBagConstraints */
@@ -305,7 +305,7 @@ public class ScriptingNodeDialogPane {
 	 */
 	public void setContext(Context context) {
 		m_context = context;
-		m_context.inject(m_listener);
+		m_context.inject(m_listener); // TODO remove when listener creation is extracted from this class
 	}
 
 	/**

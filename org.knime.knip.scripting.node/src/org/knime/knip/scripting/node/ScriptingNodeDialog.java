@@ -132,8 +132,8 @@ import org.scijava.ui.swing.widget.SwingInputPanel;
  * @see ScriptingNodeModel
  * @see ScriptingNodeFactory
  */
-public class ScriptingNodeDialog extends NodeDialogPane implements
-		ActionListener, MouseListener {
+public class ScriptingNodeDialog extends NodeDialogPane
+		implements ActionListener, MouseListener {
 
 	private final ScriptingNodeSettings m_settings = new ScriptingNodeSettings();
 
@@ -165,7 +165,6 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 	@Parameter
 	private PluginService m_pluginService;
 
-	private ScriptLanguage m_scriptLanguage;
 	private ScriptEngine m_scriptEngine;
 
 	/* UI Components */
@@ -243,10 +242,11 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
-		try (final TempClassLoader tempCl = new TempClassLoader(ScriptingGateway.get().createUrlClassLoader())) {
-	
+		try (final TempClassLoader tempCl = new TempClassLoader(
+				ScriptingGateway.get().createUrlClassLoader())) {
+
 			m_context.inject(this);
-	
+
 			// Get syntax hilighting plugins
 			AbstractTokenMakerFactory tokenMakerFactory = (AbstractTokenMakerFactory) TokenMakerFactory
 					.getDefaultInstance();
@@ -259,47 +259,54 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 					getLogger().warn("Could not register " + info.getName(), t);
 				}
 			}
-	
+
 			m_columnMatchingTable = new ColumnInputMatchingTable(
 					new DataTableSpec(), null, m_context);
-	
+
 			buildDialog();
-	
-			final ScriptLanguageIndex index = m_context.getService(
-					ScriptService.class).getIndex();
-			final String[] languages = index.parallelStream().map((lang) -> {
-				System.out.println(" -- Found language: " + lang.toString());
-				return lang.toString();
-			}).toArray((length) -> {
-				return new String[length];
-			});
-	
-			if (languages.length == 0) {
-				m_langSelection.setModel(new DefaultComboBoxModel<String>(
-						new String[] { "Java" }));
-			} else {
-				m_langSelection
-						.setModel(new DefaultComboBoxModel<String>(languages));
-			}
-	
-			m_langSelection.addItemListener((event) -> {
-				m_settings.setScriptLanguageName((String) m_langSelection
-						.getSelectedItem());
-				updateScriptLanguage();
-			});
-	
-			updateScriptLanguage();
+
+			detectLanguages();
 		}
 	}
 
+	/*
+	 * Find scijava ScriptLanguage plugins and add them to the UI for the user
+	 * to select.
+	 */
+	private void detectLanguages() {
+		final ScriptLanguageIndex index = m_context
+				.getService(ScriptService.class).getIndex();
+
+		String[] languages = index.parallelStream().map((lang) -> {
+			return lang.toString();
+		}).toArray((length) -> {
+			return new String[length];
+		});
+
+		if (languages.length != 0) {
+			m_langSelection
+					.setModel(new DefaultComboBoxModel<String>(languages));
+		} /* else, stays String[]{"Java"} */
+
+		m_langSelection.addItemListener((event) -> {
+			/* Update settings and script language, if language is selected via
+			 * the combobox. */
+			m_settings.setScriptLanguageName(
+					(String) m_langSelection.getSelectedItem());
+			updateScriptLanguage();
+		});
+
+		updateScriptLanguage();
+	}
+
 	private void updateScriptLanguage() {
-		m_scriptLanguage = m_scriptService
+		final ScriptLanguage language = m_scriptService
 				.getLanguageByName((String) m_langSelection.getSelectedItem());
-		m_scriptEngine = m_scriptLanguage.getScriptEngine();
+		m_scriptEngine = language.getScriptEngine();
 
 		// hack to set language of the EditorPane: TODO Fix in imagej-ui-swing!
 		m_codeEditor.getEditorPane().setFileName(
-				new File("." + m_scriptLanguage.getExtensions().get(0)));
+				new File("." + language.getExtensions().get(0)));
 	}
 
 	/* utility functions for creating GridBagConstraints */
@@ -359,7 +366,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		final GridBagConstraints gbc_lbl_cim = createGBC(1, 2, 1, 1, EAST,
 				FILL_NONE);
 
-		final GridBagConstraints gbc_ls = createGBC(3, 0, 2, 1, EAST, FILL_HORI);
+		final GridBagConstraints gbc_ls = createGBC(3, 0, 2, 1, EAST,
+				FILL_HORI);
 		gbc_ls.insets = new Insets(3, 3, 3, 0);
 
 		final GridBagConstraints gbc_ep = createGBC(0, 1, 5, 1,
@@ -402,8 +410,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 		// make sure cell editing stops before rows are removed
 		m_columnMatchingTable.putClientProperty("terminateEditOnFocusLost",
 				Boolean.TRUE);
-		m_columnMatchingTable.setPreferredScrollableViewportSize(new Dimension(
-				100, 150));
+		m_columnMatchingTable
+				.setPreferredScrollableViewportSize(new Dimension(100, 150));
 		m_editorPanel.add(scrollPane, gbc_cim);
 
 		/*
@@ -612,9 +620,9 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 				commandClass = ScriptingNodeModel.compile(m_scriptService,
 						m_settings.getScriptCode(),
 						m_settings.getScriptLanguageName());
-				return m_commandService.getModuleService().createModule(
-						new CommandInfo(commandClass, commandClass
-								.getAnnotation(Plugin.class)));
+				return m_commandService.getModuleService()
+						.createModule(new CommandInfo(commandClass,
+								commandClass.getAnnotation(Plugin.class)));
 			}
 
 			// create script module for execution
@@ -624,8 +632,8 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 			m_context.inject(module);
 
 			// use the currently selected language to execute the script
-			module.setLanguage(m_scriptService.getLanguageByName(m_settings
-					.getScriptLanguageName()));
+			module.setLanguage(m_scriptService
+					.getLanguageByName(m_settings.getScriptLanguageName()));
 
 			// map stdout and stderr to the UI
 			module.setOutputWriter(m_outputWriter);
@@ -701,12 +709,13 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 						final DataColumnSpec cspec = (DataColumnSpec) o;
 
 						final String columnName = cspec.getName();
-						String memberName = Character.toLowerCase(columnName
-								.charAt(0)) + columnName.substring(1);
+						String memberName = Character.toLowerCase(
+								columnName.charAt(0)) + columnName.substring(1);
 
 						int i = 0;
 						String chosen = memberName;
-						while (m_lastCompiledModule.getInfo().getInput(chosen) != null) {
+						while (m_lastCompiledModule.getInfo()
+								.getInput(chosen) != null) {
 							chosen = memberName + i;
 							++i;
 						}
@@ -722,12 +731,10 @@ public class ScriptingNodeDialog extends NodeDialogPane implements
 							typeName = itor.next().getType().getName();
 						} else {
 							// no adapter found, error out
-							JOptionPane
-									.showMessageDialog(
-											null,
-											"The column you selected has a datatype which cannot be used in Scripts.",
-											"No matching adapter",
-											JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(null,
+									"The column you selected has a datatype which cannot be used in Scripts.",
+									"No matching adapter",
+									JOptionPane.ERROR_MESSAGE);
 							return;
 						}
 

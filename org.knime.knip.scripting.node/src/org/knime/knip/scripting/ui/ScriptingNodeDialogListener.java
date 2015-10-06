@@ -11,7 +11,7 @@ import javax.swing.JOptionPane;
 
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.node.NodeLogger;
-import org.knime.knip.scijava.commands.adapter.InputAdapterPlugin;
+import org.knime.knip.scijava.commands.adapter.InputAdapter;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.scijava.Context;
 import org.scijava.module.ModuleItem;
@@ -105,7 +105,7 @@ public class ScriptingNodeDialogListener
 
 				// get the Name of the first createable type
 				@SuppressWarnings("rawtypes")
-				final Iterator<InputAdapterPlugin> itor = m_inputAdapters
+				final Iterator<InputAdapter> itor = m_inputAdapters
 						.getMatchingInputAdapters(cspec.getType()).iterator();
 				String typeName;
 				if (itor.hasNext()) {

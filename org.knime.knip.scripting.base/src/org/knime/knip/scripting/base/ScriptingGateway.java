@@ -1,23 +1,19 @@
 package org.knime.knip.scripting.base;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 
-import net.imagej.ui.swing.script.LanguageSupportService;
-
 import org.knime.knip.scijava.commands.KnimeExecutionService;
+import org.knime.knip.scijava.commands.KnimeInputDataTableService;
+import org.knime.knip.scijava.commands.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
-import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
-import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
-import org.knime.knip.scijava.commands.widget.impl.KnimeWidgetService;
+import org.knime.knip.scijava.commands.widget.KnimeWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
 import org.scijava.Context;
@@ -30,11 +26,12 @@ import org.scijava.plugin.PluginService;
 import org.scijava.plugins.scripting.java.DefaultJavaService;
 import org.scijava.prefs.PrefService;
 import org.scijava.script.ScriptHeaderService;
-import org.scijava.script.ScriptLanguageIndex;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
 import org.scijava.ui.UIService;
 import org.scijava.widget.DefaultWidgetService;
+
+import net.imagej.ui.swing.script.LanguageSupportService;
 
 /**
  * ScriptingGateway is a singleton class which creates the scijava contexts for

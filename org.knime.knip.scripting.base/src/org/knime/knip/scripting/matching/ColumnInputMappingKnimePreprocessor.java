@@ -3,10 +3,10 @@ package org.knime.knip.scripting.matching;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.knip.scijava.commands.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.KnimePreprocessor;
 import org.knime.knip.scijava.commands.adapter.InputAdapter;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
-import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
 import org.scijava.Priority;
 import org.scijava.log.LogService;
 import org.scijava.module.Module;
@@ -102,7 +102,7 @@ public class ColumnInputMappingKnimePreprocessor extends
 				}
 
 				// set the input and mark resolved
-				module.setInput(inputName, ia.getValue(cell));
+				module.setInput(inputName, ia.convert(cell, i.getType()));
 				module.setResolved(inputName, true);
 			} else {
 				// Often this is not intended, so we should inform about this

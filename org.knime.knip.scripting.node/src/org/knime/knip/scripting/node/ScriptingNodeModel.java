@@ -10,9 +10,11 @@ import java.util.List;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -23,11 +25,11 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.util.FileUtil;
+import org.knime.knip.scijava.commands.DefaultKnimeExecutionService;
+import org.knime.knip.scijava.commands.KnimeInputDataTableService;
+import org.knime.knip.scijava.commands.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapter;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
-import org.knime.knip.scijava.commands.impl.DefaultKnimeExecutionService;
-import org.knime.knip.scijava.commands.impl.KnimeInputDataTableService;
-import org.knime.knip.scijava.commands.impl.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
@@ -46,7 +48,6 @@ import org.scijava.plugin.Plugin;
 import org.scijava.plugins.scripting.java.JavaEngine;
 import org.scijava.plugins.scripting.java.JavaService;
 import org.scijava.script.ScriptLanguage;
-import org.scijava.script.ScriptModule;
 import org.scijava.script.ScriptService;
 
 /**
@@ -129,7 +130,6 @@ public class ScriptingNodeModel extends NodeModel {
 	/* DataTableSpec of the output data table, created from module outputs */
 	private DataTableSpec[] m_outSpec;
 
-	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
 			throws InvalidSettingsException {
@@ -153,14 +153,14 @@ public class ScriptingNodeModel extends NodeModel {
 		// create a output data table spec for every module output that can be
 		// adapted.
 		for (final ModuleItem<?> output : m_moduleInfo.outputs()) {
-			final OutputAdapter oa = outAdapters
+			final OutputAdapter<?, ? extends DataCell> oa = outAdapters
 					.getMatchingOutputAdapter(output.getType());
 
 			if (oa != null) {
 				// there is a adapter to convert the contents of "output",
 				// a column will be created which will contain its contents
 				columnSpecs.add(new DataColumnSpecCreator(output.getName(),
-						oa.getDataCellType()).createSpec());
+						DataType.getType(oa.getOutputType())).createSpec());
 			}
 		}
 		// create output table specs from column specs
@@ -235,7 +235,7 @@ public class ScriptingNodeModel extends NodeModel {
 				m_commandService.run((CommandInfo)m_moduleInfo, true);
 				m_outService.appendRow();
 			}
-		} catch (final Exception e) {
+		} catch (final Throwable e) {
 			e.printStackTrace();
 			System.out.println(e);
 		}
@@ -309,21 +309,14 @@ public class ScriptingNodeModel extends NodeModel {
 				exc.printStackTrace();
 			}
 
-			// // compile to work with script-dependent settings
-			// try {
-			// // check if the code compiles
-			// if (m_scriptEngine instanceof JavaEngine) {
-			// m_commandClass = compile(m_scriptService,
-			// m_settings.getScriptCode(),
-			// m_settings.getScriptLanguageName());
-			// }
-			// } catch (final ScriptException e) {
-			// m_commandClass = null;
-			// e.printStackTrace(); // TODO
-			// return;
-			// }
+			try {
+				m_moduleInfo = compile(m_scriptService, m_settings.getScriptCode(), m_settings.getScriptLanguageName());
+			} catch (NullPointerException | ScriptException e1) {
+				e1.printStackTrace();
+			}
 
 			if (m_moduleInfo == null) {
+				getLogger().info("Code did not compile, failed to load all settings.");
 				return;
 			}
 

@@ -47,5 +47,4 @@ Export-Package: net.imagej.ui.swing.script,
  org.fife.ui.rsyntaxtextarea,
  org.fife.ui.rtextarea,
  org.knime.knip.scripting.base,
- org.knime.knip.scripting.java,
- org.knime.knip.scripting.matching
+ org.knime.knip.scripting.java

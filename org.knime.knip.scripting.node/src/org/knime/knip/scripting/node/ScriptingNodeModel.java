@@ -30,12 +30,12 @@ import org.knime.knip.scijava.commands.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapter;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMapping;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingService;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingUtil;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
-import org.knime.knip.scripting.matching.Util;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
@@ -349,14 +349,14 @@ public class ScriptingNodeModel extends NodeModel {
 
 			// load column input mappings
 			m_cimService.clear();
-			Util.fillColumnToModuleItemMappingService(
+			ColumnToModuleItemMappingUtil.fillColumnToModuleItemMappingService(
 					m_settings.getColumnInputMapping(), m_cimService);
 		}
 	}
 
 	@Override
 	protected void saveSettingsTo(final NodeSettingsWO settings) {
-		Util.fillStringArraySettingsModel(m_cimService,
+		ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(m_cimService,
 				m_settings.columnInputMappingModel());
 
 		m_settings.saveSettingsTo(settings);

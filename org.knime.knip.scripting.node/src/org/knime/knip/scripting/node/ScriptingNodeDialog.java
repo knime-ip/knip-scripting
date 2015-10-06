@@ -69,12 +69,12 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMapping;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingService;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingUtil;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
-import org.knime.knip.scripting.matching.Util;
 import org.knime.knip.scripting.ui.ScriptingNodeDialogListener;
 import org.knime.knip.scripting.ui.ScriptingNodeDialogPane;
 import org.scijava.Context;
@@ -265,7 +265,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 	protected void saveSettingsTo(final NodeSettingsWO settings)
 			throws InvalidSettingsException {
 		try {
-			Util.fillStringArraySettingsModel(m_cimService,
+			ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(m_cimService,
 					m_settings.columnInputMappingModel());
 
 			for (final DialogComponent c : m_gui.dialogComponents()) {
@@ -311,7 +311,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 			}
 
 			m_cimService.clear();
-			Util.fillColumnToModuleItemMappingService(
+			ColumnToModuleItemMappingUtil.fillColumnToModuleItemMappingService(
 					m_settings.getColumnInputMapping(), m_cimService);
 
 			// load Settings for common DialogComponents

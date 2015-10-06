@@ -4,8 +4,8 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.knime.knip.scripting.matching.ColumnToModuleItemMapping;
-import org.knime.knip.scripting.matching.ColumnToModuleItemMappingService;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMapping;
+import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingService;
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 

@@ -36,15 +36,21 @@ public class ColumnInputMatchingTable extends JTable {
 	 *            ScijavaContext to get Services from
 	 */
 	public ColumnInputMatchingTable(final DataTableSpec spec,
-			final ModuleInfo info, final Context context) {
-		super(new ColumnInputMatchingTableModel(context));
-
-		context.inject(this);
+			final ModuleInfo info) {
+		super(new ColumnInputMatchingTableModel());
 
 		m_spec = spec;
 		m_info = info;
 
 		updateModel(spec, info);
+	}
+	
+	/**
+	 * Set Scijava context to update the table model.
+	 * @param context The Scijava context
+	 */
+	public void setContext(final Context context) {
+		getModel().setContext(context);
 	}
 
 	/**

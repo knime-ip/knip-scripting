@@ -36,8 +36,7 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	 * @param sm
 	 *            {@link SettingsModelString} of the code to edit
 	 */
-	public CodeEditorDialogComponent(final Context context,
-			final SettingsModelString sm) {
+	public CodeEditorDialogComponent(final SettingsModelString sm) {
 		super(sm);
 
 		m_codeModel = sm;
@@ -62,8 +61,6 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 				m_textArea.setVisible(true);
 			}
 		});
-		
-		context.inject(m_textArea);
 	}
 
 	@Override
@@ -123,5 +120,13 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	 */
 	public void updateModel() {
 		m_codeModel.setStringValue(m_textArea.getText());
+	}
+	
+	/**
+	 * Set the Scijava Context to use for the {@link EditorPane}.
+	 * @param context The Scijava context
+	 */
+	public void setContext(final Context context) {
+		context.inject(m_textArea);
 	}
 }

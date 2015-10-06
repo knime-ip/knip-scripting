@@ -38,18 +38,38 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	// read.
 	private List<ColumnToModuleItemMapping> m_mappingsList;
 
-	public ColumnInputMatchingTableModel(final Context context) {
-		context.inject(this);
+	/**
+	 * Constructor.
+	 */
+	public ColumnInputMatchingTableModel() {
 		updateModel();
 	}
 
+	/**
+	 * Fill parameters injected via a Scijava Context.
+	 * 
+	 * @param context
+	 *            The scijava context
+	 */
+	public void setContext(Context context) {
+		context.inject(this);
+	}
+
+	/**
+	 * Update the table modle to the contents of the column input mapping
+	 * service.
+	 */
 	public void updateModel() {
+		if (m_cimService == null) {
+			return;
+		}
+
 		// reference should stay valid as long as m_cimService exists
 		m_mappingsList = m_cimService.getMappingsList();
 
 		fireTableDataChanged();
 	}
-	
+
 	@Override
 	public int getRowCount() {
 		return m_mappingsList.size();

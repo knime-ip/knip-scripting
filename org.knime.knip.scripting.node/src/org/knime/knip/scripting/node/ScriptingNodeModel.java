@@ -3,6 +3,8 @@ package org.knime.knip.scripting.node;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,7 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -39,15 +42,17 @@ import org.knime.knip.scripting.base.ScriptingGateway;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
-import org.scijava.command.CommandService;
 import org.scijava.module.ModuleInfo;
 import org.scijava.module.ModuleItem;
+import org.scijava.module.ModuleService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugins.scripting.java.JavaEngine;
 import org.scijava.plugins.scripting.java.JavaService;
+import org.scijava.script.ScriptInfo;
 import org.scijava.script.ScriptLanguage;
+import org.scijava.script.ScriptModule;
 import org.scijava.script.ScriptService;
 
 /**
@@ -78,9 +83,9 @@ public class ScriptingNodeModel extends NodeModel {
 	/* java services run compiled java scripts and commands */
 	@Parameter
 	private JavaService m_javaRunner;
-	/* service responsible for creating command modules */
+	/* service responsible for running modules */
 	@Parameter
-	private CommandService m_commandService;
+	private ModuleService m_moduleService;
 	/* Service for passing DataTables as input to commands */
 	@Parameter
 	private KnimeInputDataTableService m_inService;
@@ -110,6 +115,11 @@ public class ScriptingNodeModel extends NodeModel {
 	/* Current compiled command and its command info */
 	private ModuleInfo m_moduleInfo;
 
+	private final File m_tempDir;
+	
+	private final Writer m_errorWriter = new StringWriter();
+	private final Writer m_outputWriter = new StringWriter();
+
 	/**
 	 * Constructor. Should only be called by {@link ScriptingNodeFactory}.
 	 *
@@ -125,6 +135,21 @@ public class ScriptingNodeModel extends NodeModel {
 
 		// populate @Parameter members
 		m_context.inject(this);
+
+		File dir = null;
+		try {
+			dir = FileUtil
+					.createTempDir("ScriptingNode" + m_settings.getNodeId());
+		} catch (IOException e) {
+			getLogger().error(
+					"Could not create temporary directory for Scripting Node.");
+		}
+		m_tempDir = dir;
+		
+		NodeLogger.addKNIMEConsoleWriter(m_errorWriter, NodeLogger.LEVEL.WARN,
+				NodeLogger.LEVEL.ERROR);
+		NodeLogger.addKNIMEConsoleWriter(m_outputWriter, NodeLogger.LEVEL.INFO,
+				NodeLogger.LEVEL.DEBUG);
 	}
 
 	/* DataTableSpec of the output data table, created from module outputs */
@@ -143,7 +168,8 @@ public class ScriptingNodeModel extends NodeModel {
 		final List<DataColumnSpec> columnSpecs = new ArrayList<DataColumnSpec>();
 
 		try {
-			m_moduleInfo = (CommandInfo) compile(m_scriptService, m_settings.getScriptCode(),
+			m_moduleInfo = (CommandInfo) compile(m_scriptService,
+					m_settings.getScriptCode(),
 					m_settings.getScriptLanguageName());
 		} catch (NullPointerException | ScriptException e) {
 			e.printStackTrace();
@@ -177,8 +203,8 @@ public class ScriptingNodeModel extends NodeModel {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ModuleInfo compile(ScriptService scriptService, final String code,
-			final String languageName)
+	public static ModuleInfo compile(ScriptService scriptService,
+			final String code, final String languageName)
 					throws ScriptException, NullPointerException {
 
 		// This is required for the compiler to find classes on classpath
@@ -214,6 +240,23 @@ public class ScriptingNodeModel extends NodeModel {
 			throw new Exception("Code did not compile!");
 		}
 
+		final ScriptLanguage language = m_scriptService
+				.getLanguageByName(m_settings.getScriptLanguageName());
+		// create script module for execution
+		final ScriptInfo info = new ScriptInfo(m_context,
+				new File(m_tempDir, "script." + language.getExtensions().get(0))
+						.getAbsolutePath(),
+				new StringReader(m_settings.getScriptCode()));
+		final ScriptModule module = info.createModule();
+		m_context.inject(module);
+
+		// use the currently selected language to execute the script
+		module.setLanguage(language);
+
+		// map stdout and stderr to the UI
+		module.setOutputWriter(m_outputWriter);
+		module.setErrorWriter(m_errorWriter);
+
 		final BufferedDataTable inTable = inData[0];
 
 		final BufferedDataContainer container = exec
@@ -232,7 +275,7 @@ public class ScriptingNodeModel extends NodeModel {
 				exec.checkCanceled();
 
 				m_inService.next();
-				m_commandService.run((CommandInfo)m_moduleInfo, true);
+				m_moduleService.run(m_moduleInfo, true).get();
 				m_outService.appendRow();
 			}
 		} catch (final Throwable e) {
@@ -297,9 +340,7 @@ public class ScriptingNodeModel extends NodeModel {
 			}
 
 			try {
-				File tempDir = FileUtil.createTempDir(
-						"ScriptingNode" + m_settings.getNodeId());
-				File scriptFile = new File(tempDir,
+				File scriptFile = new File(m_tempDir,
 						"script." + lang.getExtensions().get(0));
 
 				Writer w = new FileWriter(scriptFile);
@@ -310,13 +351,16 @@ public class ScriptingNodeModel extends NodeModel {
 			}
 
 			try {
-				m_moduleInfo = compile(m_scriptService, m_settings.getScriptCode(), m_settings.getScriptLanguageName());
+				m_moduleInfo = compile(m_scriptService,
+						m_settings.getScriptCode(),
+						m_settings.getScriptLanguageName());
 			} catch (NullPointerException | ScriptException e1) {
 				e1.printStackTrace();
 			}
 
 			if (m_moduleInfo == null) {
-				getLogger().info("Code did not compile, failed to load all settings.");
+				getLogger().info(
+						"Code did not compile, failed to load all settings.");
 				return;
 			}
 

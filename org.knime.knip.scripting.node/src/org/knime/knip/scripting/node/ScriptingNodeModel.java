@@ -116,7 +116,7 @@ public class ScriptingNodeModel extends NodeModel {
 	private ModuleInfo m_moduleInfo;
 
 	private final File m_tempDir;
-	
+
 	private final Writer m_errorWriter = new StringWriter();
 	private final Writer m_outputWriter = new StringWriter();
 
@@ -145,7 +145,7 @@ public class ScriptingNodeModel extends NodeModel {
 					"Could not create temporary directory for Scripting Node.");
 		}
 		m_tempDir = dir;
-		
+
 		NodeLogger.addKNIMEConsoleWriter(m_errorWriter, NodeLogger.LEVEL.WARN,
 				NodeLogger.LEVEL.ERROR);
 		NodeLogger.addKNIMEConsoleWriter(m_outputWriter, NodeLogger.LEVEL.INFO,
@@ -242,6 +242,8 @@ public class ScriptingNodeModel extends NodeModel {
 
 		final ScriptLanguage language = m_scriptService
 				.getLanguageByName(m_settings.getScriptLanguageName());
+		writeScriptToFile(language);
+		
 		// create script module for execution
 		final ScriptInfo info = new ScriptInfo(m_context,
 				new File(m_tempDir, "script." + language.getExtensions().get(0))
@@ -339,16 +341,7 @@ public class ScriptingNodeModel extends NodeModel {
 				return;
 			}
 
-			try {
-				File scriptFile = new File(m_tempDir,
-						"script." + lang.getExtensions().get(0));
-
-				Writer w = new FileWriter(scriptFile);
-				w.write(m_settings.getScriptCode());
-				w.close();
-			} catch (IOException exc) {
-				exc.printStackTrace();
-			}
+			writeScriptToFile(lang);
 
 			try {
 				m_moduleInfo = compile(m_scriptService,
@@ -395,6 +388,23 @@ public class ScriptingNodeModel extends NodeModel {
 			m_cimService.clear();
 			ColumnToModuleItemMappingUtil.fillColumnToModuleItemMappingService(
 					m_settings.getColumnInputMapping(), m_cimService);
+		}
+	}
+
+	/*
+	 * Write script code from the current settings to a file in the temp
+	 * directory.
+	 */
+	private void writeScriptToFile(ScriptLanguage lang) {
+		try {
+			File scriptFile = new File(m_tempDir,
+					"script." + lang.getExtensions().get(0));
+
+			Writer w = new FileWriter(scriptFile);
+			w.write(m_settings.getScriptCode());
+			w.close();
+		} catch (IOException exc) {
+			exc.printStackTrace();
 		}
 	}
 

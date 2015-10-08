@@ -4,8 +4,8 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMapping;
-import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingService;
+import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMapping;
+import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
 
@@ -32,11 +32,11 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 6633031650341577891L;
 
 	@Parameter
-	private ColumnToModuleItemMappingService m_cimService;
+	private ColumnModuleItemMappingService m_cimService;
 
 	// reference to the m_cimServices mappings list. Should only be used for
 	// read.
-	private List<ColumnToModuleItemMapping> m_mappingsList;
+	private List<ColumnModuleItemMapping> m_mappingsList;
 
 	/**
 	 * Constructor.
@@ -110,7 +110,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 
 	/**
 	 * Add an item from the model and the underlying
-	 * {@link ColumnToModuleItemMappingService}.
+	 * {@link ColumnModuleItemMappingService}.
 	 *
 	 * @param columnName
 	 *            column name to map
@@ -134,7 +134,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 
 	/**
 	 * Remove an item from the model and the underlying
-	 * {@link ColumnToModuleItemMappingService}.
+	 * {@link ColumnModuleItemMappingService}.
 	 *
 	 * Please make sure that all cell editors cancel edit before calling this
 	 * method.

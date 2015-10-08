@@ -12,7 +12,7 @@ import org.knime.knip.scijava.commands.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.KnimeOutputDataTableService;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
-import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingService;
+import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.commands.widget.KnimeWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
@@ -73,7 +73,7 @@ public class ScriptingGateway {
 					UIService.class, OutputAdapterService.class,
 					CommandService.class, LanguageSupportService.class,
 					ScriptHeaderService.class,
-					ColumnToModuleItemMappingService.class);
+					ColumnModuleItemMappingService.class);
 
 	/**
 	 * Constructor. Only to be called from {@link #get()}.

@@ -55,6 +55,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -232,13 +234,14 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		 */
 		try (TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			final ScriptLanguageIndex index = m_context
-					.getService(ScriptService.class).getIndex();
 
-			String[] languages = index.parallelStream().map((lang) -> {
-				return lang.toString();
-			}).toArray((length) -> {
-				return new String[length];
+			Set<String> languageSet = new LinkedHashSet<>();
+			for (ScriptLanguage lang : m_context.getService(ScriptService.class)
+					.getIndex()) {
+				languageSet.add(lang.toString());
+			}
+			String[] languages = languageSet.stream().toArray(size -> {
+				return new String[size];
 			});
 
 			if (languages.length != 0) {
@@ -246,6 +249,8 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 						.setModel(new DefaultComboBoxModel<String>(languages));
 			} /* else, stays String[]{"Java"} */
 
+			m_gui.languageSelection()
+					.setSelectedItem(m_settings.getScriptLanguageName());
 			m_gui.languageSelection().addItemListener((event) -> {
 				/*
 				 * Update settings and script language, if language is selected
@@ -417,7 +422,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 			return null;
 		}
 		m_context.inject(module);
-		
+
 		module.setErrorWriter(m_errorWriter);
 		module.setOutputWriter(m_outputWriter);
 

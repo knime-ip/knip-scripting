@@ -9,8 +9,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
@@ -40,15 +40,10 @@ import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.ScriptingGateway;
 import org.scijava.Context;
-import org.scijava.command.Command;
-import org.scijava.command.CommandInfo;
-import org.scijava.module.ModuleInfo;
 import org.scijava.module.ModuleItem;
 import org.scijava.module.ModuleService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
-import org.scijava.plugins.scripting.java.JavaEngine;
 import org.scijava.plugins.scripting.java.JavaService;
 import org.scijava.script.ScriptInfo;
 import org.scijava.script.ScriptLanguage;
@@ -113,7 +108,7 @@ public class ScriptingNodeModel extends NodeModel {
 	private ScriptService m_scriptService;
 
 	/* Current compiled command and its command info */
-	private ModuleInfo m_moduleInfo;
+	private ScriptInfo m_moduleInfo;
 
 	private final File m_tempDir;
 
@@ -168,10 +163,8 @@ public class ScriptingNodeModel extends NodeModel {
 		final List<DataColumnSpec> columnSpecs = new ArrayList<DataColumnSpec>();
 
 		try {
-			m_moduleInfo = (CommandInfo) compile(m_scriptService,
-					m_settings.getScriptCode(),
-					m_settings.getScriptLanguageName());
-		} catch (NullPointerException | ScriptException e) {
+			m_moduleInfo = compile(getCurrentLanguage());
+		} catch (NullPointerException e) {
 			e.printStackTrace();
 			throw new InvalidSettingsException("Code did not compile!", e);
 		}
@@ -203,53 +196,46 @@ public class ScriptingNodeModel extends NodeModel {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static ModuleInfo compile(ScriptService scriptService,
-			final String code, final String languageName)
-					throws ScriptException, NullPointerException {
+	public ScriptInfo compile(ScriptLanguage language) {
+		writeScriptToFile(language);
 
-		// This is required for the compiler to find classes on classpath
-		// (scijava-common for example)
-		try (final TempClassLoader tempCl = new TempClassLoader(
-				ScriptingGateway.get().createUrlClassLoader())) {
-			final ScriptLanguage language = scriptService
-					.getLanguageByName(languageName);
-			if (language == null) {
-				throw new NullPointerException("Could not load language "
-						+ languageName + " for Scripting node.");
-			}
+		// create script module for execution
+		final ScriptInfo info = new ScriptInfo(m_context,
+				new File(m_tempDir, "script." + language.getExtensions().get(0))
+						.getAbsolutePath(),
+				new StringReader(m_settings.getScriptCode()));
 
-			ScriptEngine engine = language.getScriptEngine();
+		return info;
+	}
 
-			if (engine instanceof JavaEngine) {
-				Class<? extends Command> commandClass = (Class<? extends Command>) ((JavaEngine) engine)
-						.compile(code);
-
-				return new CommandInfo(commandClass,
-						commandClass.getAnnotation(Plugin.class));
-			}
-			return (ModuleInfo) engine.eval(code);
+	/**
+	 * @return The currently set language for the node
+	 */
+	protected ScriptLanguage getCurrentLanguage() {
+		final String languageName = m_settings.getScriptLanguageName();
+		final ScriptLanguage language = m_scriptService
+				.getLanguageByName(languageName);
+		if (language == null) {
+			throw new NullPointerException("Could not load language "
+					+ languageName + " for Scripting Node.");
 		}
+		return language;
 	}
 
 	@Override
 	protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
 			final ExecutionContext exec) throws Exception {
 
+		final ScriptLanguage language = getCurrentLanguage();
+
+		m_moduleInfo = compile(language);
 		// fail if the module was not compilen in configure()
 		if (m_moduleInfo == null) {
 			throw new Exception("Code did not compile!");
 		}
 
-		final ScriptLanguage language = m_scriptService
-				.getLanguageByName(m_settings.getScriptLanguageName());
-		writeScriptToFile(language);
-		
-		// create script module for execution
-		final ScriptInfo info = new ScriptInfo(m_context,
-				new File(m_tempDir, "script." + language.getExtensions().get(0))
-						.getAbsolutePath(),
-				new StringReader(m_settings.getScriptCode()));
-		final ScriptModule module = info.createModule();
+		ScriptModule module = m_moduleInfo.createModule();
+
 		m_context.inject(module);
 
 		// use the currently selected language to execute the script
@@ -275,9 +261,11 @@ public class ScriptingNodeModel extends NodeModel {
 			while (m_inService.hasNext()) {
 				// check if user canceled execution of node
 				exec.checkCanceled();
+				
+				resetModule(module);
 
 				m_inService.next();
-				m_moduleService.run(m_moduleInfo, true).get();
+				m_moduleService.run(module, true).get();
 				m_outService.appendRow();
 			}
 		} catch (final Throwable e) {
@@ -292,6 +280,20 @@ public class ScriptingNodeModel extends NodeModel {
 		m_outService.setOutputDataRow(null);
 
 		return new BufferedDataTable[] { container.getTable() };
+	}
+
+	private void resetModule(ScriptModule m) {
+		final ScriptEngine scriptEngine = m.getEngine();
+		
+		for (final String input : m.getInputs().keySet()) {
+			m.setResolved(input, false);
+		}
+		for (final String output : m.getOutputs().keySet()) {
+			m.setResolved(output, false);
+			scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).remove(output);
+		}
+		//scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+		
 	}
 
 	@Override
@@ -311,17 +313,7 @@ public class ScriptingNodeModel extends NodeModel {
 	@Override
 	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		// try {
-		// // check if the code compiles
-		// if (m_scriptEngine instanceof JavaEngine) {
-		// m_commandClass = compile(
-		// m_scriptService,
-		// settings.getString(ScriptingNodeSettings.SM_KEY_CODE),
-		// settings.getString(ScriptingNodeSettings.SM_KEY_LANGUAGE));
-		// }
-		// } catch (final ScriptException e) {
-		// m_commandClass = null;
-		// }
+		/* nothing to do */
 	}
 
 	@Override
@@ -344,11 +336,9 @@ public class ScriptingNodeModel extends NodeModel {
 			writeScriptToFile(lang);
 
 			try {
-				m_moduleInfo = compile(m_scriptService,
-						m_settings.getScriptCode(),
-						m_settings.getScriptLanguageName());
-			} catch (NullPointerException | ScriptException e1) {
-				e1.printStackTrace();
+				m_moduleInfo = compile(getCurrentLanguage());
+			} catch (NullPointerException e) {
+				e.printStackTrace();
 			}
 
 			if (m_moduleInfo == null) {
@@ -380,8 +370,7 @@ public class ScriptingNodeModel extends NodeModel {
 				m_settingsService.loadSettingsFrom(settings);
 			} catch (final InvalidSettingsException e) {
 				// this will just not work sometimes, if new compilation
-				// contains
-				// new inputs etc
+				// contains new inputs etc
 			}
 
 			// load column input mappings
@@ -414,6 +403,8 @@ public class ScriptingNodeModel extends NodeModel {
 				m_settings.columnInputMappingModel());
 
 		m_settings.saveSettingsTo(settings);
+		
+		m_settingsService.saveSettingsTo(settings);
 	}
 
 	@Override

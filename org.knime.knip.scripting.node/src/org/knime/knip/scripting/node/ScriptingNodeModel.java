@@ -1,9 +1,7 @@
 package org.knime.knip.scripting.node;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -25,7 +23,6 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.util.FileUtil;
 import org.knime.knip.scijava.commands.DefaultKnimeExecutionService;
 import org.knime.knip.scijava.commands.KnimeInputDataTableService;
 import org.knime.knip.scijava.commands.KnimeOutputDataTableService;
@@ -37,24 +34,17 @@ import org.knime.knip.scijava.commands.mapping.ColumnToModuleItemMappingUtil;
 import org.knime.knip.scijava.commands.mapping.OutputToColumnMappingService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.core.TempClassLoader;
-import org.knime.knip.scripting.base.CommandCompileProductHelper;
 import org.knime.knip.scripting.base.CompileHelper;
 import org.knime.knip.scripting.base.CompileProductHelper;
-import org.knime.knip.scripting.base.ScriptCompileProductHelper;
 import org.knime.knip.scripting.base.ScriptingGateway;
 import org.scijava.Context;
-import org.scijava.command.Command;
-import org.scijava.command.CommandInfo;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleInfo;
 import org.scijava.module.ModuleItem;
 import org.scijava.module.ModuleService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugins.scripting.java.JavaEngine;
-import org.scijava.plugins.scripting.java.JavaScriptLanguage;
 import org.scijava.plugins.scripting.java.JavaService;
-import org.scijava.script.ScriptInfo;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
 
@@ -248,10 +238,6 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 
 		Module module = m_compileProduct.createModule(language);
-
-		// map stdout and stderr to the UI
-		// module.setOutputWriter(m_outputWriter);
-		// module.setErrorWriter(m_errorWriter);
 
 		final BufferedDataTable inTable = inData[0];
 

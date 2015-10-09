@@ -80,8 +80,8 @@ public class ScriptingGateway {
 	 */
 	protected ScriptingGateway() {
 
-		m_classLoader = new ResourceAwareClassLoader(getClass()
-				.getClassLoader(), getClass());
+		m_classLoader = new ResourceAwareClassLoader(
+				getClass().getClassLoader(), getClass());
 
 		m_pluginIndex = new PluginIndex(new DefaultPluginFinder(m_classLoader));
 	}
@@ -169,6 +169,8 @@ public class ScriptingGateway {
 		return m_classLoader;
 	}
 
+	private ClassLoader m_urlClassLoader = null;
+
 	/**
 	 * Create a {@link URLClassLoader} which contains scijava plugins and
 	 * services.
@@ -176,8 +178,12 @@ public class ScriptingGateway {
 	 * @return the class laoder
 	 */
 	public ClassLoader createUrlClassLoader() {
-		return new URLClassLoader(m_classLoader.getBundleUrls().toArray(
-				new URL[] {}), getClassLoader());
+		if (m_urlClassLoader == null) {
+			m_urlClassLoader = new URLClassLoader(
+					m_classLoader.getBundleUrls().toArray(new URL[] {}),
+					getClassLoader());
+		}
+		return m_urlClassLoader;
 	}
 
 }

@@ -130,7 +130,6 @@ public class ScriptingNodeModel extends NodeModel {
 
 		// populate @Parameter members
 		m_context.inject(this);
-		
 
 		try {
 			m_compiler = new CompileHelper(m_context);
@@ -184,13 +183,6 @@ public class ScriptingNodeModel extends NodeModel {
 
 		ArrayList<DataColumnSpec> tableSpecs = new ArrayList<>();
 		for (ModuleItem<?> output : info.outputs()) {
-			ColumnModuleItemMapping mappingForModuleItem = m_ocmService
-					.getMappingForModuleItem(output);
-			if (mappingForModuleItem == null) {
-				continue;
-			}
-			final String name = mappingForModuleItem.getColumnName();
-
 			@SuppressWarnings("unchecked")
 			final OutputAdapter<?, DataCell> outputAdapter = outAdapters
 					.getMatchingOutputAdapter(output.getType());
@@ -203,7 +195,7 @@ public class ScriptingNodeModel extends NodeModel {
 				continue;
 			}
 
-			tableSpecs.add(new DataColumnSpecCreator(name, type).createSpec());
+			tableSpecs.add(new DataColumnSpecCreator(output.getName(), type).createSpec());
 		}
 
 		DataTableSpec spec = new DataTableSpec(
@@ -229,18 +221,7 @@ public class ScriptingNodeModel extends NodeModel {
 	protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
 			final ExecutionContext exec) throws Exception {
 
-		final ScriptLanguage language = getCurrentLanguage();
-
-		m_compileProduct = m_compiler.compile(m_settings.getScriptCode(), language);
-		// fail if the module was not compiled in configure()
-		if (m_compileProduct == null) {
-			throw new Exception("Code did not compile!");
-		}
-
-		Module module = m_compileProduct.createModule(language);
-
 		final BufferedDataTable inTable = inData[0];
-
 		final BufferedDataContainer container = exec
 				.createDataContainer(m_outSpec[0]);
 
@@ -249,9 +230,21 @@ public class ScriptingNodeModel extends NodeModel {
 		m_outService.setOutputContainer(container);
 		m_execService.setExecutionContex(exec);
 
-		/* compile an run script for all rows */
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
+
+			final ScriptLanguage language = getCurrentLanguage();
+
+			m_compileProduct = m_compiler.compile(m_settings.getScriptCode(),
+					language);
+			// fail if the module was not compiled in configure()
+			if (m_compileProduct == null) {
+				throw new Exception("Code did not compile!");
+			}
+
+			Module module = m_compileProduct.createModule(language);
+
+			/* compile an run script for all rows */
 			while (m_inService.hasNext()) {
 				// check if user canceled execution of node
 				exec.checkCanceled();
@@ -314,7 +307,8 @@ public class ScriptingNodeModel extends NodeModel {
 			}
 
 			try {
-				m_compileProduct = m_compiler.compile(m_settings.getScriptCode(), getCurrentLanguage());
+				m_compileProduct = m_compiler.compile(
+						m_settings.getScriptCode(), getCurrentLanguage());
 			} catch (NullPointerException | ScriptException e) {
 				e.printStackTrace();
 			}

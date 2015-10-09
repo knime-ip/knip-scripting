@@ -7,6 +7,7 @@ Bundle-Vendor: University of Konstanz
 Eclipse-RegisterBuddy: org.knime.knip.scijava.commands, org.knime.knip.base, org.knime.knip.scripting.base
 Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  scripting-java;bundle-version="0.3.3",
+ scripting-javascript;bundle-version="0.4.1",
  scripting-jython;bundle-version="0.2.2",
  org.knime.base;bundle-version="3.0.0",
  org.knime.knip.base;bundle-version="1.4.0",

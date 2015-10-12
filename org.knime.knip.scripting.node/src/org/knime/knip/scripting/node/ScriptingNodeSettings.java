@@ -7,11 +7,14 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModel;
 import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
@@ -25,13 +28,9 @@ import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
  */
 public class ScriptingNodeSettings {
 
-	public static final String SM_KEY_ID = "NodeId";
 	public static final String SM_KEY_CODE = "Code";
 	public static final String SM_KEY_LANGUAGE = "ScriptLanguage";
 	public static final String SM_KEY_INPUT_MAPPING = "ColumnInputMappings";
-
-	/* contains the nodeID. Only used during runtime. */
-	private final SettingsModelInteger m_nodeId = createIDSettingsModel();
 
 	/* contains the language to execute the script code with */
 	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
@@ -42,15 +41,7 @@ public class ScriptingNodeSettings {
 	/* contains the column to input mappings */
 	private final SettingsModelStringArray m_columnInputMappingSettingsModel = createColumnInputMappingSettingsModel();
 
-	/**
-	 * Create a SettingsModel for the unique ID of this NodeModel.
-	 *
-	 * @return the SettingsModelInteger which refers to the ID of this
-	 *         NodeModel.
-	 */
-	public static SettingsModelInteger createIDSettingsModel() {
-		return new SettingsModelInteger(SM_KEY_ID, -1);
-	}
+	private final Map<String, SettingsModel> m_otherSettings = new HashMap<String, SettingsModel>();
 
 	/**
 	 * Create Code SettingsModel with some default example code.
@@ -58,9 +49,8 @@ public class ScriptingNodeSettings {
 	 * @return SettignsModel for the script code
 	 */
 	public static SettingsModelString createCodeSettingsModel() {
-		return new SettingsModelString(
-				SM_KEY_CODE,
-				fileAsString("platform:/plugin/org.knime.knip.scripting.node/res/DefaultScript.txt"));
+		return new SettingsModelString(SM_KEY_CODE, fileAsString(
+				"platform:/plugin/org.knime.knip.scripting.node/res/DefaultScript.txt"));
 	}
 
 	/**
@@ -92,7 +82,8 @@ public class ScriptingNodeSettings {
 	protected static String fileAsString(final String path) {
 		try {
 			URL resolvedUrl = FileLocator.resolve(new URL(path));
-			byte[] bytes = Files.readAllBytes(Paths.get(new URI(resolvedUrl.toString().replace(" ", "%20"))));
+			byte[] bytes = Files.readAllBytes(Paths
+					.get(new URI(resolvedUrl.toString().replace(" ", "%20"))));
 			return new String(bytes, Charset.defaultCharset());
 		} catch (final URISyntaxException e) {
 			e.printStackTrace();
@@ -103,13 +94,6 @@ public class ScriptingNodeSettings {
 	}
 
 	// ---- getters -----
-
-	/**
-	 * @return value of setting with key {@link #SM_KEY_ID}.
-	 */
-	public int getNodeId() {
-		return m_nodeId.getIntValue();
-	}
 
 	/**
 	 * @return value of setting with key {@link #SM_KEY_LANGUAGE}.
@@ -135,13 +119,6 @@ public class ScriptingNodeSettings {
 	// ---- access to models ----
 
 	/**
-	 * @return model with key {@link #SM_KEY_ID}.
-	 */
-	public SettingsModelInteger nodeIdModel() {
-		return m_nodeId;
-	}
-
-	/**
 	 * @return model with key {@link #SM_KEY_LANGUAGE}.
 	 */
 	public SettingsModelString scriptLanguageNameModel() {
@@ -163,14 +140,6 @@ public class ScriptingNodeSettings {
 	}
 
 	// ---- setters ----
-
-	/**
-	 * @param id
-	 *            value to set for setting with key {@link #SM_KEY_ID}.
-	 */
-	public void setNodeId(int id) {
-		m_nodeId.setIntValue(id);
-	}
 
 	/**
 	 * @param name
@@ -197,18 +166,34 @@ public class ScriptingNodeSettings {
 		m_columnInputMappingSettingsModel.setStringArrayValue(mapping);
 	}
 
+	public Map<String, SettingsModel> otherSettings() {
+		return m_otherSettings;
+	}
+
 	// ---- loading / saving ----
 
+	/**
+	 * Save settings to <code>settings</code>. "other settings" are <b>not
+	 * loaded!</b>
+	 * 
+	 * @param settings
+	 * @throws InvalidSettingsException
+	 */
 	public void saveSettingsTo(NodeSettingsWO settings) {
-		m_nodeId.saveSettingsTo(settings);
 		m_scriptLanguageModel.saveSettingsTo(settings);
 		m_codeModel.saveSettingsTo(settings);
 		m_columnInputMappingSettingsModel.saveSettingsTo(settings);
 	}
 
+	/**
+	 * Save settings to <code>settings</code>. "other settings" are <b>not
+	 * saved!</b>
+	 * 
+	 * @param settings
+	 * @throws InvalidSettingsException
+	 */
 	public void loadSettingsFrom(NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		m_nodeId.loadSettingsFrom(settings);
 		m_scriptLanguageModel.loadSettingsFrom(settings);
 		m_codeModel.loadSettingsFrom(settings);
 		m_columnInputMappingSettingsModel.loadSettingsFrom(settings);

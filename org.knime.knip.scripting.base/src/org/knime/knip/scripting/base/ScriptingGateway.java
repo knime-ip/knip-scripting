@@ -7,15 +7,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.knime.knip.scijava.commands.KnimeExecutionService;
-import org.knime.knip.scijava.commands.KnimeInputDataTableService;
-import org.knime.knip.scijava.commands.KnimeOutputDataTableService;
+import org.knime.knip.scijava.commands.KNIMEExecutionService;
+import org.knime.knip.scijava.commands.KNIMEInputDataTableService;
+import org.knime.knip.scijava.commands.KNIMEOutputDataTableService;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
 import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.commands.widget.KnimeWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
+import org.knime.knip.scijava.core.pluginindex.ReusablePluginIndex;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.DisplayPostprocessor;
@@ -59,15 +60,12 @@ public class ScriptingGateway {
 	 */
 	protected PluginIndex m_pluginIndex = null;
 
-	/** {@link Context} for id */
-	protected ArrayList<WeakReference<Context>> m_contexts = new ArrayList<WeakReference<Context>>();
-
 	/** a list of services which need to be present in newly created contexts */
 	protected static List<Class<? extends Service>> requiredServices = Arrays
 			.<Class<? extends Service>> asList(ScriptService.class,
-					DefaultJavaService.class, KnimeInputDataTableService.class,
-					KnimeOutputDataTableService.class, PrefService.class,
-					KnimeExecutionService.class, NodeSettingsService.class,
+					DefaultJavaService.class, KNIMEInputDataTableService.class,
+					KNIMEOutputDataTableService.class, PrefService.class,
+					KNIMEExecutionService.class, NodeSettingsService.class,
 					ObjectService.class, DefaultWidgetService.class,
 					KnimeWidgetService.class, InputAdapterService.class,
 					UIService.class, OutputAdapterService.class,
@@ -83,23 +81,8 @@ public class ScriptingGateway {
 		m_classLoader = new ResourceAwareClassLoader(
 				getClass().getClassLoader(), getClass());
 
-		m_pluginIndex = new PluginIndex(new DefaultPluginFinder(m_classLoader));
-	}
-
-	/**
-	 * Return a new {@link Context} with the required Services and custom
-	 * plugins.
-	 *
-	 * @return the created context
-	 */
-	protected Context createNewContext() {
-		final Context context = new Context(requiredServices, m_pluginIndex);
-
-		/* Make sure custom plugins have been added */
-		final PluginService plugins = context.getService(PluginService.class);
-		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
-
-		return context;
+		m_pluginIndex = new ReusablePluginIndex(
+				new DefaultPluginFinder(m_classLoader));
 	}
 
 	/**
@@ -107,7 +90,7 @@ public class ScriptingGateway {
 	 *
 	 * @return the singletons instance
 	 */
-	public static ScriptingGateway get() {
+	public static synchronized ScriptingGateway get() {
 		if (m_instance == null) {
 			m_instance = new ScriptingGateway();
 		}
@@ -116,48 +99,19 @@ public class ScriptingGateway {
 	}
 
 	/**
-	 * Get a scijava {@link Context} for the given id. The
-	 * {@link ScriptingGateway} does keep a strong reference to the Context, the
-	 * returned reference needs to be referenced by the caller, otherwise a new
-	 * Context will be created every call.
-	 *
-	 * @param id
-	 *            ID of the context to get
-	 * @return if id is valid (positive integer), a context will be returned
-	 *         which may have been newly created, if none existed for id yet.
-	 *         Otherwise returns null
+	 * Create a new Scijava {@link Context} with Services required for the
+	 * ScriptingNode.
+	 * 
+	 * @return the created context
 	 */
-	public Context getContext(final int id) {
-		if (id < 0) {
-			// invalid id
-			return null;
-		}
+	public Context createContext() {
+		final Context context = new Context(requiredServices, m_pluginIndex);
 
-		Context c = null;
+		/* Make sure custom plugins have been added */
+		final PluginService plugins = context.getService(PluginService.class);
+		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
 
-		// check if index is in bounds
-		if (id < m_contexts.size()) {
-			c = m_contexts.get(id).get();
-		} else {
-			// we will need to expand m_contexts size
-
-			// expand capacity first for faster adding later
-			m_contexts.ensureCapacity(id + 1);
-
-			// expand size of m_contexts with null objects
-			for (int i = (id - m_contexts.size() + 1); i > 0; --i) {
-				m_contexts.add(null);
-			}
-		}
-
-		if (c == null) {
-			// context for this id does not exist yet. Create a new one:
-			c = createNewContext();
-			// and set the ids context
-			m_contexts.set(id, new WeakReference<>(c));
-		}
-
-		return c;
+		return context;
 	}
 
 	/**

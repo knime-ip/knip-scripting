@@ -761,4 +761,22 @@ propagated with or for interoperation with KNIME.
          install-size="0"
          version="0.0.0"/>
 
+
+   <plugin
+         id="jython-shaded"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="scripting-python"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="scripting-java"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
 </feature>

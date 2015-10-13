@@ -1,5 +1,7 @@
 package org.knime.knip.scripting.parameters;
 
+import org.knime.knip.scripting.util.ClassUtils;
+
 /**
  * Code snippet generator for input parameters using the notation using in
  * comments for Javascript or Python for example.
@@ -12,7 +14,9 @@ public abstract class CommentBasedParameterCodeGenerator
 	@Override
 	public final String generateInputParameter(String code, String memberName,
 			Class<?> type) {
-		final String typeName = type.getName();
+		final String typeName = (ClassUtils.isPrimitiveOrWrapper(type)
+				|| type == String.class) ? type.getSimpleName()
+						: type.getName();
 
 		return getCommentString() + " @INPUT " + typeName + " " + memberName
 				+ "\n";

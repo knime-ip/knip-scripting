@@ -77,7 +77,6 @@ public class ScriptingGateway {
 	 * Constructor. Only to be called from {@link #get()}.
 	 */
 	protected ScriptingGateway() {
-
 		m_classLoader = new ResourceAwareClassLoader(
 				getClass().getClassLoader(), getClass());
 
@@ -132,10 +131,12 @@ public class ScriptingGateway {
 	 * @return the class laoder
 	 */
 	public ClassLoader createUrlClassLoader() {
+
 		if (m_urlClassLoader == null) {
 			m_urlClassLoader = new URLClassLoader(
 					m_classLoader.getBundleUrls().toArray(new URL[] {}),
-					getClassLoader());
+					new JoinClassLoader(getClassLoader(),
+							Thread.currentThread().getContextClassLoader()));
 		}
 		return m_urlClassLoader;
 	}

@@ -13,9 +13,15 @@ import org.knime.core.data.DataColumnSpec;
 import org.knime.core.node.NodeLogger;
 import org.knime.knip.scijava.commands.adapter.InputAdapter;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
+import org.knime.knip.scripting.node.ScriptingNodeSettings;
+import org.knime.knip.scripting.parameters.ParameterCodeGenerator;
+import org.knime.knip.scripting.parameters.ParameterCodeGeneratorService;
+import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.module.ModuleItem;
 import org.scijava.plugin.Parameter;
+import org.scijava.script.ScriptLanguage;
+import org.scijava.script.ScriptService;
 
 /**
  * Listener for the ScriptingNode dialog user interface.
@@ -25,15 +31,21 @@ import org.scijava.plugin.Parameter;
  * @author Jonathan Hale
  *
  */
-public class ScriptingNodeDialogListener
+public class ScriptingNodeDialogListener extends AbstractContextual
 		implements ActionListener, MouseListener {
 
 	private final ScriptingNodeDialogPane m_gui;
+	
+	private final ScriptingNodeSettings m_settings;
 
 	@Parameter
-	Context context;
+	private Context context;
 	@Parameter
 	private InputAdapterService m_inputAdapters;
+	@Parameter
+	private ScriptService m_scriptService;
+	@Parameter
+	private ParameterCodeGeneratorService m_parameterGenerators;
 
 	// ActionCommands for removing and adding column/input matchings
 	public final static String CMD_ADD = "add";
@@ -54,9 +66,10 @@ public class ScriptingNodeDialogListener
 	 *            NodeLogger to output messages to
 	 */
 	public ScriptingNodeDialogListener(ScriptingNodeDialogPane gui,
-			NodeLogger logger) {
+			NodeLogger logger, ScriptingNodeSettings settings) {
 		m_gui = gui;
 		m_logger = logger;
+		m_settings = settings;
 	}
 
 	@Override
@@ -107,9 +120,9 @@ public class ScriptingNodeDialogListener
 				@SuppressWarnings("rawtypes")
 				final Iterator<InputAdapter> itor = m_inputAdapters
 						.getMatchingInputAdapters(cspec.getType()).iterator();
-				String typeName;
+				final Class<?> type;
 				if (itor.hasNext()) {
-					typeName = itor.next().getType().getName();
+					type = itor.next().getOutputType();
 				} else {
 					// no adapter found, error out
 					JOptionPane.showMessageDialog(null,
@@ -119,10 +132,21 @@ public class ScriptingNodeDialogListener
 					return;
 				}
 
+				final ScriptLanguage currentLanguage = m_scriptService
+						.getLanguageByName(m_settings.getScriptLanguageName());
+				ParameterCodeGenerator generator = m_parameterGenerators
+						.getGeneratorForLanguage(currentLanguage);
+				
+				if (generator == null) {
+					m_logger.error("No way of generating input parameter code for language \"" + m_settings.getScriptLanguageName() + "\".");
+				}
+
 				// find position for inserting @Parameter declaration
-				final int pos = m_gui.codeEditor().getCode().indexOf('{') + 1;
-				final String parameterCode = "\n\n\t@Parameter(type = ItemIO.INPUT)\n\tprivate "
-						+ typeName + " " + memberName + ";\n";
+				final String code = m_gui.codeEditor().getCode();
+				final int pos = generator.getPosition(code);
+
+				final String parameterCode = generator
+						.generateInputParameter(code, memberName, type);
 
 				m_gui.codeEditor().getEditorPane().insert(parameterCode, pos);
 				m_gui.codeEditor().updateModel();

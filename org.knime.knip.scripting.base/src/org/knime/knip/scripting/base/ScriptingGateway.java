@@ -3,7 +3,6 @@ package org.knime.knip.scripting.base;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +16,7 @@ import org.knime.knip.scijava.commands.settings.NodeSettingsService;
 import org.knime.knip.scijava.commands.widget.KnimeWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scijava.core.pluginindex.ReusablePluginIndex;
+import org.knime.knip.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.DisplayPostprocessor;
@@ -70,7 +70,7 @@ public class ScriptingGateway {
 					KnimeWidgetService.class, InputAdapterService.class,
 					UIService.class, OutputAdapterService.class,
 					CommandService.class, LanguageSupportService.class,
-					ScriptHeaderService.class,
+					ScriptHeaderService.class, ParameterCodeGeneratorService.class,
 					ColumnModuleItemMappingService.class);
 
 	/**

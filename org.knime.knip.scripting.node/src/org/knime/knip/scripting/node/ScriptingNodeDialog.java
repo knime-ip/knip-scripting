@@ -192,8 +192,8 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 				}
 			}
 
-			m_listener = new ScriptingNodeDialogListener(m_gui, getLogger());
-			m_context.inject(m_listener);
+			m_listener = new ScriptingNodeDialogListener(m_gui, getLogger(), m_settings);
+			m_listener.setContext(m_context);
 			m_gui.setContext(m_context);
 			m_gui.addListener(m_listener);
 		}

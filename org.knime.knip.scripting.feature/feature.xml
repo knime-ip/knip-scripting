@@ -756,7 +756,7 @@ propagated with or for interoperation with KNIME.
    </requires>
 
    <plugin
-         id="org.knime.knip.scripting.base"
+         id="org.knime.knip.scripting"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

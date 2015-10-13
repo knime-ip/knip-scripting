@@ -104,8 +104,8 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 				final DataColumnSpec cspec = (DataColumnSpec) o;
 
 				final String columnName = cspec.getName();
-				String memberName = Character.toLowerCase(columnName.charAt(0))
-						+ columnName.substring(1);
+				String memberName = removeIntegers(Character.toLowerCase(columnName.charAt(0))
+						+ columnName.substring(1));
 
 				int i = 0;
 				String chosen = memberName;
@@ -156,6 +156,15 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 						memberName);
 			}
 		}
+	}
+
+	private String removeIntegers(final String memberName) {
+		String ret = memberName;
+		while (Character.isDigit(ret.charAt(ret.length()-1))) {
+			ret = ret.substring(0, ret.length()-1);
+		}
+		
+		return ret;
 	}
 
 	@Override

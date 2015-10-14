@@ -150,8 +150,13 @@ public class ScriptingNodeModel extends NodeModel {
 			if (outputAdapter != null) {
 				type = DataType.getType(outputAdapter.getOutputType());
 			} else {
-				getLogger().warn("Could not find an OutputAdapter for \""
-						+ output.getName() + "\", skipping.");
+				// print warning if output is not the special scijava script
+				// module return value.
+				if (output.getName() != "result"
+						&& output.getType() != Object.class) {
+					getLogger().warn("Could not find an OutputAdapter for \""
+							+ output.getName() + "\", skipping.");
+				}
 				continue;
 			}
 

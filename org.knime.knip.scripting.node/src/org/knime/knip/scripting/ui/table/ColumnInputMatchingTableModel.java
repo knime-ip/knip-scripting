@@ -1,5 +1,6 @@
 package org.knime.knip.scripting.ui.table;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -7,6 +8,7 @@ import javax.swing.table.AbstractTableModel;
 import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMapping;
 import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.scijava.Context;
+import org.scijava.Contextual;
 import org.scijava.plugin.Parameter;
 
 /**
@@ -16,7 +18,7 @@ import org.scijava.plugin.Parameter;
  *
  * @author Jonathan Hale (University of Konstanz)
  */
-public class ColumnInputMatchingTableModel extends AbstractTableModel {
+public class ColumnInputMatchingTableModel extends AbstractTableModel implements Contextual {
 
 	/** Constants for table column indices */
 	/** "Column" column index */
@@ -32,11 +34,13 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 6633031650341577891L;
 
 	@Parameter
+	private Context m_context;
+	@Parameter
 	private ColumnModuleItemMappingService m_cimService;
 
 	// reference to the m_cimServices mappings list. Should only be used for
 	// read.
-	private List<ColumnModuleItemMapping> m_mappingsList;
+	private List<ColumnModuleItemMapping> m_mappings;
 
 	/**
 	 * Constructor.
@@ -46,33 +50,27 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	}
 
 	/**
-	 * Fill parameters injected via a Scijava Context.
-	 * 
-	 * @param context
-	 *            The scijava context
-	 */
-	public void setContext(Context context) {
-		context.inject(this);
-	}
-
-	/**
 	 * Update the table modle to the contents of the column input mapping
 	 * service.
 	 */
 	public void updateModel() {
 		if (m_cimService == null) {
+			// Needs to be set via context first.
 			return;
 		}
 
 		// reference should stay valid as long as m_cimService exists
-		m_mappingsList = m_cimService.getMappingsList();
+		m_mappings = m_cimService.getMappingsList();
 
 		fireTableDataChanged();
 	}
 
 	@Override
 	public int getRowCount() {
-		return m_mappingsList.size();
+		if (m_mappings == null) {
+			updateModel();
+		}
+		return m_mappings.size();
 	}
 
 	@Override
@@ -84,11 +82,11 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	public Object getValueAt(final int rowIndex, final int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
-			return m_mappingsList.get(rowIndex).getColumnName();
+			return m_mappings.get(rowIndex).getColumnName();
 		case ACTIVE:
-			return m_mappingsList.get(rowIndex).isActive();
+			return m_mappings.get(rowIndex).isActive();
 		case INPUT:
-			return m_mappingsList.get(rowIndex).getItemName();
+			return m_mappings.get(rowIndex).getItemName();
 		default:
 			return new String("<Column Index Out Of Bounds!>");
 		}
@@ -118,10 +116,10 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	 *            input name to map to
 	 */
 	public void addItem(final String columnName, final String inputName) {
-		final int row = m_mappingsList.size();
+		final int row = m_mappings.size();
 		m_cimService.addMapping(columnName, inputName);
 
-		if (row != m_mappingsList.size()) {
+		if (row != m_mappings.size()) {
 			// adding the mapping changed the size of the table, therefore it
 			// was added to the end of the list.
 			this.fireTableRowsInserted(row, row);
@@ -143,7 +141,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 	 *            row index to remove
 	 */
 	public void removeItem(final int row) {
-		m_cimService.removeMapping(m_mappingsList.get(row));
+		m_cimService.removeMapping(m_mappings.get(row));
 		this.fireTableRowsDeleted(row, row);
 	}
 
@@ -152,7 +150,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 		if (columnIndex > 2 || columnIndex < 0) {
 			return false;
 		}
-		if (rowIndex >= m_mappingsList.size() || rowIndex < 0) {
+		if (rowIndex >= m_mappings.size() || rowIndex < 0) {
 			return false;
 		}
 		// all existing cells can be edited
@@ -164,13 +162,13 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 			final int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
-			m_mappingsList.get(rowIndex).setColumnName((String) value);
+			m_mappings.get(rowIndex).setColumnName((String) value);
 			break;
 		case ACTIVE:
-			m_mappingsList.get(rowIndex).setActive((Boolean) value);
+			m_mappings.get(rowIndex).setActive((Boolean) value);
 			break;
 		case INPUT:
-			m_mappingsList.get(rowIndex).setItemName((String) value);
+			m_mappings.get(rowIndex).setItemName((String) value);
 			break;
 		default:
 			// Column index out of bounds
@@ -189,6 +187,23 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel {
 		} else {
 			return Void.class;
 		}
+	}
+	
+	// --- Contextual methods ---
+	
+	@Override
+	public void setContext(final Context context) {
+		context.inject(this);
+	}
+
+	@Override
+	public Context context() {
+		return m_context;
+	}
+
+	@Override
+	public Context getContext() {
+		return m_context;
 	}
 
 }

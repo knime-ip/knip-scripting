@@ -26,6 +26,7 @@ import org.knime.core.node.util.ColumnSelectionList;
 import org.knime.knip.scripting.node.ScriptingNodeSettings;
 import org.knime.knip.scripting.ui.table.ColumnInputMatchingTable;
 import org.scijava.Context;
+import org.scijava.Contextual;
 
 /**
  * User inteface components of the ScriptingNode dialog.
@@ -33,14 +34,18 @@ import org.scijava.Context;
  * @author Jonathan Hale
  *
  */
-public class ScriptingNodeDialogPane {
+public class ScriptingNodeDialogPane implements Contextual {
 
 	private ScriptingNodeSettings m_settings;
 
 	/* containers */
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
 
-	/* options for easy debugging */
+	/*
+	 * options for easy debugging: WARNING: This is for debugging the UI layout
+	 * ONLY. It causes loads of bugs related to components not being updated
+	 * after pane is rebuilt.
+	 */
 	public final static boolean DEBUG_UI = false;
 
 	/* UI Components */
@@ -50,8 +55,7 @@ public class ScriptingNodeDialogPane {
 
 	// Labels
 	private final JLabel LBL_HEADER = new JLabel("Script Editor");
-	// TODO Does this whitespace matter? Find cleaner solution:
-	private final JLabel LBL_LANG = new JLabel("Language: ");
+	private final JLabel LBL_LANG = new JLabel("Language:");
 	private final JLabel LBL_COLUMN = new JLabel("Column:");
 	private final JLabel LBL_CIM = new JLabel("Column/Input Matchings:");
 
@@ -60,7 +64,7 @@ public class ScriptingNodeDialogPane {
 	private final JButton m_remBtn = new JButton("-");
 
 	// Code Editor
-	CodeEditorDialogComponent m_codeEditor = null;
+	private CodeEditorDialogComponent m_codeEditor;
 
 	// tab panels
 	private final JPanel m_editorPanel = new JPanel(new GridBagLayout());
@@ -78,14 +82,19 @@ public class ScriptingNodeDialogPane {
 	 * @param logger
 	 *            NodeLogger to output messages to
 	 */
-	public ScriptingNodeDialogPane(NodeLogger logger) {
+	public ScriptingNodeDialogPane(final NodeLogger logger, final ScriptingNodeSettings settings) {
 		/* one time setup of some components */
 		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+		
+		m_settings = settings;
+		
+		buildDialog();
 	}
 
 	/* utility functions for creating GridBagConstraints */
 	private static final GridBagConstraints createGBC(final int x, final int y,
-			final int w, final int h, final int anchor, final int fill) {
+			final int w, final int h, final int anchor, final int fill,
+			final Insets insets) {
 		float weightx = 1.0f;
 		float weighty = 1.0f;
 
@@ -98,7 +107,7 @@ public class ScriptingNodeDialogPane {
 		}
 
 		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
-				fill, new Insets(0, 0, 0, 0), 0, 0);
+				fill, insets, 0, 0);
 	}
 
 	private static final GridBagConstraints createGBC(final int x, final int y,
@@ -106,6 +115,13 @@ public class ScriptingNodeDialogPane {
 			final double weightx, final double weighty) {
 		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
 				fill, new Insets(0, 0, 0, 0), 0, 0);
+	}
+
+	private static final GridBagConstraints createGBC(final int x, final int y,
+			final int w, final int h, final int anchor, final int fill,
+			final double weightx, final double weighty, final Insets insets) {
+		return new GridBagConstraints(x, y, w, h, weightx, weighty, anchor,
+				fill, insets, 0, 0);
 	}
 
 	/*
@@ -138,7 +154,7 @@ public class ScriptingNodeDialogPane {
 	/*
 	 * Add dialog components to tab panels.
 	 */
-	public void buildDialog() {
+	private void buildDialog() {
 		final int FILL_BOTH = GridBagConstraints.BOTH;
 		final int FILL_NONE = GridBagConstraints.NONE;
 		final int FILL_HORI = GridBagConstraints.HORIZONTAL;
@@ -164,32 +180,31 @@ public class ScriptingNodeDialogPane {
 				new DataTableSpec(), null);
 
 		final GridBagConstraints gbc_lbl_header = createGBC(0, 0, 1, 1, WEST,
-				FILL_NONE);
+				FILL_NONE, new Insets(0, 3, 0, 0));
 		final GridBagConstraints gbc_lbl_lang = createGBC(2, 0, 1, 1, EAST,
-				FILL_NONE);
+				FILL_NONE, new Insets(0, 0, 0, 3));
 		final GridBagConstraints gbc_lbl_cim = createGBC(1, 2, 1, 1, EAST,
-				FILL_NONE);
+				FILL_NONE, new Insets(0, 3, 0, 0));
 
-		final GridBagConstraints gbc_ls = createGBC(3, 0, 2, 1, EAST,
-				FILL_HORI);
-		gbc_ls.insets = new Insets(3, 3, 3, 0);
+		final GridBagConstraints gbc_ls = createGBC(3, 0, 2, 1, EAST, FILL_HORI,
+				new Insets(3, 3, 3, 3));
 
 		final GridBagConstraints gbc_ep = createGBC(0, 1, 5, 1,
-				FIRST_LINE_START, FILL_BOTH, 1.0, 1.0);
-		gbc_ep.insets = new Insets(0, 3, 0, 0);
+				FIRST_LINE_START, FILL_BOTH, 1.0, 1.0, new Insets(0, 3, 0, 3));
 		final GridBagConstraints gbc_csl = createGBC(0, 2, 1, 2, WEST,
-				FILL_VERT);
+				FILL_VERT, new Insets(0, 3, 3, 0));
 		final GridBagConstraints gbc_cim = createGBC(1, 3, 4, 1,
-				FIRST_LINE_START, FILL_BOTH, 1.0, 0.0);
+				FIRST_LINE_START, FILL_BOTH, 1.0, 0.0, new Insets(0, 3, 3, 3));
 
 		final GridBagConstraints gbc_add = createGBC(3, 2, 1, 1, WEST,
-				FILL_HORI);
+				FILL_HORI, new Insets(3, 3, 3, 3));
 		final GridBagConstraints gbc_rem = createGBC(4, 2, 1, 1, WEST,
-				FILL_HORI);
+				FILL_HORI, new Insets(3, 3, 3, 3));
 
 		m_editorPanel.add(m_langSelection, gbc_ls);
 
-		m_codeEditor = new CodeEditorDialogComponent(m_settings.scriptCodeModel());
+		m_codeEditor = new CodeEditorDialogComponent(
+				m_settings.scriptCodeModel());
 		addDialogComponent(m_editorPanel, m_codeEditor, gbc_ep);
 
 		m_columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -198,14 +213,13 @@ public class ScriptingNodeDialogPane {
 		final JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
 		columnSelectionPanel.add(LBL_COLUMN,
 				createGBC(0, 0, 1, 1, FIRST_LINE_START, FILL_HORI, 1.0, 0.0));
-		columnSelectionPanel.add(m_columnList,
+		columnSelectionPanel.add(
+				new JScrollPane(m_columnList,
+						JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),
 				createGBC(0, 1, 1, 1, FIRST_LINE_START, FILL_BOTH, 1.0, 1.0));
-		// FIXME lazy way of adding the neat border. Add scrollpane to list
-		// instead
-		// columnSelectionPanel.setBorder(UIManager.getBorder("Table.scrollPaneBorder"));
 		columnSelectionPanel.setPreferredSize(new Dimension(180, 0));
-		final JScrollPane sp = new JScrollPane(columnSelectionPanel);
-		m_editorPanel.add(sp, gbc_csl);
+		m_editorPanel.add(columnSelectionPanel, gbc_csl);
 
 		final JScrollPane scrollPane = new JScrollPane(m_columnMatchingTable);
 		m_columnMatchingTable.setFillsViewportHeight(true);
@@ -284,29 +298,9 @@ public class ScriptingNodeDialogPane {
 		m_editorPanel.removeAll();
 		m_dialogComponents.clear();
 		buildDialog();
-	}
 
-	/**
-	 * Set the scijava context. Will inject the context to the underlying
-	 * listener.
-	 * 
-	 * @param context
-	 *            Scijava context to use
-	 */
-	public void setContext(Context context) {
-		m_codeEditor.setContext(context);
-		m_columnMatchingTable.setContext(context);
-	}
-
-	/**
-	 * Provide Access to node settings to initially fill the Dialog Components.
-	 * TODO: This should not be done here, but rather externally.
-	 * 
-	 * @param settings
-	 *            Settings to use
-	 */
-	public void setSettings(ScriptingNodeSettings settings) {
-		m_settings = settings;
+		setContext(m_context); // required, since CodeEditor et al. will be
+								// reconstructed
 	}
 
 	/**
@@ -324,7 +318,7 @@ public class ScriptingNodeDialogPane {
 	 *            The listener
 	 */
 	public <T extends ActionListener & MouseListener> void addListener(
-			T listener) {
+			final T listener) {
 		m_columnList.addMouseListener(listener);
 		m_addBtn.addActionListener(listener);
 		m_remBtn.addActionListener(listener);
@@ -337,10 +331,32 @@ public class ScriptingNodeDialogPane {
 	 *            The listener
 	 */
 	public <T extends ActionListener & MouseListener> void removeListener(
-			T listener) {
+			final T listener) {
 		m_columnList.removeMouseListener(listener);
 		m_addBtn.removeActionListener(listener);
 		m_remBtn.removeActionListener(listener);
+	}
+
+	// --- Contextual methods ---
+
+	private Context m_context;
+
+	@Override
+	public void setContext(final Context context) {
+		m_codeEditor.setContext(context);
+		m_columnMatchingTable.setContext(context);
+
+		m_context = context; // no injection needed.
+	}
+
+	@Override
+	public Context context() {
+		return m_context;
+	}
+
+	@Override
+	public Context getContext() {
+		return context();
 	}
 
 }

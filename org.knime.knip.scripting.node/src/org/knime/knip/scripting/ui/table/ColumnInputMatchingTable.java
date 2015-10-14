@@ -7,6 +7,7 @@ import javax.swing.table.TableColumnModel;
 
 import org.knime.core.data.DataTableSpec;
 import org.scijava.Context;
+import org.scijava.Contextual;
 import org.scijava.module.ModuleInfo;
 
 /**
@@ -14,7 +15,7 @@ import org.scijava.module.ModuleInfo;
  *
  * @author Jonathan Hale (University of Konstanz)
  */
-public class ColumnInputMatchingTable extends JTable {
+public class ColumnInputMatchingTable extends JTable implements Contextual {
 
 	/**
 	 */
@@ -44,14 +45,6 @@ public class ColumnInputMatchingTable extends JTable {
 
 		updateModel(spec, info);
 	}
-	
-	/**
-	 * Set Scijava context to update the table model.
-	 * @param context The Scijava context
-	 */
-	public void setContext(final Context context) {
-		getModel().setContext(context);
-	}
 
 	/**
 	 * Set the cell editors as the created Components.
@@ -59,14 +52,14 @@ public class ColumnInputMatchingTable extends JTable {
 	private void setCellEditors() {
 		final TableColumnModel model = getColumnModel();
 
-		model.getColumn(ColumnInputMatchingTableModel.COLUMN).setCellEditor(
-				new ColumnInputMappingTableCellEditor(m_spec));
+		model.getColumn(ColumnInputMatchingTableModel.COLUMN)
+				.setCellEditor(new ColumnInputMappingTableCellEditor(m_spec));
 
-		model.getColumn(ColumnInputMatchingTableModel.ACTIVE).setCellEditor(
-				new DefaultCellEditor(new JCheckBox()));
+		model.getColumn(ColumnInputMatchingTableModel.ACTIVE)
+				.setCellEditor(new DefaultCellEditor(new JCheckBox()));
 
-		model.getColumn(ColumnInputMatchingTableModel.INPUT).setCellEditor(
-				new ColumnInputMappingTableCellEditor(m_info));
+		model.getColumn(ColumnInputMatchingTableModel.INPUT)
+				.setCellEditor(new ColumnInputMappingTableCellEditor(m_info));
 
 	}
 
@@ -93,7 +86,7 @@ public class ColumnInputMatchingTable extends JTable {
 	public DataTableSpec getDataTableSpec() {
 		return m_spec;
 	}
-	
+
 	/**
 	 * @return currently set module info.
 	 * @see #updateModel(DataTableSpec, ModuleInfo)
@@ -108,5 +101,23 @@ public class ColumnInputMatchingTable extends JTable {
 	@Override
 	public ColumnInputMatchingTableModel getModel() {
 		return (ColumnInputMatchingTableModel) super.getModel();
+	}
+
+	// --- Contextual methods ---
+	// For convenience only. CIMTable does not keep a context itself.
+	
+	@Override
+	public void setContext(final Context context) {
+		getModel().setContext(context);
+	}
+
+	@Override
+	public Context context() {
+		return getModel().context();
+	}
+
+	@Override
+	public Context getContext() {
+		return getModel().getContext();
 	}
 }

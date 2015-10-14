@@ -31,24 +31,11 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  scripting-java;bundle-version="0.3.3",
  scripting-jython;bundle-version="0.2.2",
  jython-shaded;bundle-version="2.5.3",
- scripting-javascript;bundle-version="0.4.1"
+ scripting-javascript;bundle-version="0.4.1",
+ imagej-ui-swing;bundle-version="0.15.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: knip_scripting_base.jar,
- lib/autocomplete-2.5.7.jar,
- lib/imagej-ui-swing-0.15.1-SNAPSHOT.jar,
- lib/jcommon-1.0.23.jar,
- lib/jfreechart-1.0.19.jar,
- lib/languagesupport-2.5.7.jar,
- lib/rsyntaxtextarea-2.5.7.jar,
  lib/tools.jar
-Export-Package: net.imagej.ui.swing.script,
- net.imagej.ui.swing.script.commands,
- net.imagej.ui.swing.script.highliters,
- net.imagej.ui.swing.script.interpreter,
- net.imagej.ui.swing.script.languagesupport,
- org.fife.ui.autocomplete,
- org.fife.ui.rsyntaxtextarea,
- org.fife.ui.rtextarea,
- org.knime.knip.scripting.base,
+Export-Package: org.knime.knip.scripting.base,
  org.knime.knip.scripting.java,
  org.knime.knip.scripting.parameters

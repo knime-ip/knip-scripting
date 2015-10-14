@@ -25,9 +25,9 @@ import org.scijava.script.ScriptService;
 
 /**
  * Listener for the ScriptingNode dialog user interface.
- * 
+ *
  * Requires to be injected by a Scijava {@link Context}.
- * 
+ *
  * @author Jonathan Hale
  *
  */
@@ -35,7 +35,7 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 		implements ActionListener, MouseListener {
 
 	private final ScriptingNodeDialogPane m_gui;
-	
+
 	private final ScriptingNodeSettings m_settings;
 
 	@Parameter
@@ -59,14 +59,14 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param gui
 	 *            Pane to apply actions to
 	 * @param logger
 	 *            NodeLogger to output messages to
 	 */
-	public ScriptingNodeDialogListener(ScriptingNodeDialogPane gui,
-			NodeLogger logger, ScriptingNodeSettings settings) {
+	public ScriptingNodeDialogListener(final ScriptingNodeDialogPane gui,
+			final NodeLogger logger, final ScriptingNodeSettings settings) {
 		m_gui = gui;
 		m_logger = logger;
 		m_settings = settings;
@@ -90,7 +90,7 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 	 * Create a code snippet for a new input in the script which is
 	 * automatically mapped to the column in the column selection list at the
 	 * given index.
-	 * 
+	 *
 	 * @param index
 	 *            Index of the column to create the code snippet for
 	 */
@@ -104,8 +104,9 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 				final DataColumnSpec cspec = (DataColumnSpec) o;
 
 				final String columnName = cspec.getName();
-				String memberName = removeIntegers(Character.toLowerCase(columnName.charAt(0))
-						+ columnName.substring(1));
+				String memberName = removeIntegers(
+						Character.toLowerCase(columnName.charAt(0))
+								+ columnName.substring(1));
 
 				int i = 0;
 				String chosen = memberName;
@@ -134,11 +135,14 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 
 				final ScriptLanguage currentLanguage = m_scriptService
 						.getLanguageByName(m_settings.getScriptLanguageName());
-				ParameterCodeGenerator generator = m_parameterGenerators
+				final ParameterCodeGenerator generator = m_parameterGenerators
 						.getGeneratorForLanguage(currentLanguage);
-				
+
 				if (generator == null) {
-					m_logger.error("No way of generating input parameter code for language \"" + m_settings.getScriptLanguageName() + "\".");
+					m_logger.error(
+							"No way of generating input parameter code for language \""
+									+ m_settings.getScriptLanguageName()
+									+ "\".");
 				}
 
 				// find position for inserting @Parameter declaration
@@ -160,10 +164,10 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 
 	private String removeIntegers(final String memberName) {
 		String ret = memberName;
-		while (Character.isDigit(ret.charAt(ret.length()-1))) {
-			ret = ret.substring(0, ret.length()-1);
+		while (Character.isDigit(ret.charAt(ret.length() - 1))) {
+			ret = ret.substring(0, ret.length() - 1);
 		}
-		
+
 		return ret;
 	}
 

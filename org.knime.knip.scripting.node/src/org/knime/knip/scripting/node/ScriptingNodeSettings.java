@@ -15,14 +15,13 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModel;
-import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 
 /**
  * Class containing all SettingsModels for {@link ScriptingNodeDialog} and
  * {@link ScriptingNodeModel}.
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
  *
  */
@@ -81,8 +80,8 @@ public class ScriptingNodeSettings {
 	 */
 	protected static String fileAsString(final String path) {
 		try {
-			URL resolvedUrl = FileLocator.resolve(new URL(path));
-			byte[] bytes = Files.readAllBytes(Paths
+			final URL resolvedUrl = FileLocator.resolve(new URL(path));
+			final byte[] bytes = Files.readAllBytes(Paths
 					.get(new URI(resolvedUrl.toString().replace(" ", "%20"))));
 			return new String(bytes, Charset.defaultCharset());
 		} catch (final URISyntaxException e) {
@@ -145,7 +144,7 @@ public class ScriptingNodeSettings {
 	 * @param name
 	 *            value to set for setting with key {@link #SM_KEY_LANGUAGE}.
 	 */
-	public void setScriptLanguageName(String name) {
+	public void setScriptLanguageName(final String name) {
 		m_scriptLanguageModel.setStringValue(name);
 	}
 
@@ -153,7 +152,7 @@ public class ScriptingNodeSettings {
 	 * @param code
 	 *            value to set for setting with key {@link #SM_KEY_CODE}.
 	 */
-	public void setScriptCode(String code) {
+	public void setScriptCode(final String code) {
 		m_codeModel.setStringValue(code);
 	}
 
@@ -162,7 +161,7 @@ public class ScriptingNodeSettings {
 	 *            value to set for setting with key
 	 *            {@link #SM_KEY_INPUT_MAPPING}.
 	 */
-	public void setColumnInputMapping(String[] mapping) {
+	public void setColumnInputMapping(final String[] mapping) {
 		m_columnInputMappingSettingsModel.setStringArrayValue(mapping);
 	}
 
@@ -175,11 +174,11 @@ public class ScriptingNodeSettings {
 	/**
 	 * Save settings to <code>settings</code>. "other settings" are <b>not
 	 * loaded!</b>
-	 * 
+	 *
 	 * @param settings
 	 * @throws InvalidSettingsException
 	 */
-	public void saveSettingsTo(NodeSettingsWO settings) {
+	public void saveSettingsTo(final NodeSettingsWO settings) {
 		m_scriptLanguageModel.saveSettingsTo(settings);
 		m_codeModel.saveSettingsTo(settings);
 		m_columnInputMappingSettingsModel.saveSettingsTo(settings);
@@ -188,11 +187,11 @@ public class ScriptingNodeSettings {
 	/**
 	 * Save settings to <code>settings</code>. "other settings" are <b>not
 	 * saved!</b>
-	 * 
+	 *
 	 * @param settings
 	 * @throws InvalidSettingsException
 	 */
-	public void loadSettingsFrom(NodeSettingsRO settings)
+	public void loadSettingsFrom(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		m_scriptLanguageModel.loadSettingsFrom(settings);
 		m_codeModel.loadSettingsFrom(settings);

@@ -94,7 +94,7 @@ public class ScriptingNodeModel extends NodeModel {
 
 		try {
 			m_compiler = new CompileHelper(m_context);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			getLogger().error(
 					"Could not create temporary directory for Scripting Node.");
 		}
@@ -142,7 +142,7 @@ public class ScriptingNodeModel extends NodeModel {
 				.outputAdapters();
 
 		final ArrayList<DataColumnSpec> tableSpecs = new ArrayList<>();
-		for (ModuleItem<?> output : info.outputs()) {
+		for (final ModuleItem<?> output : info.outputs()) {
 			@SuppressWarnings("unchecked")
 			final OutputAdapter<?, DataCell> outputAdapter = outAdapters
 					.getMatchingOutputAdapter(output.getType());
@@ -297,7 +297,7 @@ public class ScriptingNodeModel extends NodeModel {
 			final ColumnModuleItemMapping mapping = m_knimeContext
 					.inputMapping().getMappingForModuleItemName(inputName);
 
-			boolean needsUI = !(mapping != null && mapping.isActive());
+			final boolean needsUI = !(mapping != null && mapping.isActive());
 
 			if (needsUI) {
 				m_knimeContext.nodeSettings().createAndAddSettingsModel(i);
@@ -320,7 +320,7 @@ public class ScriptingNodeModel extends NodeModel {
 			createSettingsForCompileProduct();
 			m_knimeContext.nodeSettings().saveSettingsTo(settings);
 
-		} catch (ScriptException e) {
+		} catch (final ScriptException e) {
 			// Compilation failure
 			return;
 		}

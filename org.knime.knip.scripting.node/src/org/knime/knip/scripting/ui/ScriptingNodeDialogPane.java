@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 
 import org.knime.core.data.DataTableSpec;
@@ -30,13 +31,13 @@ import org.scijava.Contextual;
 
 /**
  * User inteface components of the ScriptingNode dialog.
- * 
+ *
  * @author Jonathan Hale
  *
  */
 public class ScriptingNodeDialogPane implements Contextual {
 
-	private ScriptingNodeSettings m_settings;
+	private final ScriptingNodeSettings m_settings;
 
 	/* containers */
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
@@ -78,16 +79,17 @@ public class ScriptingNodeDialogPane implements Contextual {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param logger
 	 *            NodeLogger to output messages to
 	 */
-	public ScriptingNodeDialogPane(final NodeLogger logger, final ScriptingNodeSettings settings) {
+	public ScriptingNodeDialogPane(final NodeLogger logger,
+			final ScriptingNodeSettings settings) {
 		/* one time setup of some components */
 		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		
+
 		m_settings = settings;
-		
+
 		buildDialog();
 	}
 
@@ -170,9 +172,9 @@ public class ScriptingNodeDialogPane implements Contextual {
 		/*
 		 * Default values: gridx = RELATIVE; gridy = RELATIVE; gridwidth = 1;
 		 * gridheight = 1;
-		 * 
+		 *
 		 * weightx = 0; weighty = 0; anchor = CENTER; fill = NONE;
-		 * 
+		 *
 		 * insets = new Insets(0, 0, 0, 0); ipadx = 0; ipady = 0;
 		 */
 
@@ -215,8 +217,8 @@ public class ScriptingNodeDialogPane implements Contextual {
 				createGBC(0, 0, 1, 1, FIRST_LINE_START, FILL_HORI, 1.0, 0.0));
 		columnSelectionPanel.add(
 				new JScrollPane(m_columnList,
-						JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),
+						ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+						ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER),
 				createGBC(0, 1, 1, 1, FIRST_LINE_START, FILL_BOTH, 1.0, 1.0));
 		columnSelectionPanel.setPreferredSize(new Dimension(180, 0));
 		m_editorPanel.add(columnSelectionPanel, gbc_csl);
@@ -313,7 +315,7 @@ public class ScriptingNodeDialogPane implements Contextual {
 
 	/**
 	 * Add a listener to all components.
-	 * 
+	 *
 	 * @param listener
 	 *            The listener
 	 */
@@ -326,7 +328,7 @@ public class ScriptingNodeDialogPane implements Contextual {
 
 	/**
 	 * Remove a listener from all components.
-	 * 
+	 *
 	 * @param listener
 	 *            The listener
 	 */

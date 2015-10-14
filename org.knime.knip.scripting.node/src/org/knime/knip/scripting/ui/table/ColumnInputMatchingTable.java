@@ -105,7 +105,7 @@ public class ColumnInputMatchingTable extends JTable implements Contextual {
 
 	// --- Contextual methods ---
 	// For convenience only. CIMTable does not keep a context itself.
-	
+
 	@Override
 	public void setContext(final Context context) {
 		getModel().setContext(context);

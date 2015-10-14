@@ -9,23 +9,22 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.imagej.ui.swing.script.EditorPane;
-
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
 import org.scijava.Context;
-import org.scijava.plugin.PluginInfo;
+
+import net.imagej.ui.swing.script.EditorPane;
 
 /**
  * DialogComponent which uses a {@link EditorPane} to edit Java Code.
  *
  * @author Jonathan Hale (University of Konstanz)
  */
-public class CodeEditorDialogComponent extends DialogComponent implements
-		ChangeListener {
+public class CodeEditorDialogComponent extends DialogComponent
+		implements ChangeListener {
 
 	private final EditorPane m_textArea;
 	private final SettingsModelString m_codeModel;
@@ -47,9 +46,10 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 
 		final JPanel panel = getComponentPanel();
 		panel.setLayout(new GridBagLayout());
-		panel.add(m_textArea.wrappedInScrollbars(), new GridBagConstraints(0,
-				0, 1, 1, 1.0, 1.0, GridBagConstraints.FIRST_LINE_START,
-				GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+		panel.add(m_textArea.wrappedInScrollbars(),
+				new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
+						GridBagConstraints.FIRST_LINE_START,
+						GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 
 		// make tab key not jump to the next component
 		panel.setFocusTraversalKeysEnabled(false);
@@ -69,7 +69,8 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	}
 
 	@Override
-	protected void validateSettingsBeforeSave() throws InvalidSettingsException {
+	protected void validateSettingsBeforeSave()
+			throws InvalidSettingsException {
 		updateModel();
 	}
 
@@ -121,10 +122,12 @@ public class CodeEditorDialogComponent extends DialogComponent implements
 	public void updateModel() {
 		m_codeModel.setStringValue(m_textArea.getText());
 	}
-	
+
 	/**
 	 * Set the Scijava Context to use for the {@link EditorPane}.
-	 * @param context The Scijava context
+	 * 
+	 * @param context
+	 *            The Scijava context
 	 */
 	public void setContext(final Context context) {
 		context.inject(m_textArea);

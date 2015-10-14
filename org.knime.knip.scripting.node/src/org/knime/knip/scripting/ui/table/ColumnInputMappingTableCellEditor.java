@@ -67,7 +67,7 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 			final Object value, final boolean isSelected, final int row,
 			final int column) {
 		Object val = value;
-		
+
 		if (m_mode == EditorMode.COLUMN) {
 			val = m_spec.getColumnSpec((String) value);
 		} else if (m_mode == EditorMode.INPUT) {

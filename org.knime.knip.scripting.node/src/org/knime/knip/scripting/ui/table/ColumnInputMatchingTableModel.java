@@ -1,6 +1,5 @@
 package org.knime.knip.scripting.ui.table;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -18,7 +17,8 @@ import org.scijava.plugin.Parameter;
  *
  * @author Jonathan Hale (University of Konstanz)
  */
-public class ColumnInputMatchingTableModel extends AbstractTableModel implements Contextual {
+public class ColumnInputMatchingTableModel extends AbstractTableModel
+		implements Contextual {
 
 	/** Constants for table column indices */
 	/** "Column" column index */
@@ -188,9 +188,9 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel implements
 			return Void.class;
 		}
 	}
-	
+
 	// --- Contextual methods ---
-	
+
 	@Override
 	public void setContext(final Context context) {
 		context.inject(this);

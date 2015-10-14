@@ -72,7 +72,7 @@ public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @return null (ScriptingNode does not have views.)
 	 */
 	@Override

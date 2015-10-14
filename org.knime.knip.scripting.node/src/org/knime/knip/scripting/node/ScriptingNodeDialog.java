@@ -236,8 +236,6 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		addTabAt(0, "Script Editor", m_gui.editorPane());
 		addTabAt(1, "Script Dialog", m_autogenPanel);
 
-		// TODO tried to fix the (win10?) issue where the dialog window is
-		// smaller than the editorPane. This did not work:
 		getPanel().revalidate();
 	}
 

@@ -280,27 +280,10 @@ public class ScriptingNodeModel extends NodeModel {
 				return;
 			}
 
-			// Create settings models for module inputs which do not have a
-			// ColumnToModuleInputMapping that maps to them
-			for (final ModuleItem<?> i : m_compileProduct.inputs()) {
-				final String inputName = i.getName();
-				boolean needsSettings = true;
-
-				// try to find a mapping
-				final ColumnModuleItemMapping mapping = m_knimeContext
-						.inputMapping().getMappingForModuleItemName(inputName);
-				if (mapping != null) {
-					// possibly found an active mapping.
-					needsSettings = !mapping.isActive();
-				}
-
-				if (needsSettings) {
-					m_knimeContext.nodeSettings().createSettingsModel(i);
-				}
-			}
+			createSettingsForCompileProduct();
 
 			try {
-				m_knimeContext.nodeSettings().loadSettingsFrom(settings);
+				m_knimeContext.nodeSettings().loadSettingsFrom(settings, false);
 			} catch (final InvalidSettingsException e) {
 				// this will just not work sometimes, if new compilation
 				// contains new inputs etc
@@ -314,12 +297,35 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 	}
 
+	private void createSettingsForCompileProduct() {
+		// Create settings models for module inputs which do not have a
+		// ColumnToModuleInputMapping that maps to them
+		for (final ModuleItem<?> i : m_compileProduct.inputs()) {
+			final String inputName = i.getName();
+			boolean needsSettings = true;
+
+			// try to find a mapping
+			final ColumnModuleItemMapping mapping = m_knimeContext
+					.inputMapping().getMappingForModuleItemName(inputName);
+			if (mapping != null) {
+				// possibly found an active mapping.
+				needsSettings = !mapping.isActive();
+			}
+
+			if (needsSettings) {
+				m_knimeContext.nodeSettings().createSettingsModel(i);
+			}
+		}
+	}
+
 	@Override
 	protected void saveSettingsTo(final NodeSettingsWO settings) {
 		ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(
 				m_knimeContext.inputMapping(),
 				m_settings.columnInputMappingModel());
 
+		createSettingsForCompileProduct();
+		
 		m_settings.saveSettingsTo(settings);
 		m_knimeContext.nodeSettings().saveSettingsTo(settings);
 	}

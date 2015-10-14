@@ -13,7 +13,7 @@ import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
 import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.knime.knip.scijava.commands.settings.NodeSettingsService;
-import org.knime.knip.scijava.commands.widget.KnimeWidgetService;
+import org.knime.knip.scijava.commands.widget.KNIMEWidgetService;
 import org.knime.knip.scijava.core.ResourceAwareClassLoader;
 import org.knime.knip.scijava.core.pluginindex.ReusablePluginIndex;
 import org.knime.knip.scripting.parameters.ParameterCodeGeneratorService;
@@ -67,7 +67,7 @@ public class ScriptingGateway {
 					KNIMEOutputDataTableService.class, PrefService.class,
 					KNIMEExecutionService.class, NodeSettingsService.class,
 					ObjectService.class, DefaultWidgetService.class,
-					KnimeWidgetService.class, InputAdapterService.class,
+					KNIMEWidgetService.class, InputAdapterService.class,
 					UIService.class, OutputAdapterService.class,
 					CommandService.class, LanguageSupportService.class,
 					ScriptHeaderService.class, ParameterCodeGeneratorService.class,

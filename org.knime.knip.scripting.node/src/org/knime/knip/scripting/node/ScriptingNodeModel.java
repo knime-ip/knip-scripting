@@ -208,7 +208,7 @@ public class ScriptingNodeModel extends NodeModel {
 				throw new Exception("Code did not compile!");
 			}
 
-			Module module = m_compileProduct.createModule(language);
+			final Module module = m_compileProduct.createModule(language);
 
 			/* compile an run script for all rows */
 			while (m_knimeContext.inputTable().hasNext()) {
@@ -257,9 +257,8 @@ public class ScriptingNodeModel extends NodeModel {
 
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			ScriptLanguage lang = m_scriptService
+			final ScriptLanguage lang = m_scriptService
 					.getLanguageByName(m_settings.getScriptLanguageName());
-
 			if (lang == null) {
 				getLogger()
 						.error("Language " + m_settings.getScriptLanguageName()
@@ -271,22 +270,10 @@ public class ScriptingNodeModel extends NodeModel {
 				m_compileProduct = m_compiler.compile(
 						m_settings.getScriptCode(), getCurrentLanguage());
 			} catch (NullPointerException | ScriptException e) {
-				e.printStackTrace();
-			}
-
-			if (m_compileProduct == null) {
+				// compilation failed
 				getLogger().info(
 						"Code did not compile, failed to load all settings.");
 				return;
-			}
-
-			createSettingsForCompileProduct();
-
-			try {
-				m_knimeContext.nodeSettings().loadSettingsFrom(settings, false);
-			} catch (final InvalidSettingsException e) {
-				// this will just not work sometimes, if new compilation
-				// contains new inputs etc
 			}
 
 			// load column input mappings
@@ -294,6 +281,9 @@ public class ScriptingNodeModel extends NodeModel {
 			ColumnToModuleItemMappingUtil.fillColumnToModuleItemMappingService(
 					m_settings.getColumnInputMapping(),
 					m_knimeContext.inputMapping());
+
+			createSettingsForCompileProduct();
+			m_knimeContext.nodeSettings().loadSettingsFrom(settings, true);
 		}
 	}
 
@@ -302,18 +292,15 @@ public class ScriptingNodeModel extends NodeModel {
 		// ColumnToModuleInputMapping that maps to them
 		for (final ModuleItem<?> i : m_compileProduct.inputs()) {
 			final String inputName = i.getName();
-			boolean needsSettings = true;
 
 			// try to find a mapping
 			final ColumnModuleItemMapping mapping = m_knimeContext
 					.inputMapping().getMappingForModuleItemName(inputName);
-			if (mapping != null) {
-				// possibly found an active mapping.
-				needsSettings = !mapping.isActive();
-			}
 
-			if (needsSettings) {
-				m_knimeContext.nodeSettings().createSettingsModel(i);
+			boolean needsUI = !(mapping != null && mapping.isActive());
+
+			if (needsUI) {
+				m_knimeContext.nodeSettings().createAndAddSettingsModel(i);
 			}
 		}
 	}
@@ -323,11 +310,20 @@ public class ScriptingNodeModel extends NodeModel {
 		ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(
 				m_knimeContext.inputMapping(),
 				m_settings.columnInputMappingModel());
-
-		createSettingsForCompileProduct();
-		
 		m_settings.saveSettingsTo(settings);
-		m_knimeContext.nodeSettings().saveSettingsTo(settings);
+
+		try (final TempClassLoader tempCl = new TempClassLoader(
+				ScriptingGateway.get().createUrlClassLoader())) {
+			m_compileProduct = m_compiler.compile(m_settings.getScriptCode(),
+					getCurrentLanguage());
+
+			createSettingsForCompileProduct();
+			m_knimeContext.nodeSettings().saveSettingsTo(settings);
+
+		} catch (ScriptException e) {
+			// Compilation failure
+			return;
+		}
 	}
 
 	@Override

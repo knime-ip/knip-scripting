@@ -40,6 +40,7 @@ public class ScriptingNodeSettings {
 	/* contains the column to input mappings */
 	private final SettingsModelStringArray m_columnInputMappingSettingsModel = createColumnInputMappingSettingsModel();
 
+	/* contains other settings which will be passed to a NodeSettingsService */
 	private final Map<String, SettingsModel> m_otherSettings = new HashMap<String, SettingsModel>();
 
 	/**
@@ -115,6 +116,13 @@ public class ScriptingNodeSettings {
 		return m_columnInputMappingSettingsModel.getStringArrayValue();
 	}
 
+	/**
+	 * @return map of settings to pass to a {@link NodeSettingsService}.
+	 */
+	public Map<String, SettingsModel> otherSettings() {
+		return m_otherSettings;
+	}
+
 	// ---- access to models ----
 
 	/**
@@ -163,10 +171,6 @@ public class ScriptingNodeSettings {
 	 */
 	public void setColumnInputMapping(final String[] mapping) {
 		m_columnInputMappingSettingsModel.setStringArrayValue(mapping);
-	}
-
-	public Map<String, SettingsModel> otherSettings() {
-		return m_otherSettings;
 	}
 
 	// ---- loading / saving ----

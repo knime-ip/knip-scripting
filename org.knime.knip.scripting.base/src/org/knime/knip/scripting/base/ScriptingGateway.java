@@ -6,9 +6,9 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
+import org.knime.knip.scijava.commands.DefaultInputDataRowService;
+import org.knime.knip.scijava.commands.DefaultOutputDataRowService;
 import org.knime.knip.scijava.commands.KNIMEExecutionService;
-import org.knime.knip.scijava.commands.KNIMEInputDataTableService;
-import org.knime.knip.scijava.commands.KNIMEOutputDataTableService;
 import org.knime.knip.scijava.commands.adapter.InputAdapterService;
 import org.knime.knip.scijava.commands.adapter.OutputAdapterService;
 import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMappingService;
@@ -20,6 +20,7 @@ import org.knime.knip.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.DisplayPostprocessor;
+import org.scijava.log.slf4j.SLF4JLogService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.DefaultPluginFinder;
 import org.scijava.plugin.PluginIndex;
@@ -63,8 +64,8 @@ public class ScriptingGateway {
 	/** a list of services which need to be present in newly created contexts */
 	protected static List<Class<? extends Service>> requiredServices = Arrays
 			.<Class<? extends Service>> asList(ScriptService.class,
-					DefaultJavaService.class, KNIMEInputDataTableService.class,
-					KNIMEOutputDataTableService.class, PrefService.class,
+					DefaultJavaService.class, DefaultInputDataRowService.class,
+					DefaultOutputDataRowService.class, PrefService.class,
 					KNIMEExecutionService.class, NodeSettingsService.class,
 					ObjectService.class, DefaultWidgetService.class,
 					KNIMEWidgetService.class, InputAdapterService.class,

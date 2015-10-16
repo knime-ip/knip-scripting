@@ -137,6 +137,23 @@ public class ScriptingNodeModel extends NodeModel {
 	/* Output data table specification */
 	private DataTableSpec m_outTableSpec = null;
 
+	/**
+	 * @return {@link ScriptLanguage} with name
+	 *         <code>m_settings.getScriptLanguageName()</code>.
+	 */
+	protected ScriptLanguage getCurrentLanguage() {
+		final String languageName = m_settings.getScriptLanguageName();
+		final ScriptLanguage language = m_scriptService
+				.getLanguageByName(languageName);
+		if (language == null) {
+			throw new NullPointerException("Could not load language "
+					+ languageName + " for Scripting Node.");
+		}
+		return language;
+	}
+	
+	// --- node lifecycle: configure/execute/reset ---
+	
 	@Override
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
 			throws InvalidSettingsException {
@@ -184,21 +201,6 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 	}
 
-	/**
-	 * @return {@link ScriptLanguage} with name
-	 *         <code>m_settings.getScriptLanguageName()</code>.
-	 */
-	protected ScriptLanguage getCurrentLanguage() {
-		final String languageName = m_settings.getScriptLanguageName();
-		final ScriptLanguage language = m_scriptService
-				.getLanguageByName(languageName);
-		if (language == null) {
-			throw new NullPointerException("Could not load language "
-					+ languageName + " for Scripting Node.");
-		}
-		return language;
-	}
-
 	@Override
 	protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
 			final ExecutionContext exec) throws Exception {
@@ -237,6 +239,14 @@ public class ScriptingNodeModel extends NodeModel {
 		return new BufferedDataTable[] { out };
 	}
 
+
+	@Override
+	protected void reset() {
+		/* nothing to do */
+	}
+	
+	// --- streaming ---
+	
 	@Override
 	public StreamableOperator createStreamableOperator(
 			final PartitionInfo partitionInfo, final PortObjectSpec[] inSpecs)
@@ -251,6 +261,8 @@ public class ScriptingNodeModel extends NodeModel {
 		}
 	}
 
+    // --- loading and saving ---
+    
 	@Override
 	protected void loadInternals(final File nodeInternDir,
 			final ExecutionMonitor exec)
@@ -346,11 +358,8 @@ public class ScriptingNodeModel extends NodeModel {
 			return;
 		}
 	}
-
-	@Override
-	protected void reset() {
-		// unused
-	}
+	
+	// --- nested classes ---
 
 	/**
 	 * CellFactory for ScriptingNode.

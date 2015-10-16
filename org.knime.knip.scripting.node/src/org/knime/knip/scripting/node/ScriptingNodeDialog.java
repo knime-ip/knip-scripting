@@ -48,6 +48,7 @@
  */
 package org.knime.knip.scripting.node;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.io.IOException;
@@ -59,6 +60,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
@@ -245,6 +248,10 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 
 	private JPanel createOutputTablePane() {
 		JPanel outTablePane = new JPanel();
+		outTablePane.setLayout(new BorderLayout());
+
+		JPanel contents = new JPanel();
+		contents.setLayout(new BoxLayout(contents, BoxLayout.PAGE_AXIS));
 
 		/* Column creation mode */
 		final DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
@@ -255,15 +262,20 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		m_gui.dialogComponents().add(colCreationModeComp);
 
 		JPanel comp = colCreationModeComp.getComponentPanel();
-		outTablePane.add(comp);
-		
+		contents.add(comp);
+
 		/* Column suffix */
-		final DialogComponentString colSuffixComp = new DialogComponentString(m_settings.columnSuffixModel(), "Column Suffix");
-		
+		final DialogComponentString colSuffixComp = new DialogComponentString(
+				m_settings.columnSuffixModel(), "Column Suffix");
+
 		m_gui.dialogComponents().add(colSuffixComp);
-		
+		// FIXME: Hack to have component initially disabled, if necessary.
+		colSuffixComp.setEnabled(m_settings.columnSuffixModel().isEnabled());
+
 		comp = colSuffixComp.getComponentPanel();
-		outTablePane.add(comp);
+		contents.add(comp);
+
+		outTablePane.add(contents, BorderLayout.NORTH);
 
 		return outTablePane;
 	}
@@ -323,8 +335,11 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 			final DataTableSpec[] specs) throws NotConfigurableException {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			m_settings.loadSettingsFrom(settings);
+			try {
+				m_settings.loadSettingsFrom(settings);
+			} catch (Throwable t) {
 
+			}
 			// DEBUG CODE //
 			if (ScriptingNodeDialogPane.DEBUG_UI) {
 				// rebuild panel to reflect possible changes

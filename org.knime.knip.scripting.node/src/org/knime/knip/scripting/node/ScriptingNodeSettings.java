@@ -117,6 +117,12 @@ public class ScriptingNodeSettings {
 					.equals(newVal));
 		});
 
+		// same code as in change listener to initialize enabled property
+		// correctly
+		final String newVal = columnCreationMode.getStringValue();
+		suffixModel.setEnabled(
+				ColumnCreationMode.APPEND_COLUMNS.toString().equals(newVal));
+
 		return suffixModel;
 	}
 

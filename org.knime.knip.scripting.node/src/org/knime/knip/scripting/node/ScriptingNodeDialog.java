@@ -72,6 +72,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
+import org.knime.core.node.defaultnodesettings.DialogComponentString;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
 import org.knime.knip.scijava.commands.DefaultKNIMEScijavaContext;
 import org.knime.knip.scijava.commands.KNIMEScijavaContext;
@@ -245,6 +246,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 	private JPanel createOutputTablePane() {
 		JPanel outTablePane = new JPanel();
 
+		/* Column creation mode */
 		final DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
 				m_settings.columnCreationModeModel(), "Column Creation Mode",
 				ColumnCreationMode.NEW_TABLE.toString(),
@@ -252,7 +254,15 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 
 		m_gui.dialogComponents().add(colCreationModeComp);
 
-		final JPanel comp = colCreationModeComp.getComponentPanel();
+		JPanel comp = colCreationModeComp.getComponentPanel();
+		outTablePane.add(comp);
+		
+		/* Column suffix */
+		final DialogComponentString colSuffixComp = new DialogComponentString(m_settings.columnSuffixModel(), "Column Suffix");
+		
+		m_gui.dialogComponents().add(colSuffixComp);
+		
+		comp = colSuffixComp.getComponentPanel();
 		outTablePane.add(comp);
 
 		return outTablePane;

@@ -333,6 +333,11 @@ public class ScriptingNodeModel extends NodeModel {
 		// unused
 	}
 
+	/**
+	 * CellFactory for ScriptingNode.
+	 * 
+	 * @author Jonathan Hale
+	 */
 	protected class ScriptingCellFactory extends AbstractContextual
 			implements CellFactory {
 
@@ -351,6 +356,9 @@ public class ScriptingNodeModel extends NodeModel {
 
 		protected DataColumnSpec[] createDataColumnSpecs() {
 			final ArrayList<DataColumnSpec> tableSpecs = new ArrayList<>();
+
+			final String suffix = (m_settings.columnSuffixModel().isEnabled())
+					? m_settings.getColumnSuffix() : "";
 
 			for (final ModuleItem<?> output : m_module.getInfo().outputs()) {
 				@SuppressWarnings("unchecked")
@@ -372,8 +380,10 @@ public class ScriptingNodeModel extends NodeModel {
 					continue;
 				}
 
-				tableSpecs.add(new DataColumnSpecCreator(output.getName(), type)
-						.createSpec());
+				// Add the column to table specs with name equal to the outputs
+				// name with suffix.
+				tableSpecs.add(new DataColumnSpecCreator(
+						output.getName() + suffix, type).createSpec());
 			}
 
 			return tableSpecs.toArray(new DataColumnSpec[] {});

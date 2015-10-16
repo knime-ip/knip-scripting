@@ -10,6 +10,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import org.eclipse.core.runtime.FileLocator;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -36,6 +39,7 @@ public class ScriptingNodeSettings {
 	public static final String SM_KEY_LANGUAGE = "ScriptLanguage";
 	public static final String SM_KEY_INPUT_MAPPING = "ColumnInputMappings";
 	public static final String SM_KEY_COLUMN_CREATION_MODE = "ColumnCreationMode";
+	public static final String SM_KEY_COLUMN_SUFFIX = "ColumnSuffix";
 
 	/* contains the language to execute the script code with */
 	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
@@ -48,6 +52,10 @@ public class ScriptingNodeSettings {
 
 	/* contains the column creation mode */
 	private final SettingsModelString m_columnCreationModeModel = createColumnCreationModeModel();
+
+	/* contains the column suffix */
+	private final SettingsModelString m_columnSuffixModel = createColumnSuffixModel(
+			m_columnCreationModeModel);
 
 	/* contains other settings which will be passed to a NodeSettingsService */
 	private final Map<String, SettingsModel> m_otherSettings = new HashMap<String, SettingsModel>();
@@ -90,6 +98,26 @@ public class ScriptingNodeSettings {
 	public static SettingsModelString createColumnCreationModeModel() {
 		return new SettingsModelString(SM_KEY_COLUMN_CREATION_MODE,
 				ColumnCreationMode.NEW_TABLE.toString());
+	}
+
+	/**
+	 * Create column suffix SettingsModel with default <code>""</code>.
+	 *
+	 * @return SettingsModel for the column creation mode
+	 */
+	public static SettingsModelString createColumnSuffixModel(
+			final SettingsModelString columnCreationMode) {
+		final SettingsModelString suffixModel = new SettingsModelString(
+				SM_KEY_COLUMN_SUFFIX, "");
+
+		// disable suffixModel if columnCreationMode is not APPEND_COLUMNS
+		columnCreationMode.addChangeListener((e) -> {
+			final String newVal = columnCreationMode.getStringValue();
+			suffixModel.setEnabled(ColumnCreationMode.APPEND_COLUMNS.toString()
+					.equals(newVal));
+		});
+
+		return suffixModel;
 	}
 
 	/**
@@ -145,6 +173,13 @@ public class ScriptingNodeSettings {
 	}
 
 	/**
+	 * @return value of setting with key {@link #SM_KEY_COLUMN_SUFFIX}.
+	 */
+	public String getColumnSuffix() {
+		return m_columnSuffixModel.getStringValue();
+	}
+
+	/**
 	 * @return map of settings to pass to a {@link NodeSettingsService}.
 	 */
 	public Map<String, SettingsModel> otherSettings() {
@@ -179,6 +214,13 @@ public class ScriptingNodeSettings {
 	 */
 	public SettingsModelString columnCreationModeModel() {
 		return m_columnCreationModeModel;
+	}
+
+	/**
+	 * @return model with key {@link #SM_KEY_COLUMN_SUFFIX}.
+	 */
+	public SettingsModelString columnSuffixModel() {
+		return m_columnSuffixModel;
 	}
 
 	// ---- setters ----
@@ -216,6 +258,13 @@ public class ScriptingNodeSettings {
 		m_columnCreationModeModel.setStringValue(mode.toString());
 	}
 
+	/**
+	 * @mode value to set for settings with key {@link #SM_KEY_COLUMN_SUFFIX}.
+	 */
+	public void setColumnSuffix(final String suffix) {
+		m_columnSuffixModel.setStringValue(suffix);
+	}
+
 	// ---- loading / saving ----
 
 	/**
@@ -230,6 +279,7 @@ public class ScriptingNodeSettings {
 		m_codeModel.saveSettingsTo(settings);
 		m_columnInputMappingSettingsModel.saveSettingsTo(settings);
 		m_columnCreationModeModel.saveSettingsTo(settings);
+		m_columnSuffixModel.saveSettingsTo(settings);
 	}
 
 	/**
@@ -245,5 +295,6 @@ public class ScriptingNodeSettings {
 		m_codeModel.loadSettingsFrom(settings);
 		m_columnInputMappingSettingsModel.loadSettingsFrom(settings);
 		m_columnCreationModeModel.loadSettingsFrom(settings);
+		m_columnSuffixModel.loadSettingsFrom(settings);
 	}
 }

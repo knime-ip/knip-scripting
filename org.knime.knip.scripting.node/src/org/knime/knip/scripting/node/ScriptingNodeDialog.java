@@ -335,11 +335,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 			final DataTableSpec[] specs) throws NotConfigurableException {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			try {
-				m_settings.loadSettingsFrom(settings);
-			} catch (Throwable t) {
-
-			}
+			m_settings.loadSettingsFrom(settings);
 			// DEBUG CODE //
 			if (ScriptingNodeDialogPane.DEBUG_UI) {
 				// rebuild panel to reflect possible changes

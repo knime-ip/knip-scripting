@@ -64,16 +64,33 @@ public class ColumnInputMatchingTable extends JTable implements Contextual {
 	}
 
 	/**
-	 * Update this Tables model to represent a given DataTableSpec and
-	 * ModuleInfo.
+	 * Update this Tables model to represent a given {@link DataTableSpec} and
+	 * {@link ModuleInfo}.
 	 *
 	 * @param spec
 	 *            the DataTableSpec.
+	 * @param info
+	 *            the module info
 	 */
 	public void updateModel(final DataTableSpec spec, final ModuleInfo info) {
 		getModel().updateModel();
 
 		m_spec = spec;
+		m_info = info;
+
+		setCellEditors();
+	}
+
+	/**
+	 * Update this Tables model to represent a given {@link ModuleInfo}, keeping
+	 * the current {@link DataTableSpec}.
+	 *
+	 * @param info
+	 *            the module info
+	 */
+	public void updateModel(final ModuleInfo info) {
+		getModel().updateModel();
+
 		m_info = info;
 
 		setCellEditors();

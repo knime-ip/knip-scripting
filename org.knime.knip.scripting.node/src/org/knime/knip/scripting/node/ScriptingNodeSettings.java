@@ -17,6 +17,8 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModel;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
+import org.knime.knip.scijava.commands.settings.NodeSettingsService;
+import org.knime.knip.scripting.settings.ColumnCreationMode;
 
 /**
  * Class containing all SettingsModels for {@link ScriptingNodeDialog} and
@@ -27,9 +29,13 @@ import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
  */
 public class ScriptingNodeSettings {
 
+	/**
+	 * Constants for settings model keys
+	 */
 	public static final String SM_KEY_CODE = "Code";
 	public static final String SM_KEY_LANGUAGE = "ScriptLanguage";
 	public static final String SM_KEY_INPUT_MAPPING = "ColumnInputMappings";
+	public static final String SM_KEY_COLUMN_CREATION_MODE = "ColumnCreationMode";
 
 	/* contains the language to execute the script code with */
 	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
@@ -39,6 +45,9 @@ public class ScriptingNodeSettings {
 
 	/* contains the column to input mappings */
 	private final SettingsModelStringArray m_columnInputMappingSettingsModel = createColumnInputMappingSettingsModel();
+
+	/* contains the column creation mode */
+	private final SettingsModelString m_columnCreationModeModel = createColumnCreationModeModel();
 
 	/* contains other settings which will be passed to a NodeSettingsService */
 	private final Map<String, SettingsModel> m_otherSettings = new HashMap<String, SettingsModel>();
@@ -70,6 +79,17 @@ public class ScriptingNodeSettings {
 	public static SettingsModelStringArray createColumnInputMappingSettingsModel() {
 		return new SettingsModelStringArray(SM_KEY_INPUT_MAPPING,
 				new String[] {});
+	}
+
+	/**
+	 * Create column creation mode SettingsModel with some default
+	 * {@link ColumnCreationMode#NEW_TABLE}.
+	 *
+	 * @return SettignsModel for the column creation mode
+	 */
+	public static SettingsModelString createColumnCreationModeModel() {
+		return new SettingsModelString(SM_KEY_COLUMN_CREATION_MODE,
+				ColumnCreationMode.NEW_TABLE.toString());
 	}
 
 	/**
@@ -117,6 +137,14 @@ public class ScriptingNodeSettings {
 	}
 
 	/**
+	 * @return value of setting with key {@link #SM_KEY_COLUMN_CREATION_MODE}.
+	 */
+	public ColumnCreationMode getColumnCreationMode() {
+		return ColumnCreationMode
+				.fromString(m_columnCreationModeModel.getStringValue());
+	}
+
+	/**
 	 * @return map of settings to pass to a {@link NodeSettingsService}.
 	 */
 	public Map<String, SettingsModel> otherSettings() {
@@ -146,6 +174,13 @@ public class ScriptingNodeSettings {
 		return m_columnInputMappingSettingsModel;
 	}
 
+	/**
+	 * @return model with key {@link #SM_KEY_COLUMN_CREATION_MODE}.
+	 */
+	public SettingsModelString columnCreationModeModel() {
+		return m_columnCreationModeModel;
+	}
+
 	// ---- setters ----
 
 	/**
@@ -173,6 +208,14 @@ public class ScriptingNodeSettings {
 		m_columnInputMappingSettingsModel.setStringArrayValue(mapping);
 	}
 
+	/**
+	 * @mode value to set for settings with key
+	 *       {@link #SM_KEY_COLUMN_CREATION_MODE}.
+	 */
+	public void setColumnCreationMode(final ColumnCreationMode mode) {
+		m_columnCreationModeModel.setStringValue(mode.toString());
+	}
+
 	// ---- loading / saving ----
 
 	/**
@@ -186,6 +229,7 @@ public class ScriptingNodeSettings {
 		m_scriptLanguageModel.saveSettingsTo(settings);
 		m_codeModel.saveSettingsTo(settings);
 		m_columnInputMappingSettingsModel.saveSettingsTo(settings);
+		m_columnCreationModeModel.saveSettingsTo(settings);
 	}
 
 	/**
@@ -200,5 +244,6 @@ public class ScriptingNodeSettings {
 		m_scriptLanguageModel.loadSettingsFrom(settings);
 		m_codeModel.loadSettingsFrom(settings);
 		m_columnInputMappingSettingsModel.loadSettingsFrom(settings);
+		m_columnCreationModeModel.loadSettingsFrom(settings);
 	}
 }

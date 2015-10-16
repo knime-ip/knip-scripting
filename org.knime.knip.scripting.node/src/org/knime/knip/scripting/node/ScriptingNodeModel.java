@@ -29,6 +29,11 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.port.PortObjectSpec;
+import org.knime.core.node.streamable.PartitionInfo;
+import org.knime.core.node.streamable.StreamableFunction;
+import org.knime.core.node.streamable.StreamableOperator;
+import org.knime.core.node.streamable.StreamableOperatorInternals;
 import org.knime.knip.scijava.commands.DefaultKNIMEScijavaContext;
 import org.knime.knip.scijava.commands.KNIMEScijavaContext;
 import org.knime.knip.scijava.commands.adapter.OutputAdapter;
@@ -233,6 +238,20 @@ public class ScriptingNodeModel extends NodeModel {
 	}
 
 	@Override
+	public StreamableOperator createStreamableOperator(
+			final PartitionInfo partitionInfo, final PortObjectSpec[] inSpecs)
+					throws InvalidSettingsException {
+
+		if (m_settings
+				.getColumnCreationMode() == ColumnCreationMode.APPEND_COLUMNS) {
+			return new RearrangingScriptingStreamableFunction(
+					m_colRearranger.createStreamableFunction());
+		} else {
+			return new ScriptingStreamableFunction();
+		}
+	}
+
+	@Override
 	protected void loadInternals(final File nodeInternDir,
 			final ExecutionMonitor exec)
 					throws IOException, CanceledExecutionException {
@@ -419,5 +438,96 @@ public class ScriptingNodeModel extends NodeModel {
 			m_compileProduct.resetModule(m_module);
 		}
 	}
+
+	// --- streamable functions ---
+
+	/**
+	 * Streamable function for ScriptingNode.
+	 * 
+	 * @author Jonathan Hale
+	 */
+	protected class ScriptingStreamableFunction extends StreamableFunction {
+		private TempClassLoader tempCl;
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init(final ExecutionContext exec) throws Exception {
+			// provide the KNIME data via Scijava services to module
+			m_knimeContext.execution().setExecutionContext(exec);
+
+			tempCl = new TempClassLoader(
+					ScriptingGateway.get().createUrlClassLoader());
+		}
+
+		@Override
+		public DataRow compute(final DataRow input) throws Exception {
+			return new DefaultRow(input.getKey(),
+					m_cellFactory.getCells(input));
+		}
+
+		@Override
+		public void finish() {
+			super.finish();
+
+			tempCl.close();
+		}
+	}
+
+	/**
+	 * Streamable function for ScriptingNode using a column rearranger.
+	 * 
+	 * @author Jonathan Hale
+	 */
+	protected class RearrangingScriptingStreamableFunction
+			extends StreamableFunction {
+
+		final StreamableFunction m_colRearrangerFunction;
+
+		/**
+		 * Constructor
+		 * 
+		 * @param streamableFunction
+		 *            Function of the column rearranger
+		 */
+		public RearrangingScriptingStreamableFunction(
+				final StreamableFunction streamableFunction) {
+			m_colRearrangerFunction = streamableFunction;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final void init(final ExecutionContext exec) throws Exception {
+			super.init(exec);
+			m_colRearrangerFunction.init(exec);
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final DataRow compute(final DataRow inputRow) {
+			try {
+				return m_colRearrangerFunction.compute(inputRow);
+			} catch (Exception e) {
+				throw new IllegalArgumentException(
+						"Exception caught while reading row "
+								+ inputRow.getKey() + "! Caught exception "
+								+ e.getMessage());
+			}
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final void finish() {
+			m_colRearrangerFunction.finish();
+			super.finish();
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public final StreamableOperatorInternals saveInternals() {
+			return m_colRearrangerFunction.saveInternals();
+		}
+	};
 
 }

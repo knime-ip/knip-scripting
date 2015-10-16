@@ -72,6 +72,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
+import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
 import org.knime.knip.scijava.commands.DefaultKNIMEScijavaContext;
 import org.knime.knip.scijava.commands.KNIMEScijavaContext;
 import org.knime.knip.scijava.commands.mapping.ColumnModuleItemMapping;
@@ -81,6 +82,7 @@ import org.knime.knip.scijava.core.TempClassLoader;
 import org.knime.knip.scripting.base.CompileHelper;
 import org.knime.knip.scripting.base.CompileProductHelper;
 import org.knime.knip.scripting.base.ScriptingGateway;
+import org.knime.knip.scripting.settings.ColumnCreationMode;
 import org.knime.knip.scripting.ui.ScriptingNodeDialogListener;
 import org.knime.knip.scripting.ui.ScriptingNodeDialogPane;
 import org.scijava.Context;
@@ -235,8 +237,23 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		/* create tabs */
 		addTabAt(0, "Script Editor", m_gui.editorPane());
 		addTabAt(1, "Script Dialog", m_autogenPanel);
+		addTabAt(2, "Output Table", createOutputTablePane());
 
 		getPanel().revalidate();
+	}
+
+	private JPanel createOutputTablePane() {
+		JPanel outTablePane = new JPanel();
+
+		DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
+				m_settings.columnCreationModeModel(), "Column Creation Mode",
+				ColumnCreationMode.NEW_TABLE.toString(),
+				ColumnCreationMode.APPEND_COLUMNS.toString());
+
+		m_generatedDialogComponents.add(colCreationModeComp);
+		outTablePane.add(colCreationModeComp.getComponentPanel());
+
+		return outTablePane;
 	}
 
 	private void updateScriptLanguage() {

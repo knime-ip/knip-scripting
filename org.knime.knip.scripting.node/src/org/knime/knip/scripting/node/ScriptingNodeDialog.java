@@ -311,6 +311,10 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 					m_scriptService.getLanguageByName(
 							m_settings.getScriptLanguageName()));
 
+			// refresh cim table (see also knip-scripting#21)
+			m_gui.columnInputMatchingTable()
+					.updateModel(m_compilationResult.getModuleInfo());
+
 			// update autogen panel
 			createAutogenPanel();
 

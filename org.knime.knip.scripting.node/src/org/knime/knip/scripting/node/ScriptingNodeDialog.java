@@ -245,13 +245,15 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 	private JPanel createOutputTablePane() {
 		JPanel outTablePane = new JPanel();
 
-		DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
+		final DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
 				m_settings.columnCreationModeModel(), "Column Creation Mode",
 				ColumnCreationMode.NEW_TABLE.toString(),
 				ColumnCreationMode.APPEND_COLUMNS.toString());
 
-		m_generatedDialogComponents.add(colCreationModeComp);
-		outTablePane.add(colCreationModeComp.getComponentPanel());
+		m_gui.dialogComponents().add(colCreationModeComp);
+
+		final JPanel comp = colCreationModeComp.getComponentPanel();
+		outTablePane.add(comp);
 
 		return outTablePane;
 	}

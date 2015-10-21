@@ -1,6 +1,7 @@
 package org.knime.knip.scripting.parameters;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.scijava.plugin.AbstractSingletonService;
 import org.scijava.plugin.Plugin;
@@ -18,7 +19,7 @@ public class DefaultParameterCodeGeneratorService
 		extends AbstractSingletonService<ParameterCodeGenerator>
 		implements ParameterCodeGeneratorService {
 
-	private HashMap<String, ParameterCodeGenerator> m_generatorMap = null;
+	private Map<String, ParameterCodeGenerator> m_generatorMap = null;
 
 	@Override
 	public Class<ParameterCodeGenerator> getPluginType() {
@@ -33,7 +34,8 @@ public class DefaultParameterCodeGeneratorService
 		}
 
 		for (String name : language.getNames()) {
-			ParameterCodeGenerator generator = m_generatorMap.get(name.toLowerCase());
+			ParameterCodeGenerator generator = m_generatorMap
+					.get(name.toLowerCase());
 			if (generator != null) {
 				return generator;
 			}

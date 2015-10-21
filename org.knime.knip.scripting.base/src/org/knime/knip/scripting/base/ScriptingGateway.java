@@ -20,7 +20,6 @@ import org.knime.knip.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.DisplayPostprocessor;
-import org.scijava.log.slf4j.SLF4JLogService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.DefaultPluginFinder;
 import org.scijava.plugin.PluginIndex;

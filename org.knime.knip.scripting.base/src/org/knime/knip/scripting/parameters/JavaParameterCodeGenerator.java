@@ -18,8 +18,8 @@ public class JavaParameterCodeGenerator implements ParameterCodeGenerator {
 				|| type == String.class) ? type.getSimpleName()
 						: type.getName();
 
-		return "\n\t@Parameter(type = ItemIO.INPUT)\n\tprivate " + typeName
-				+ " " + memberName + ";\n";
+		return "\n\n\t@Parameter(type = ItemIO.INPUT)\n\tprivate " + typeName
+				+ " " + memberName + ";";
 	}
 
 	@Override

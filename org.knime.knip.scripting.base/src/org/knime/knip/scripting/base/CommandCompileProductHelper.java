@@ -1,8 +1,5 @@
 package org.knime.knip.scripting.base;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-
 import org.scijava.Context;
 import org.scijava.command.CommandInfo;
 import org.scijava.module.Module;

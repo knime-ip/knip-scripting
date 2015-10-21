@@ -4,8 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
@@ -104,23 +106,15 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 				final DataColumnSpec cspec = (DataColumnSpec) o;
 
 				final String columnName = cspec.getName();
-				String memberName = removeIntegers(
-						Character.toLowerCase(columnName.charAt(0))
-								+ columnName.substring(1));
-
-				int i = 0;
-				String chosen = memberName;
-				while (m_gui.columnInputMatchingTable().getModuleInfo()
-						.getInput(chosen) != null) {
-					chosen = memberName + i;
-					++i;
-				}
-				memberName = chosen;
+				String memberName = cleanupMemberName(columnName);
 
 				// get the Name of the first createable type
 				@SuppressWarnings("rawtypes")
 				final Iterator<InputAdapter> itor = m_inputAdapters
-						.getMatchingInputAdapters(cspec.getType()).iterator();
+						.getMatchingInputAdapters(
+								cspec.getType().getPreferredValueClass())
+						.iterator();
+
 				final Class<?> type;
 				if (itor.hasNext()) {
 					type = itor.next().getOutputType();
@@ -160,6 +154,29 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 						memberName);
 			}
 		}
+	}
+
+	/**
+	 * Cleans the columnname from illegal characters to make it usable as a
+	 * parameter.
+	 * 
+	 * @param columnName the name of the column
+	 * @return name of the parameter 
+	 */
+	private String cleanupMemberName(final String columnName) {
+		String memberName = removeIntegers(
+				Character.toLowerCase(columnName.charAt(0))
+						+ columnName.substring(1));
+
+		int i = 0;
+		String chosen = memberName;
+		while (m_gui.columnInputMatchingTable().getModuleInfo()
+				.getInput(chosen) != null) {
+			chosen = memberName + i;
+			++i;
+		}
+		memberName = chosen;
+		return memberName;
 	}
 
 	private String removeIntegers(final String memberName) {

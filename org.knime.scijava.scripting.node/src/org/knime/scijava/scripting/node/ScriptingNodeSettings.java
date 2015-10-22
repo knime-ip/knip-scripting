@@ -67,7 +67,7 @@ public class ScriptingNodeSettings {
 	 */
 	public static SettingsModelString createCodeSettingsModel() {
 		return new SettingsModelString(SM_KEY_CODE, fileAsString(
-				"platform:/plugin/org.knime.knip.scripting.node/res/DefaultScript.txt"));
+				"platform:/plugin/org.knime.scijava.scripting.node/res/DefaultScript.txt"));
 	}
 
 	/**

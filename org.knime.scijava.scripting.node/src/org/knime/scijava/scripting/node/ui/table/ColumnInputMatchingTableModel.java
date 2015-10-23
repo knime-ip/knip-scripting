@@ -1,5 +1,6 @@
 package org.knime.scijava.scripting.node.ui.table;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -131,7 +132,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	}
 
 	/**
-	 * Remove an item from the model and the underlying
+	 * Remove items from the model and the underlying
 	 * {@link ColumnModuleItemMappingService}.
 	 *
 	 * Please make sure that all cell editors cancel edit before calling this
@@ -140,10 +141,17 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	 * @param row
 	 *            row index to remove
 	 */
-	public void removeItem(final int row) {
-		m_cimService.removeMapping(m_mappings.get(row));
-		this.fireTableRowsDeleted(row, row);
+	public void removeItems(final int...rows){
+		List<ColumnModuleItemMapping> mappings = new ArrayList<>();
+		for (int row : rows) {
+			mappings.add(m_mappings.get(row));
+		}
+		for (ColumnModuleItemMapping mapping : mappings) {
+			m_cimService.removeMapping(mapping);
+		}
+		this.fireTableDataChanged();
 	}
+	
 
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {

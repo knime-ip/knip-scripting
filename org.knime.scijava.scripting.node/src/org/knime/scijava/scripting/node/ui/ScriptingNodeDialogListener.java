@@ -254,7 +254,7 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 	 * ColumnInputMappingTable.
 	 */
 	protected void removeColumnInputMapping() {
-		final int row = m_gui.columnInputMatchingTable().getSelectedRow();
-		m_gui.columnInputMatchingTable().getModel().removeItem(row);
+		final int[] rows = m_gui.columnInputMatchingTable().getSelectedRows();
+		m_gui.columnInputMatchingTable().getModel().removeItems(rows);
 	}
 }

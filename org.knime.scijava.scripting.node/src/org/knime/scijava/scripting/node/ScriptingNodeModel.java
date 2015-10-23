@@ -258,9 +258,8 @@ public class ScriptingNodeModel extends NodeModel {
 				.getColumnCreationMode() == ColumnCreationMode.APPEND_COLUMNS) {
 			return new RearrangingScriptingStreamableFunction(
 					m_colRearranger.createStreamableFunction());
-		} else {
-			return new ScriptingStreamableFunction();
 		}
+		return new ScriptingStreamableFunction();
 	}
 	
     @Override

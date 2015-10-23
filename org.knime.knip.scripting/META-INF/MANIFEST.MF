@@ -16,3 +16,4 @@ Require-Bundle: scijava-common;bundle-version="2.47.0",
  imagej-common,
  org.knime.scijava.scripting.node;bundle-version="0.9.0",
  org.knime.scijava.scripting.base;bundle-version="0.9.0"
+Export-Package: org.knime.knip.scripting.adapters

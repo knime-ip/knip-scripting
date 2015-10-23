@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.knime.knip.scripting.feature"
+      id="org.knime.scijava.scripting.feature"
       label="KNIME Scijava Scripting Feature"
       version="0.9.0.qualifier"
       provider-name="University of Konstanz / KNIME">

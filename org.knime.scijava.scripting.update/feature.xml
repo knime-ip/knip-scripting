@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.knime.knip.scripting.update"
-      label="KNIP Scripting Update Site"
+      id="org.knime.scijava.scripting.update"
+      label="KNIME SciJava Scripting Update Site"
       version="0.9.0.qualifier"
       provider-name="University of Konstanz">
 

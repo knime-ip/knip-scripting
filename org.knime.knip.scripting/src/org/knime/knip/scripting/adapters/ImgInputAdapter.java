@@ -9,7 +9,7 @@ import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import net.imglib2.img.Img;
+import net.imagej.ImgPlus;
 
 /**
  * Adapter for {@link BooleanValue} to Boolean.
@@ -17,15 +17,15 @@ import net.imglib2.img.Img;
  * @author Gabriel Einsdorf (University of Konstanz)
  *
  */
-@Plugin(type = InputAdapter.class, priority = Priority.HIGH_PRIORITY)
-public class ImgPlusInputAdapter
-		extends AbstractInputAdapter<ImgPlusValue, Img> {
+@Plugin(type = InputAdapter.class, priority=Priority.LOW_PRIORITY)
+public class ImgInputAdapter
+		extends AbstractInputAdapter<ImgPlusValue, ImgPlus> {
 
 	@Parameter
 	KNIMEExecutionService execService;
 
 	@Override
-	protected Img getValue(ImgPlusValue value) {
+	protected ImgPlus getValue(ImgPlusValue value) {
 		return value.getImgPlus();
 	}
 
@@ -35,7 +35,7 @@ public class ImgPlusInputAdapter
 	}
 
 	@Override
-	public Class<Img> getOutputType() {
-		return Img.class;
+	public Class<ImgPlus> getOutputType() {
+		return ImgPlus.class;
 	}
 }

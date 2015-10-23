@@ -9,7 +9,8 @@ import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import net.imglib2.img.Img;
+import net.imagej.ImgPlus;
+import net.imglib2.RandomAccessibleInterval;
 
 /**
  * Adapter for {@link BooleanValue} to Boolean.
@@ -17,15 +18,15 @@ import net.imglib2.img.Img;
  * @author Gabriel Einsdorf (University of Konstanz)
  *
  */
-@Plugin(type = InputAdapter.class, priority = Priority.HIGH_PRIORITY)
-public class ImgPlusInputAdapter
-		extends AbstractInputAdapter<ImgPlusValue, Img> {
+@Plugin(type = InputAdapter.class, priority=Priority.LOW_PRIORITY -1)
+public class RAIInputAdapter
+		extends AbstractInputAdapter<ImgPlusValue, RandomAccessibleInterval> {
 
 	@Parameter
 	KNIMEExecutionService execService;
 
 	@Override
-	protected Img getValue(ImgPlusValue value) {
+	protected RandomAccessibleInterval getValue(ImgPlusValue value) {
 		return value.getImgPlus();
 	}
 
@@ -35,7 +36,7 @@ public class ImgPlusInputAdapter
 	}
 
 	@Override
-	public Class<Img> getOutputType() {
-		return Img.class;
+	public Class<RandomAccessibleInterval> getOutputType() {
+		return RandomAccessibleInterval.class;
 	}
 }

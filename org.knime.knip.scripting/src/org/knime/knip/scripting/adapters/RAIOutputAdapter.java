@@ -7,31 +7,33 @@ import org.knime.knip.base.data.img.ImgPlusCellFactory;
 import org.knime.scijava.commands.AbstractOutputAdapter;
 import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.adapter.OutputAdapter;
+import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import net.imagej.ImgPlus;
+import net.imglib2.img.Img;
 
 /**
- * Adapter for ImgPlus to {@link ImgPlusCell}.
+ * Adapter for Img to {@link ImgPlusCell}.
  *
  * @author Gabriel Einsdorf (University of Konstanz)
  *
  */
+
 @SuppressWarnings("rawtypes")
-@Plugin(type = OutputAdapter.class)
-public class ImgPlusOutputAdapter
-		extends AbstractOutputAdapter<ImgPlus, ImgPlusCell> {
+@Plugin(type = OutputAdapter.class, priority = Priority.LOW_PRIORITY - 1)
+public class RAIOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusCell> {
 
 	@Parameter
 	KNIMEExecutionService execService;
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	protected ImgPlusCell createCell(ImgPlus imp) {
+	protected ImgPlusCell createCell(Img img) {
 		try {
 			return new ImgPlusCellFactory(execService.getExecutionContext())
-					.createCell(imp);
+					.createCell(ImgPlus.wrap(img));
 		} catch (IOException e) {
 			throw new IllegalArgumentException(
 					"Can't convert value: " + e.getMessage());
@@ -44,8 +46,8 @@ public class ImgPlusOutputAdapter
 	}
 
 	@Override
-	public Class<ImgPlus> getInputType() {
-		return ImgPlus.class;
+	public Class<Img> getInputType() {
+		return Img.class;
 	}
 
 }

@@ -160,32 +160,36 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 	 * Cleans the columnname from illegal characters to make it usable as a
 	 * parameter.
 	 * 
-	 * @param columnName the name of the column
-	 * @return name of the parameter 
+	 * @param columnName
+	 *            the name of the column
+	 * @return name of the parameter
 	 */
 	private String cleanupMemberName(final String columnName) {
-		String memberName = removeIntegers(
-				Character.toLowerCase(columnName.charAt(0))
-						+ columnName.substring(1));
 
+		// lowercase first letter
+		String name = Character.toLowerCase(columnName.charAt(0))
+				+ columnName.substring(1);
+		if (Character.isDigit(name.charAt(0))) {
+			name = "_" + columnName.substring(0);
+		}
+
+		// replace all illegal characters with '_'
+		// Used regex without java escapes for readability:
+		// \\|\#|\[|\]|\(|\)\{|\}|\%|\+|\?|\~|/|\&|\.|\:|\;|\|
+		name = name.replaceAll(
+				"\\\\|\\#|\\[|\\]|\\(|\\)\\{|\\}|\\%|\\+|"
+				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\|",
+				"_");
+
+		// ensure uniqueness
+		String chosen = name;
 		int i = 0;
-		String chosen = memberName;
 		while (m_gui.columnInputMatchingTable().getModuleInfo()
 				.getInput(chosen) != null) {
-			chosen = memberName + i;
+			chosen = name + i;
 			++i;
 		}
-		memberName = chosen;
-		return memberName;
-	}
-
-	private String removeIntegers(final String memberName) {
-		String ret = memberName;
-		while (Character.isDigit(ret.charAt(ret.length() - 1))) {
-			ret = ret.substring(0, ret.length() - 1);
-		}
-
-		return ret;
+		return chosen;
 	}
 
 	@Override

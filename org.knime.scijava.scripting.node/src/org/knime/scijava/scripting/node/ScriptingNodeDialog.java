@@ -77,6 +77,7 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.DialogComponentString;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
+import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.scijava.commands.DefaultKNIMEScijavaContext;
 import org.knime.scijava.commands.KNIMEScijavaContext;
 import org.knime.scijava.commands.mapping.ColumnModuleItemMapping;
@@ -253,9 +254,11 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		JPanel contents = new JPanel();
 		contents.setLayout(new BoxLayout(contents, BoxLayout.PAGE_AXIS));
 
+		SettingsModelString columnCreationModeModel = m_settings
+				.columnCreationModeModel();
 		/* Column creation mode */
 		final DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
-				m_settings.columnCreationModeModel(), "Column Creation Mode",
+				columnCreationModeModel, "Column Creation Mode",
 				ColumnCreationMode.NEW_TABLE.toString(),
 				ColumnCreationMode.APPEND_COLUMNS.toString());
 
@@ -264,13 +267,16 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		JPanel comp = colCreationModeComp.getComponentPanel();
 		contents.add(comp);
 
+		SettingsModelString columnSuffixModel = m_settings.columnSuffixModel();
 		/* Column suffix */
 		final DialogComponentString colSuffixComp = new DialogComponentString(
-				m_settings.columnSuffixModel(), "Column Suffix");
+				columnSuffixModel, "Column Suffix");
+
+		// Ensure that component is correctly initialized.
+		columnSuffixModel.setEnabled(columnCreationModeModel.getStringValue()
+				.equals(ColumnCreationMode.APPEND_COLUMNS.toString()));
 
 		m_gui.dialogComponents().add(colSuffixComp);
-		// FIXME: Hack to have component initially disabled, if necessary.
-		colSuffixComp.setEnabled(m_settings.columnSuffixModel().isEnabled());
 
 		comp = colSuffixComp.getComponentPanel();
 		contents.add(comp);

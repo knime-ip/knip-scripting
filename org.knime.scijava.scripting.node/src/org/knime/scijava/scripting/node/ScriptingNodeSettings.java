@@ -110,18 +110,15 @@ public class ScriptingNodeSettings {
 		final SettingsModelString suffixModel = new SettingsModelString(
 				SM_KEY_COLUMN_SUFFIX, "");
 
+		// set inital state
+		suffixModel.setEnabled(ColumnCreationMode.APPEND_COLUMNS.toString()
+					.equals(columnCreationMode.getStringValue()));
+
 		// disable suffixModel if columnCreationMode is not APPEND_COLUMNS
 		columnCreationMode.addChangeListener((e) -> {
-			final String newVal = columnCreationMode.getStringValue();
 			suffixModel.setEnabled(ColumnCreationMode.APPEND_COLUMNS.toString()
-					.equals(newVal));
+					.equals(columnCreationMode.getStringValue()));
 		});
-
-		// same code as in change listener to initialize enabled property
-		// correctly
-		final String newVal = columnCreationMode.getStringValue();
-		suffixModel.setEnabled(
-				ColumnCreationMode.APPEND_COLUMNS.toString().equals(newVal));
 
 		return suffixModel;
 	}

@@ -8,8 +8,6 @@ Eclipse-BuddyPolicy: registered
 Eclipse-RegisterBuddy: org.knime.scijava.commands, org.knime.scijava.core, org.scijava.scijava-common
 Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  org.knime.base;bundle-version="3.0.0",
- org.knime.knip.base;bundle-version="1.4.0",
- org.knime.knip.core;bundle-version="1.4.0",
  org.eclipse.pde.api.tools;bundle-version="1.0.301",
  scijava-common;bundle-version="2.47.0",
  scijava-log-slf4j;bundle-version="1.0.2",
@@ -25,7 +23,8 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  jython-shaded;bundle-version="2.5.3",
  scripting-javascript;bundle-version="0.4.1",
  imagej-ui-swing;bundle-version="0.15.0",
- imagej-common;bundle-version="0.18.0"
+ imagej-common;bundle-version="0.18.0",
+ imagej-deprecated;bundle-version="0.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: lib/tools.jar,
  scijava_scripting_base.jar

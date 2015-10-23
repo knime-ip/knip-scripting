@@ -728,44 +728,30 @@ propagated with or for interoperation with KNIME.
    </license>
 
    <requires>
-      <import plugin="org.knime.workbench.repository" version="2.10.0" match="greaterOrEqual"/>
-      <import plugin="org.knime.base" version="2.10.1" match="greaterOrEqual"/>
-      <import plugin="org.knime.knip.base" version="1.2.0" match="greaterOrEqual"/>
-      <import plugin="org.knime.knip.core" version="1.2.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.pde.api.tools" version="1.0.301" match="greaterOrEqual"/>
-      <import plugin="scijava-common" version="2.36.0" match="greaterOrEqual"/>
       <import plugin="scijava-log-slf4j" version="1.0.2" match="greaterOrEqual"/>
       <import plugin="scijava-plugins-commands" version="0.1.8" match="greaterOrEqual"/>
       <import plugin="scijava-plugins-text-markdown" version="0.1.1" match="greaterOrEqual"/>
       <import plugin="scijava-plugins-text-plain" version="0.1.1" match="greaterOrEqual"/>
       <import plugin="scijava-ui-awt" version="0.1.3" match="greaterOrEqual"/>
-      <import plugin="scijava-ui-swing" version="0.3.0" match="greaterOrEqual"/>
-      <import plugin="scripting-jython" version="0.1.4" match="greaterOrEqual"/>
-      <import plugin="org.knime.knip.scijava.core" version="0.1.0" match="greaterOrEqual"/>
-      <import plugin="org.knime.knip.scijava.commands" version="0.1.0" match="greaterOrEqual"/>
       <import plugin="imglib2" version="2.2.0" match="greaterOrEqual"/>
-      <import plugin="imagej-ops" version="0.8.0" match="greaterOrEqual"/>
-      <import plugin="imglib2-algorithm" version="0.2.0" match="greaterOrEqual"/>
-      <import plugin="imglib2-algorithm-fft" version="0.1.1" match="greaterOrEqual"/>
-      <import plugin="imglib2-algorithm-gpl" version="0.1.2" match="greaterOrEqual"/>
-      <import plugin="imglib2-ij" version="2.0.0" match="greaterOrEqual"/>
-      <import plugin="imglib2-realtransform" version="2.0.0" match="greaterOrEqual"/>
-      <import plugin="imglib2-roi" version="0.2.1" match="greaterOrEqual"/>
-      <import plugin="imagej-common" version="0.12.0" match="greaterOrEqual"/>
-      <import plugin="scripting-java" version="0.3.0" match="greaterOrEqual"/>
+      <import plugin="scijava-common" version="2.45.0" match="greaterOrEqual"/>
+      <import plugin="scijava-common" version="2.47.0" match="greaterOrEqual"/>
+      <import plugin="org.knime.workbench.repository" version="3.0.0" match="greaterOrEqual"/>
+      <import plugin="org.knime.base" version="3.0.0" match="greaterOrEqual"/>
+      <import plugin="org.knime.knip.base" version="1.4.0" match="greaterOrEqual"/>
+      <import plugin="org.knime.knip.core" version="1.4.0" match="greaterOrEqual"/>
+      <import plugin="scijava-ui-swing" version="0.7.0" match="greaterOrEqual"/>
+      <import plugin="org.knime.scijava.core" version="0.2.0" match="greaterOrEqual"/>
+      <import plugin="org.knime.scijava.commands" version="0.2.0" match="greaterOrEqual"/>
+      <import plugin="scripting-java" version="0.3.3" match="greaterOrEqual"/>
+      <import plugin="scripting-jython" version="0.2.2" match="greaterOrEqual"/>
+      <import plugin="jython-shaded" version="2.5.3" match="greaterOrEqual"/>
+      <import plugin="scripting-javascript" version="0.4.1" match="greaterOrEqual"/>
+      <import plugin="imagej-ui-swing" version="0.15.0" match="greaterOrEqual"/>
+      <import plugin="imagej-common" version="0.18.0" match="greaterOrEqual"/>
+      <import plugin="org.knime.scijava.scripting.base" version="0.9.0" match="greaterOrEqual"/>
    </requires>
-
-   <plugin
-         id="org.knime.knip.scripting.base"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.knime.knip.scripting.node"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
 
    <plugin
          id="jython-shaded"
@@ -787,6 +773,18 @@ propagated with or for interoperation with KNIME.
 
    <plugin
          id="scripting-javascript"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.knime.scijava.scripting.base"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.knime.scijava.scripting.node"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

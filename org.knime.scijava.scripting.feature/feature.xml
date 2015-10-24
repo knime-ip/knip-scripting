@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.knime.scijava.scripting.feature"
-      label="KNIME Scijava Scripting Feature"
+      label="KNIME - SciJava Scripting Extensions"
       version="0.9.0.qualifier"
       provider-name="University of Konstanz / KNIME">
 
@@ -728,34 +728,11 @@ propagated with or for interoperation with KNIME.
    </license>
 
    <plugin
-         id="jython-shaded"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="scripting-jython"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="scripting-java"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="scripting-javascript"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
          id="org.knime.scijava.scripting.base"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
+         
 
    <plugin
          id="org.knime.scijava.scripting.node"

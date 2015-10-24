@@ -11,9 +11,9 @@ Require-Bundle: scijava-common;bundle-version="2.47.0",
  org.knime.core;bundle-version="3.0.0",
  org.knime.knip.base;bundle-version="1.4.0",
  org.knime.knip.core;bundle-version="1.4.0",
- org.knime.scijava.commands;bundle-version="0.2.0",
  imglib2;bundle-version="2.4.0",
  imagej-common,
  org.knime.scijava.scripting.node;bundle-version="0.9.0",
- org.knime.scijava.scripting.base;bundle-version="0.9.0"
+ org.knime.scijava.scripting.base;bundle-version="0.9.0",
+ org.knime.scijava.commands;bundle-version="0.2.0"
 Export-Package: org.knime.knip.scripting.adapters

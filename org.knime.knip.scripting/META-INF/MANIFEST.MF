@@ -11,9 +11,25 @@ Require-Bundle: scijava-common;bundle-version="2.47.0",
  org.knime.core;bundle-version="3.0.0",
  org.knime.knip.base;bundle-version="1.4.0",
  org.knime.knip.core;bundle-version="1.4.0",
- imglib2;bundle-version="2.4.0",
- imagej-common,
+ org.knime.scijava.commands;bundle-version="0.2.0",
+ imglib2;bundle-version="2.4.0";visibility:=reexport,
  org.knime.scijava.scripting.node;bundle-version="0.9.0",
  org.knime.scijava.scripting.base;bundle-version="0.9.0",
- org.knime.scijava.commands;bundle-version="0.2.0"
-Export-Package: org.knime.knip.scripting.adapters
+ org.knime.scijava.commands;bundle-version="0.2.0",
+ imglib2-roi;bundle-version="0.4.2";visibility:=reexport,
+ imagej-common;bundle-version="0.18.0",visibility:=reexport
+ imagej-ops;bundle-version="0.22.0";visibility:=reexport,
+ imglib2-algorithm;bundle-version="0.3.2";visibility:=reexport,
+ imglib2-algorithm-fft;bundle-version="0.1.2";visibility:=reexport,
+ imglib2-algorithm-gpl;bundle-version="0.1.5";visibility:=reexport,
+ imglib2-ij;bundle-version="2.0.31";visibility:=reexport,
+ imglib2-realtransform;bundle-version="2.0.29";visibility:=reexport,
+ imglib2-ui;bundle-version="2.0.29";visibility:=reexport
+Export-Package: org.knime.knip.scripting.adapters;
+  uses:="org.knime.knip.base.data.img,
+   net.imglib2.img,
+   org.knime.scijava.commands,
+   net.imglib2,
+   org.knime.knip.base.data.labeling,
+   net.imglib2.roi.labeling,
+   net.imagej"

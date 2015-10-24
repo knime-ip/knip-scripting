@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.knime.knip.scripting.feature"
-      label="KNIME Image Processing - Scripting Feature"
+      label="KNIME Image Processing - Scripting"
       version="0.9.0.qualifier"
       provider-name="University of Konstanz / KNIME">
 
@@ -726,42 +726,6 @@ interoperation with KNIME.  The owner of a Node may freely choose the
 license terms applicable to such Node, including when such Node is
 propagated with or for interoperation with KNIME.
    </license>
-
-   <plugin
-         id="jython-shaded"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="scripting-jython"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="scripting-java"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="scripting-javascript"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.knime.scijava.scripting.base"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.knime.scijava.scripting.node"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
 
    <plugin
          id="org.knime.knip.scripting"

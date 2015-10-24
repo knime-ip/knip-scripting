@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.knime.knip.scripting.update"
+      label="KNIME Image Processing - Scripting Update Site"
+      version="0.9.0.qualifier"
+      provider-name="University of Konstanz">
+
+   <includes
+         id="org.knime.knip.scripting.feature"
+         version="0.0.0"/>
+
+</feature>

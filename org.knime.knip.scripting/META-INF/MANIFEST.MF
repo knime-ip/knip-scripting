@@ -23,6 +23,5 @@ Require-Bundle: scijava-common;bundle-version="2.47.0",
  imglib2-algorithm-gpl;bundle-version="0.1.5";visibility:=reexport,
  imglib2-ij;bundle-version="2.0.31";visibility:=reexport,
  imglib2-realtransform;bundle-version="2.0.29";visibility:=reexport,
- imglib2-ui;bundle-version="2.0.29";visibility:=reexport,
  imagej-ops;bundle-version="0.22.0";visibility:=reexport
 Export-Package: org.knime.knip.scripting.adapters

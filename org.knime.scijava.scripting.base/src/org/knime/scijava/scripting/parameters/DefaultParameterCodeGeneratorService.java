@@ -3,6 +3,7 @@ package org.knime.scijava.scripting.parameters;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.scijava.InstantiableException;
 import org.scijava.plugin.AbstractSingletonService;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginInfo;
@@ -49,11 +50,14 @@ public class DefaultParameterCodeGeneratorService
 	 * instance.
 	 */
 	private void processInstances() {
-		m_generatorMap = new HashMap<>();
-
-		for (PluginInfo<ParameterCodeGenerator> pluginInfo : getPlugins()) {
-			m_generatorMap.put(pluginInfo.getName().toLowerCase(),
-					getInstance(pluginInfo.getPluginClass()));
+		try {
+			m_generatorMap = new HashMap<>();
+			for (PluginInfo<ParameterCodeGenerator> pluginInfo : getPlugins()) {
+				m_generatorMap.put(pluginInfo.getName().toLowerCase(),
+						getInstance(pluginInfo.loadClass()));
+			}
+		} catch (InstantiableException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

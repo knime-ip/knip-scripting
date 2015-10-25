@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.knime.scijava.scripting.base;singleton:=true
 Bundle-Version: 0.9.0.qualifier
 Bundle-Vendor: University of Konstanz
 Eclipse-BuddyPolicy: registered
-Eclipse-RegisterBuddy: org.knime.scijava.commands, org.knime.scijava.core, org.scijava.scijava-common
+Eclipse-RegisterBuddy: org.knime.scijava.commands
 Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  org.knime.base;bundle-version="3.0.0",
  org.eclipse.pde.api.tools;bundle-version="1.0.301",

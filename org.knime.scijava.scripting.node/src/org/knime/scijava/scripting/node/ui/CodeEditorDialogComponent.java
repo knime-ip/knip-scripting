@@ -14,6 +14,8 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
+import org.knime.scijava.core.TempClassLoader;
+import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.scijava.Context;
 
 import net.imagej.ui.swing.script.EditorPane;
@@ -39,11 +41,12 @@ public class CodeEditorDialogComponent extends DialogComponent
 		super(sm);
 
 		m_codeModel = sm;
-
-		m_textArea = new EditorPane();
+		try (final TempClassLoader tempCl = new TempClassLoader(
+				ScriptingGateway.get().createUrlClassLoader())) {
+			m_textArea = new EditorPane();
+		}
 		m_textArea.setCodeFoldingEnabled(true);
 		m_textArea.setAntiAliasingEnabled(true);
-
 		final JPanel panel = getComponentPanel();
 		panel.setLayout(new GridBagLayout());
 		panel.add(m_textArea.wrappedInScrollbars(),

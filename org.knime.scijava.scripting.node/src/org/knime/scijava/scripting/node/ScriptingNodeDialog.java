@@ -289,9 +289,12 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		final ScriptLanguage language = m_scriptService.getLanguageByName(
 				(String) m_gui.languageSelection().getSelectedItem());
 
-		// Hack to set language of the EditorPane: TODO Fix in imagej-ui-swing!
-		m_gui.codeEditor().getEditorPane()
-				.setFileName(new File("." + language.getExtensions().get(0)));
+		try (final TempClassLoader tempCl = new TempClassLoader(
+				ScriptingGateway.get().createUrlClassLoader())) {
+			// Hack to set language of the EditorPane: TODO Fix in imagej-ui-swing!
+			m_gui.codeEditor().getEditorPane()
+			.setFileName(new File("." + language.getExtensions().get(0)));
+		}
 	}
 
 	/**

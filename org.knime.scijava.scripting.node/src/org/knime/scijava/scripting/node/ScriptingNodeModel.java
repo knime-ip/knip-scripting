@@ -432,8 +432,7 @@ public class ScriptingNodeModel extends NodeModel {
 			try {
 				m_moduleService.run(m_module, true).get();
 			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-				getLogger().error("Module execution failed");
+				getLogger().error("Module execution failed in Row: " + row.getKey());
 			}
 			DataCell[] cells = m_knimeContext.output().getOutputDataCells();
 

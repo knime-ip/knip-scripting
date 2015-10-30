@@ -119,7 +119,7 @@ public class ScriptingNodeModel extends NodeModel {
 				.setSettingsModels(m_settings.otherSettings());
 
 		try {
-			m_compiler = new CompileHelper(m_context);
+			m_compiler = new CompileHelper();
 		} catch (final IOException e) {
 			getLogger().error(
 					"Could not create temporary directory for Scripting Node.");
@@ -432,7 +432,7 @@ public class ScriptingNodeModel extends NodeModel {
 			try {
 				m_moduleService.run(m_module, true).get();
 			} catch (InterruptedException | ExecutionException e) {
-				getLogger().error("Module execution failed");
+				getLogger().error("Module execution failed in Row: " + row.getKey());
 			}
 			DataCell[] cells = m_knimeContext.output().getOutputDataCells();
 

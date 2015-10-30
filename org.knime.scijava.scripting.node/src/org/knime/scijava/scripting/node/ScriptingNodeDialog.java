@@ -176,7 +176,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			try {
-				m_compiler = new CompileHelper(m_context);
+				m_compiler = new CompileHelper();
 			} catch (final IOException e) {
 				// caused only by temporary directory not createable
 			}

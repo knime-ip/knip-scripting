@@ -15,6 +15,7 @@ import org.knime.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
 import org.knime.scijava.core.ResourceAwareClassLoader;
+import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.core.pluginindex.ReusablePluginIndex;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.Context;
@@ -60,6 +61,8 @@ public class ScriptingGateway {
 	 */
 	protected PluginIndex m_pluginIndex = null;
 
+	private Context completeContex;
+
 	/** a list of services which need to be present in newly created contexts */
 	protected static List<Class<? extends Service>> requiredServices = Arrays
 			.<Class<? extends Service>> asList(ScriptService.class,
@@ -70,7 +73,8 @@ public class ScriptingGateway {
 					KNIMEWidgetService.class, InputAdapterService.class,
 					UIService.class, OutputAdapterService.class,
 					CommandService.class, LanguageSupportService.class,
-					ScriptHeaderService.class, ParameterCodeGeneratorService.class,
+					ScriptHeaderService.class,
+					ParameterCodeGeneratorService.class,
 					ColumnModuleItemMappingService.class);
 
 	/**
@@ -111,6 +115,13 @@ public class ScriptingGateway {
 		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
 
 		return context;
+	}
+
+	public Context getGlobalContext() {
+		if (completeContex == null)
+			completeContex = new Context(m_pluginIndex);
+
+		return completeContex;
 	}
 
 	/**

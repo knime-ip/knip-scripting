@@ -25,7 +25,6 @@ public class CompileHelper {
 
 	private File m_tempDir;
 	private String m_script;
-	private final Context m_context;
 
 	/**
 	 * Constructor
@@ -33,8 +32,7 @@ public class CompileHelper {
 	 * @param context
 	 * @throws IOException
 	 */
-	public CompileHelper(final Context context) throws IOException {
-		m_context = context;
+	public CompileHelper() throws IOException {
 
 		File dir = null;
 		dir = FileUtil.createTempDir("ScriptingNode");
@@ -75,7 +73,7 @@ public class CompileHelper {
 			JavaEngine scriptEngine = (JavaEngine) language.getScriptEngine();
 			Class<? extends Command> commandClass = (Class<? extends Command>) scriptEngine
 					.compile(new StringReader(m_script));
-			return new CommandCompileProductHelper(m_context,
+			return new CommandCompileProductHelper(
 					new CommandInfo(commandClass));
 		}
 
@@ -83,10 +81,11 @@ public class CompileHelper {
 		final File scriptFile = new File(m_tempDir,
 				"script." + language.getExtensions().get(0));
 
-		final ScriptInfo info = new ScriptInfo(m_context,
+		final ScriptInfo info = new ScriptInfo(
+				ScriptingGateway.get().getGlobalContext(),
 				scriptFile.getAbsolutePath(), new StringReader(m_script));
 
-		return new ScriptCompileProductHelper(m_context, info);
+		return new ScriptCompileProductHelper(info);
 	}
 
 	/**

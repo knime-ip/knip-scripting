@@ -48,10 +48,14 @@
  */
 package org.knime.scijava.scripting.node;
 
+
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.scijava.commands.DefaultKNIMEScijavaContext;
+import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
+import org.scijava.Context;
 
 /**
  * NodeFactory for {@link SciJavaScriptingNodeModel}.
@@ -63,6 +67,18 @@ import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
  */
 public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNodeModel> {
 
+	
+
+	private Context m_context;
+	private DefaultKNIMEScijavaContext m_knimeContext;
+
+	public SciJavaScriptingNodeFactory() {
+		super();
+		m_context = ScriptingGateway.get().createContext();
+		m_knimeContext = new DefaultKNIMEScijavaContext();
+		m_knimeContext.setContext(m_context);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -95,7 +111,7 @@ public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNod
 	 */
 	@Override
 	protected NodeDialogPane createNodeDialogPane() {
-		return new SciJavaScriptingNodeDialog();
+		return new SciJavaScriptingNodeDialog(m_context, m_knimeContext);
 	}
 
 	/**
@@ -103,7 +119,7 @@ public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNod
 	 */
 	@Override
 	public SciJavaScriptingNodeModel createNodeModel() {
-		return new SciJavaScriptingNodeModel();
+		return new SciJavaScriptingNodeModel(m_context, m_knimeContext);
 	}
 
 }

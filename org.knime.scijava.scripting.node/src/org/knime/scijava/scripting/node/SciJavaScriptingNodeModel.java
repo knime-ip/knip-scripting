@@ -36,7 +36,6 @@ import org.knime.core.node.streamable.PartitionInfo;
 import org.knime.core.node.streamable.StreamableFunction;
 import org.knime.core.node.streamable.StreamableOperator;
 import org.knime.core.node.streamable.StreamableOperatorInternals;
-import org.knime.scijava.commands.DefaultKNIMEScijavaContext;
 import org.knime.scijava.commands.KNIMEScijavaContext;
 import org.knime.scijava.commands.adapter.OutputAdapter;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
@@ -101,22 +100,22 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	private ColumnRearranger m_colRearranger;
 
 	/**
-	 * Constructor. Should only be called by {@link SciJavaScriptingNodeFactory}.
+	 * @param context
+	 * @param knimeContext
 	 *
-	 * @see SciJavaScriptingNodeFactory
 	 */
-	protected SciJavaScriptingNodeModel() {
+	protected SciJavaScriptingNodeModel(Context scijavaContext,
+			KNIMEScijavaContext knimeContext) {
 		super(1, 1);
 
-		m_context = ScriptingGateway.get().createContext();
+		m_context = scijavaContext;
+		m_knimeContext = knimeContext;
 
 		// populate @Parameter members
 		m_context.inject(this);
 
 		// setup all required KNIME related Scijava services
-		m_knimeContext = new DefaultKNIMEScijavaContext();
-		m_knimeContext.setContext(m_context);
-		m_knimeContext.nodeSettings()
+		m_knimeContext.nodeModelSettings()
 				.setSettingsModels(m_settings.otherSettings());
 
 		try {
@@ -154,9 +153,9 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		}
 		return language;
 	}
-	
+
 	// --- node lifecycle: configure/execute/reset ---
-	
+
 	@Override
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
 			throws InvalidSettingsException {
@@ -240,14 +239,13 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		return new BufferedDataTable[] { out };
 	}
 
-
 	@Override
 	protected void reset() {
 		/* nothing to do */
 	}
-	
+
 	// --- streaming ---
-	
+
 	@Override
 	public StreamableOperator createStreamableOperator(
 			final PartitionInfo partitionInfo, final PortObjectSpec[] inSpecs)
@@ -260,19 +258,19 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		}
 		return new ScriptingStreamableFunction();
 	}
-	
-    @Override
-    public InputPortRole[] getInputPortRoles() {
-        return new InputPortRole[]{InputPortRole.DISTRIBUTED_STREAMABLE};
-    }
 
-    @Override
-    public OutputPortRole[] getOutputPortRoles() {
-        return new OutputPortRole[]{OutputPortRole.DISTRIBUTED};
-    }
+	@Override
+	public InputPortRole[] getInputPortRoles() {
+		return new InputPortRole[] { InputPortRole.DISTRIBUTED_STREAMABLE };
+	}
 
-    // --- loading and saving ---
-    
+	@Override
+	public OutputPortRole[] getOutputPortRoles() {
+		return new OutputPortRole[] { OutputPortRole.DISTRIBUTED };
+	}
+
+	// --- loading and saving ---
+
 	@Override
 	protected void loadInternals(final File nodeInternDir,
 			final ExecutionMonitor exec)
@@ -326,7 +324,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 					m_knimeContext.inputMapping());
 
 			createSettingsForCompileProduct();
-			m_knimeContext.nodeSettings().loadSettingsFrom(settings, true);
+			m_knimeContext.nodeDialogSettings().loadSettingsFrom(settings,
+					true);
 		}
 	}
 
@@ -343,7 +342,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			final boolean needsUI = !(mapping != null && mapping.isActive());
 
 			if (needsUI) {
-				m_knimeContext.nodeSettings().createAndAddSettingsModel(i);
+				m_knimeContext.nodeModelSettings().createAndAddSettingsModel(i);
 			}
 		}
 	}
@@ -361,14 +360,14 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 					getCurrentLanguage());
 
 			createSettingsForCompileProduct();
-			m_knimeContext.nodeSettings().saveSettingsTo(settings);
+			m_knimeContext.nodeModelSettings().saveSettingsTo(settings);
 
 		} catch (final ScriptException e) {
 			// Compilation failure
 			return;
 		}
 	}
-	
+
 	// --- nested classes ---
 
 	/**

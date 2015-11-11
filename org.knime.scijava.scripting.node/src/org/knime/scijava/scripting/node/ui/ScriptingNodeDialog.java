@@ -46,7 +46,7 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.scijava.scripting.node;
+package org.knime.scijava.scripting.node.ui;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
@@ -86,9 +86,10 @@ import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.CompileHelper;
 import org.knime.scijava.scripting.base.CompileProductHelper;
 import org.knime.scijava.scripting.base.ScriptingGateway;
+import org.knime.scijava.scripting.node.ScriptingNodeFactory;
+import org.knime.scijava.scripting.node.ScriptingNodeModel;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
-import org.knime.scijava.scripting.node.ui.ScriptingNodeDialogListener;
-import org.knime.scijava.scripting.node.ui.ScriptingNodeDialogPane;
+import org.knime.scijava.scripting.node.settings.ScriptingNodeSettings;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.module.Module;

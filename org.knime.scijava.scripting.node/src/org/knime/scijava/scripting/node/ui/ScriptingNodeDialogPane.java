@@ -25,7 +25,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.util.ColumnSelectionList;
-import org.knime.scijava.scripting.node.ScriptingNodeSettings;
+import org.knime.scijava.scripting.node.settings.ScriptingNodeSettings;
 import org.knime.scijava.scripting.node.ui.table.ColumnInputMatchingTable;
 import org.scijava.Context;
 import org.scijava.Contextual;

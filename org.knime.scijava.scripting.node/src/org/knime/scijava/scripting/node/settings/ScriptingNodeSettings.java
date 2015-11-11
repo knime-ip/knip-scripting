@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node;
+package org.knime.scijava.scripting.node.settings;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +18,8 @@ import org.knime.core.node.defaultnodesettings.SettingsModel;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.scijava.commands.settings.NodeSettingsService;
-import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
+import org.knime.scijava.scripting.node.ScriptingNodeModel;
+import org.knime.scijava.scripting.node.ui.ScriptingNodeDialog;
 
 /**
  * Class containing all SettingsModels for {@link ScriptingNodeDialog} and

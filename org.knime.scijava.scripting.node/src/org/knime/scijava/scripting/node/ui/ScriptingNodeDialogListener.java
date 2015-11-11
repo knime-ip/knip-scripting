@@ -13,7 +13,7 @@ import org.knime.core.data.DataColumnSpec;
 import org.knime.core.node.NodeLogger;
 import org.knime.scijava.commands.adapter.InputAdapter;
 import org.knime.scijava.commands.adapter.InputAdapterService;
-import org.knime.scijava.scripting.node.ScriptingNodeSettings;
+import org.knime.scijava.scripting.node.settings.ScriptingNodeSettings;
 import org.knime.scijava.scripting.parameters.ParameterCodeGenerator;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.AbstractContextual;

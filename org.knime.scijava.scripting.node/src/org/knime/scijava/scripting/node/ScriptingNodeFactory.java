@@ -51,6 +51,7 @@ package org.knime.scijava.scripting.node;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.scijava.scripting.node.ui.ScriptingNodeDialog;
 
 /**
  * NodeFactory for {@link ScriptingNodeModel}.

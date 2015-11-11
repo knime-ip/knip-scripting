@@ -47,6 +47,7 @@ import org.knime.scijava.scripting.base.CompileHelper;
 import org.knime.scijava.scripting.base.CompileProductHelper;
 import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
+import org.knime.scijava.scripting.node.settings.ScriptingNodeSettings;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.module.Module;

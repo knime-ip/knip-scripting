@@ -9,7 +9,6 @@ import java.io.Writer;
 import javax.script.ScriptException;
 
 import org.knime.core.util.FileUtil;
-import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
 import org.scijava.plugins.scripting.java.JavaEngine;

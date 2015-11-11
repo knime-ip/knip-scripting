@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.knime.knip.base.data.img.ImgPlusCell;
 import org.knime.knip.base.data.img.ImgPlusCellFactory;
-import org.knime.scijava.commands.AbstractOutputAdapter;
 import org.knime.scijava.commands.KNIMEExecutionService;
+import org.knime.scijava.commands.adapter.AbstractOutputAdapter;
 import org.knime.scijava.commands.adapter.OutputAdapter;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;

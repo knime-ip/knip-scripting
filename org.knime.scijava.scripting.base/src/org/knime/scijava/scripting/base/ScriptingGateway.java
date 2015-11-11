@@ -6,16 +6,15 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
-import org.knime.scijava.commands.DefaultInputDataRowService;
-import org.knime.scijava.commands.DefaultOutputDataRowService;
 import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.adapter.InputAdapterService;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
+import org.knime.scijava.commands.io.DefaultInputDataRowService;
+import org.knime.scijava.commands.io.DefaultOutputDataRowService;
 import org.knime.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
 import org.knime.scijava.core.ResourceAwareClassLoader;
-import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.core.pluginindex.ReusablePluginIndex;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.Context;

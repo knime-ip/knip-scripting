@@ -61,7 +61,7 @@ import org.knime.core.node.config.ConfigRO;
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
-public class ScriptingNodeSetFactory implements NodeSetFactory {
+public class SciJavaScriptingNodeSetFactory implements NodeSetFactory {
 
 	private final Map<String, String> m_nodeFactories = new HashMap<String, String>();
 
@@ -109,7 +109,7 @@ public class ScriptingNodeSetFactory implements NodeSetFactory {
 	 */
 	@Override
 	public Collection<String> getNodeFactoryIds() {
-		m_nodeFactories.put(ScriptingNodeFactory.class.getCanonicalName(),
+		m_nodeFactories.put(SciJavaScriptingNodeFactory.class.getCanonicalName(),
 				"/community/knip/");
 		return m_nodeFactories.keySet();
 	}

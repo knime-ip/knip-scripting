@@ -25,7 +25,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.util.ColumnSelectionList;
-import org.knime.scijava.scripting.node.settings.ScriptingNodeSettings;
+import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.node.ui.table.ColumnInputMatchingTable;
 import org.scijava.Context;
 import org.scijava.Contextual;
@@ -36,7 +36,7 @@ import org.scijava.Contextual;
  * @author Jonathan Hale
  *
  */
-public class ScriptingNodeDialogPane implements Contextual {
+public class SciJavaScriptingNodeDialogPane implements Contextual {
 
 	/* containers */
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
@@ -86,7 +86,7 @@ public class ScriptingNodeDialogPane implements Contextual {
 	 * @param codeModel
 	 *            the SettingsModel storing the code
 	 */
-	public ScriptingNodeDialogPane(final NodeLogger logger,
+	public SciJavaScriptingNodeDialogPane(final NodeLogger logger,
 			final SettingsModelString codeModel) {
 		/* one time setup of some components */
 		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
@@ -235,12 +235,12 @@ public class ScriptingNodeDialogPane implements Contextual {
 		m_editorPanel.add(scrollPane, gbc_cim);
 
 		/* "Add column/input matching" button */
-		m_addBtn.setActionCommand(ScriptingNodeDialogListener.CMD_ADD);
+		m_addBtn.setActionCommand(SciJavaScriptingNodeDialogListener.CMD_ADD);
 		m_addBtn.setToolTipText("Add column/input matching.");
 		m_editorPanel.add(m_addBtn, gbc_add);
 
 		/* "Remove column/input matching" button */
-		m_remBtn.setActionCommand(ScriptingNodeDialogListener.CMD_REM);
+		m_remBtn.setActionCommand(SciJavaScriptingNodeDialogListener.CMD_REM);
 		m_remBtn.setToolTipText("Remove selected column/input matching.");
 		m_editorPanel.add(m_remBtn, gbc_rem);
 

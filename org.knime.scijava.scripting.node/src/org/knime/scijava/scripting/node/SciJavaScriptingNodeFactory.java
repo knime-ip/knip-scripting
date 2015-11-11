@@ -51,17 +51,17 @@ package org.knime.scijava.scripting.node;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
-import org.knime.scijava.scripting.node.ui.ScriptingNodeDialog;
+import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
 
 /**
- * NodeFactory for {@link ScriptingNodeModel}.
+ * NodeFactory for {@link SciJavaScriptingNodeModel}.
  *
- * Creates {@link ScriptingNodeModel}s and {@link ScriptingNodeDialog}s.
+ * Creates {@link SciJavaScriptingNodeModel}s and {@link SciJavaScriptingNodeDialog}s.
  *
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
-public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
+public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNodeModel> {
 
 	/**
 	 * {@inheritDoc}
@@ -77,8 +77,8 @@ public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
 	 * @return null (ScriptingNode does not have views.)
 	 */
 	@Override
-	public NodeView<ScriptingNodeModel> createNodeView(final int viewIndex,
-			final ScriptingNodeModel nodeModel) {
+	public NodeView<SciJavaScriptingNodeModel> createNodeView(final int viewIndex,
+			final SciJavaScriptingNodeModel nodeModel) {
 		return null;
 	}
 
@@ -95,15 +95,15 @@ public class ScriptingNodeFactory extends NodeFactory<ScriptingNodeModel> {
 	 */
 	@Override
 	protected NodeDialogPane createNodeDialogPane() {
-		return new ScriptingNodeDialog();
+		return new SciJavaScriptingNodeDialog();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ScriptingNodeModel createNodeModel() {
-		return new ScriptingNodeModel();
+	public SciJavaScriptingNodeModel createNodeModel() {
+		return new SciJavaScriptingNodeModel();
 	}
 
 }

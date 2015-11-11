@@ -5,7 +5,7 @@
          point="org.knime.workbench.repository.nodesets">
       <nodeset
             expert-flag="false"
-            factory-class="org.knime.scijava.scripting.node.ScriptingNodeSetFactory"
+            factory-class="org.knime.scijava.scripting.node.SciJavaScriptingNodeSetFactory"
             id="org.knime.knip.scripting.node.ScriptingNodeSetFactory">
       </nodeset>
    </extension>

@@ -13,7 +13,7 @@ import org.knime.core.data.DataColumnSpec;
 import org.knime.core.node.NodeLogger;
 import org.knime.scijava.commands.adapter.InputAdapter;
 import org.knime.scijava.commands.adapter.InputAdapterService;
-import org.knime.scijava.scripting.node.settings.ScriptingNodeSettings;
+import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.parameters.ParameterCodeGenerator;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.AbstractContextual;
@@ -31,12 +31,12 @@ import org.scijava.script.ScriptService;
  * @author Jonathan Hale
  *
  */
-public class ScriptingNodeDialogListener extends AbstractContextual
+public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		implements ActionListener, MouseListener {
 
-	private final ScriptingNodeDialogPane m_gui;
+	private final SciJavaScriptingNodeDialogPane m_gui;
 
-	private final ScriptingNodeSettings m_settings;
+	private final SciJavaScriptingNodeSettings m_settings;
 	
 	@Parameter
 	private Context context;
@@ -65,8 +65,8 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 	 * @param logger
 	 *            NodeLogger to output messages to
 	 */
-	public ScriptingNodeDialogListener(final ScriptingNodeDialogPane gui,
-			final NodeLogger logger, final ScriptingNodeSettings settings) {
+	public SciJavaScriptingNodeDialogListener(final SciJavaScriptingNodeDialogPane gui,
+			final NodeLogger logger, final SciJavaScriptingNodeSettings settings) {
 		m_gui = gui;
 		m_logger = logger;
 		m_settings = settings;

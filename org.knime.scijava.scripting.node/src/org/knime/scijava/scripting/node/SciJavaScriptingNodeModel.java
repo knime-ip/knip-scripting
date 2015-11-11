@@ -47,7 +47,7 @@ import org.knime.scijava.scripting.base.CompileHelper;
 import org.knime.scijava.scripting.base.CompileProductHelper;
 import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
-import org.knime.scijava.scripting.node.settings.ScriptingNodeSettings;
+import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.module.Module;
@@ -64,14 +64,14 @@ import org.scijava.script.ScriptService;
  *
  * @author Jonathan Hale (University of Konstanz)
  */
-public class ScriptingNodeModel extends NodeModel {
+public class SciJavaScriptingNodeModel extends NodeModel {
 
 	/* scijava context stuff */
 	private final Context m_context;
 	private final KNIMEScijavaContext m_knimeContext;
 
 	/* Node settings */
-	private final ScriptingNodeSettings m_settings = new ScriptingNodeSettings();
+	private final SciJavaScriptingNodeSettings m_settings = new SciJavaScriptingNodeSettings();
 
 	@Parameter
 	private ObjectService m_objectService;
@@ -101,11 +101,11 @@ public class ScriptingNodeModel extends NodeModel {
 	private ColumnRearranger m_colRearranger;
 
 	/**
-	 * Constructor. Should only be called by {@link ScriptingNodeFactory}.
+	 * Constructor. Should only be called by {@link SciJavaScriptingNodeFactory}.
 	 *
-	 * @see ScriptingNodeFactory
+	 * @see SciJavaScriptingNodeFactory
 	 */
-	protected ScriptingNodeModel() {
+	protected SciJavaScriptingNodeModel() {
 		super(1, 1);
 
 		m_context = ScriptingGateway.get().createContext();

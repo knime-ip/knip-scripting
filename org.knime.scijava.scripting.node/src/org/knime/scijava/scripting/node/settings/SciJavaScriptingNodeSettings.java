@@ -18,17 +18,17 @@ import org.knime.core.node.defaultnodesettings.SettingsModel;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.scijava.commands.settings.NodeSettingsService;
-import org.knime.scijava.scripting.node.ScriptingNodeModel;
-import org.knime.scijava.scripting.node.ui.ScriptingNodeDialog;
+import org.knime.scijava.scripting.node.SciJavaScriptingNodeModel;
+import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
 
 /**
- * Class containing all SettingsModels for {@link ScriptingNodeDialog} and
- * {@link ScriptingNodeModel}.
+ * Class containing all SettingsModels for {@link SciJavaScriptingNodeDialog} and
+ * {@link SciJavaScriptingNodeModel}.
  *
  * @author Jonathan Hale (University of Konstanz)
  *
  */
-public class ScriptingNodeSettings {
+public class SciJavaScriptingNodeSettings {
 
 	/**
 	 * Constants for settings model keys

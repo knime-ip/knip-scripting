@@ -351,7 +351,7 @@ public class ScriptingNodeModel extends NodeModel {
 	protected void saveSettingsTo(final NodeSettingsWO settings) {
 		ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(
 				m_knimeContext.inputMapping(),
-				m_settings.columnInputMappingModel());
+				m_settings.getColumnInputMappingModel());
 		m_settings.saveSettingsTo(settings);
 
 		try (final TempClassLoader tempCl = new TempClassLoader(
@@ -394,7 +394,7 @@ public class ScriptingNodeModel extends NodeModel {
 		protected DataColumnSpec[] createDataColumnSpecs() {
 			final ArrayList<DataColumnSpec> tableSpecs = new ArrayList<>();
 
-			final String suffix = (m_settings.columnSuffixModel().isEnabled())
+			final String suffix = (m_settings.getColumnSuffixModel().isEnabled())
 					? m_settings.getColumnSuffix() : "";
 
 			for (final ModuleItem<?> output : m_module.getInfo().outputs()) {

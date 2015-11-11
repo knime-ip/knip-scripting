@@ -23,6 +23,7 @@ import javax.swing.UIManager;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
+import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.util.ColumnSelectionList;
 import org.knime.scijava.scripting.node.ScriptingNodeSettings;
 import org.knime.scijava.scripting.node.ui.table.ColumnInputMatchingTable;
@@ -36,8 +37,6 @@ import org.scijava.Contextual;
  *
  */
 public class ScriptingNodeDialogPane implements Contextual {
-
-	private final ScriptingNodeSettings m_settings;
 
 	/* containers */
 	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
@@ -77,18 +76,22 @@ public class ScriptingNodeDialogPane implements Contextual {
 	// column selection list for generating inputs with column matchings
 	private final ColumnSelectionList m_columnList = new ColumnSelectionList();
 
+	private SettingsModelString m_codeModel;
+
 	/**
 	 * Constructor
 	 *
 	 * @param logger
 	 *            NodeLogger to output messages to
+	 * @param codeModel
+	 *            the SettingsModel storing the code
 	 */
 	public ScriptingNodeDialogPane(final NodeLogger logger,
-			final ScriptingNodeSettings settings) {
+			final SettingsModelString codeModel) {
 		/* one time setup of some components */
 		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 
-		m_settings = settings;
+		m_codeModel = codeModel;
 
 		buildDialog();
 	}
@@ -205,8 +208,7 @@ public class ScriptingNodeDialogPane implements Contextual {
 
 		m_editorPanel.add(m_langSelection, gbc_ls);
 
-		m_codeEditor = new CodeEditorDialogComponent(
-				m_settings.scriptCodeModel());
+		m_codeEditor = new CodeEditorDialogComponent(m_codeModel);
 		addDialogComponent(m_editorPanel, m_codeEditor, gbc_ep);
 
 		m_columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

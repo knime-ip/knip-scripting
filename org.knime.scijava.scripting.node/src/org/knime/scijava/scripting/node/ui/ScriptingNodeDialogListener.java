@@ -37,7 +37,7 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 	private final ScriptingNodeDialogPane m_gui;
 
 	private final ScriptingNodeSettings m_settings;
-
+	
 	@Parameter
 	private Context context;
 	@Parameter
@@ -125,10 +125,8 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 					return;
 				}
 
-				final ScriptLanguage currentLanguage = m_scriptService
-						.getLanguageByName(m_settings.getScriptLanguageName());
 				final ParameterCodeGenerator generator = m_parameterGenerators
-						.getGeneratorForLanguage(currentLanguage);
+						.getGeneratorForLanguage(getCurrentLanguage());
 
 				if (generator == null) {
 					m_logger.error(
@@ -254,5 +252,20 @@ public class ScriptingNodeDialogListener extends AbstractContextual
 	protected void removeColumnInputMapping() {
 		final int[] rows = m_gui.columnInputMatchingTable().getSelectedRows();
 		m_gui.columnInputMatchingTable().getModel().removeItems(rows);
+	}
+	
+	
+	/**
+	 * @return The currently set language for the node
+	 */
+	protected ScriptLanguage getCurrentLanguage() {
+		final String languageName = m_settings.getScriptLanguageName();
+		final ScriptLanguage language = m_scriptService
+				.getLanguageByName(languageName);
+		if (language == null) {
+			throw new NullPointerException("Could not load language "
+					+ languageName + " for Scripting Node.");
+		}
+		return language;
 	}
 }

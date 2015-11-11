@@ -154,7 +154,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 	 * Default constructor
 	 */
 	public ScriptingNodeDialog() {
-		m_gui = new ScriptingNodeDialogPane(getLogger(), m_settings);
+		m_gui = new ScriptingNodeDialogPane(getLogger(), m_settings.getScriptCodeModel());
 
 		m_errorWriter = new StringWriter();
 		m_outputWriter = new StringWriter();
@@ -254,7 +254,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		contents.setLayout(new BoxLayout(contents, BoxLayout.PAGE_AXIS));
 
 		SettingsModelString columnCreationModeModel = m_settings
-				.columnCreationModeModel();
+				.getColumnCreationModeModel();
 		/* Column creation mode */
 		final DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
 				columnCreationModeModel, "Column Creation Mode",
@@ -266,7 +266,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		JPanel comp = colCreationModeComp.getComponentPanel();
 		contents.add(comp);
 
-		SettingsModelString columnSuffixModel = m_settings.columnSuffixModel();
+		SettingsModelString columnSuffixModel = m_settings.getColumnSuffixModel();
 		/* Column suffix */
 		final DialogComponentString colSuffixComp = new DialogComponentString(
 				columnSuffixModel, "Column Suffix");
@@ -307,7 +307,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 				ScriptingGateway.get().createUrlClassLoader())) {
 			ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(
 					m_knimeContext.inputMapping(),
-					m_settings.columnInputMappingModel());
+					m_settings.getColumnInputMappingModel());
 
 			for (final DialogComponent c : m_gui.dialogComponents()) {
 				c.saveSettingsTo(settings);
@@ -409,8 +409,7 @@ public class ScriptingNodeDialog extends NodeDialogPane {
 		try {
 
 			final Module module = m_compilationResult
-					.createModule(m_scriptService.getLanguageByName(
-							m_settings.getScriptLanguageName()));
+					.createModule(getCurrentLanguage());
 			for (final ModuleItem<?> input : m_compilationResult.inputs()) {
 				final String inputName = input.getName();
 				final ColumnModuleItemMapping mapping = m_knimeContext

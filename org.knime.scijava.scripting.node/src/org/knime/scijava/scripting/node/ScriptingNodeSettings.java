@@ -10,9 +10,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.eclipse.core.runtime.FileLocator;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -194,35 +191,35 @@ public class ScriptingNodeSettings {
 	/**
 	 * @return model with key {@link #SM_KEY_LANGUAGE}.
 	 */
-	public SettingsModelString scriptLanguageNameModel() {
+	public SettingsModelString getScriptLanguageNameModel() {
 		return m_scriptLanguageModel;
 	}
 
 	/**
 	 * @return model with key {@link #SM_KEY_CODE}.
 	 */
-	public SettingsModelString scriptCodeModel() {
+	public SettingsModelString getScriptCodeModel() {
 		return m_codeModel;
 	}
 
 	/**
 	 * @return model with key {@link #SM_KEY_INPUT_MAPPING}.
 	 */
-	public SettingsModelStringArray columnInputMappingModel() {
+	public SettingsModelStringArray getColumnInputMappingModel() {
 		return m_columnInputMappingSettingsModel;
 	}
 
 	/**
 	 * @return model with key {@link #SM_KEY_COLUMN_CREATION_MODE}.
 	 */
-	public SettingsModelString columnCreationModeModel() {
+	public SettingsModelString getColumnCreationModeModel() {
 		return m_columnCreationModeModel;
 	}
 
 	/**
 	 * @return model with key {@link #SM_KEY_COLUMN_SUFFIX}.
 	 */
-	public SettingsModelString columnSuffixModel() {
+	public SettingsModelString getColumnSuffixModel() {
 		return m_columnSuffixModel;
 	}
 

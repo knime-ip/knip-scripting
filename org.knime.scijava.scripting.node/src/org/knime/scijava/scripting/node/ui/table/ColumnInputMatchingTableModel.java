@@ -37,10 +37,9 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	@Parameter
 	private Context m_context;
 	@Parameter
-	private ColumnModuleItemMappingService m_cimService;
+	private ColumnModuleItemMappingService m_colModuleMappingService;
 
-	// reference to the m_cimServices mappings list. Should only be used for
-	// read.
+	// can only be read from  
 	private List<ColumnModuleItemMapping> m_mappings;
 
 	/**
@@ -51,17 +50,17 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	}
 
 	/**
-	 * Update the table modle to the contents of the column input mapping
+	 * Update the table model to the contents of the column input mapping
 	 * service.
 	 */
 	public void updateModel() {
-		if (m_cimService == null) {
+		if (m_colModuleMappingService == null) {
 			// Needs to be set via context first.
 			return;
 		}
 
 		// reference should stay valid as long as m_cimService exists
-		m_mappings = m_cimService.getMappingsList();
+		m_mappings = m_colModuleMappingService.getMappingsList();
 
 		fireTableDataChanged();
 	}
@@ -118,7 +117,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	 */
 	public void addItem(final String columnName, final String inputName) {
 		final int row = m_mappings.size();
-		m_cimService.addMapping(columnName, inputName);
+		m_colModuleMappingService.addMapping(columnName, inputName);
 
 		if (row != m_mappings.size()) {
 			// adding the mapping changed the size of the table, therefore it
@@ -147,7 +146,7 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 			mappings.add(m_mappings.get(row));
 		}
 		for (ColumnModuleItemMapping mapping : mappings) {
-			m_cimService.removeMapping(mapping);
+			m_colModuleMappingService.removeMapping(mapping);
 		}
 		this.fireTableDataChanged();
 	}

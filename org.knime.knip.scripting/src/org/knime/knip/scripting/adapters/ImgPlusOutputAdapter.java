@@ -24,7 +24,7 @@ public class ImgPlusOutputAdapter
 		extends AbstractOutputAdapter<ImgPlus, ImgPlusCell> {
 
 	@Parameter
-	KNIMEExecutionService execService;
+	private KNIMEExecutionService execService;
 
 	@SuppressWarnings({ "unchecked" })
 	@Override

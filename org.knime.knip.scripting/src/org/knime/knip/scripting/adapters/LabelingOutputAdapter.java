@@ -2,8 +2,6 @@ package org.knime.knip.scripting.adapters;
 
 import java.io.IOException;
 
-import org.knime.knip.base.data.img.ImgPlusCell;
-import org.knime.knip.base.data.img.ImgPlusCellFactory;
 import org.knime.knip.base.data.labeling.LabelingCell;
 import org.knime.knip.base.data.labeling.LabelingCellFactory;
 import org.knime.knip.base.data.labeling.LabelingValue;
@@ -14,9 +12,7 @@ import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import net.imagej.ImgPlus;
-import net.imglib2.img.Img;
-import net.imglib2.roi.labeling.ImgLabeling;
+import net.imagej.ops.OpService;
 
 /**
  * Adapter for LabelingValue to {@link LabelingCell}.
@@ -26,18 +22,21 @@ import net.imglib2.roi.labeling.ImgLabeling;
  */
 
 @SuppressWarnings("rawtypes")
-@Plugin(type = OutputAdapter.class, priority=Priority.HIGH_PRIORITY)
+@Plugin(type = OutputAdapter.class, priority = Priority.HIGH_PRIORITY)
 public class LabelingOutputAdapter
 		extends AbstractOutputAdapter<LabelingValue, LabelingCell> {
 
 	@Parameter
-	KNIMEExecutionService execService;
+	private KNIMEExecutionService execService;
+
+	@Parameter
+	private OpService ops;
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	protected LabelingCell createCell(LabelingValue imgL) {
-				try {
-			 return new LabelingCellFactory(execService.getExecutionContext())
+		try {
+			return new LabelingCellFactory(execService.getExecutionContext())
 					.createCell(imgL.getLabeling(), imgL.getLabelingMetadata());
 		} catch (IOException e) {
 			throw new IllegalArgumentException(

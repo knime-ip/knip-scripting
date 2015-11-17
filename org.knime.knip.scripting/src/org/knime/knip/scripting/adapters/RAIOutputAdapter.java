@@ -26,7 +26,7 @@ import net.imglib2.img.Img;
 public class RAIOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusCell> {
 
 	@Parameter
-	KNIMEExecutionService execService;
+	private KNIMEExecutionService execService;
 
 	@SuppressWarnings({ "unchecked" })
 	@Override

@@ -2,14 +2,11 @@ package org.knime.knip.scripting.adapters;
 
 import org.knime.core.data.BooleanValue;
 import org.knime.knip.base.data.img.ImgPlusValue;
-import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.adapter.AbstractInputAdapter;
 import org.knime.scijava.commands.adapter.InputAdapter;
 import org.scijava.Priority;
-import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import net.imagej.ImgPlus;
 import net.imglib2.img.Img;
 
 /**
@@ -18,12 +15,8 @@ import net.imglib2.img.Img;
  * @author Gabriel Einsdorf (University of Konstanz)
  *
  */
-@Plugin(type = InputAdapter.class, priority=Priority.LOW_PRIORITY)
-public class ImgInputAdapter
-		extends AbstractInputAdapter<ImgPlusValue, Img> {
-
-	@Parameter
-	KNIMEExecutionService execService;
+@Plugin(type = InputAdapter.class, priority = Priority.LOW_PRIORITY)
+public class ImgInputAdapter extends AbstractInputAdapter<ImgPlusValue, Img> {
 
 	@Override
 	protected Img getValue(ImgPlusValue value) {

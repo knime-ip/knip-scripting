@@ -22,12 +22,11 @@ import net.imglib2.img.Img;
  */
 
 @SuppressWarnings("rawtypes")
-@Plugin(type = OutputAdapter.class, priority=Priority.LOW_PRIORITY)
-public class ImgOutputAdapter
-		extends AbstractOutputAdapter<Img, ImgPlusCell> {
+@Plugin(type = OutputAdapter.class, priority = Priority.LOW_PRIORITY)
+public class ImgOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusCell> {
 
 	@Parameter
-	KNIMEExecutionService execService;
+	private KNIMEExecutionService execService;
 
 	@SuppressWarnings({ "unchecked" })
 	@Override

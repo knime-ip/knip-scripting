@@ -288,6 +288,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	@Override
 	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
+		m_settings.validateSettings(settings);
 		/* nothing to do */
 	}
 

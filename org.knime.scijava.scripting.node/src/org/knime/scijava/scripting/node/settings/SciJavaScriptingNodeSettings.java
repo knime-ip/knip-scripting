@@ -7,7 +7,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -22,8 +24,8 @@ import org.knime.scijava.scripting.node.SciJavaScriptingNodeModel;
 import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
 
 /**
- * Class containing all SettingsModels for {@link SciJavaScriptingNodeDialog} and
- * {@link SciJavaScriptingNodeModel}.
+ * Class containing all SettingsModels for {@link SciJavaScriptingNodeDialog}
+ * and {@link SciJavaScriptingNodeModel}.
  *
  * @author Jonathan Hale (University of Konstanz)
  *
@@ -57,6 +59,17 @@ public class SciJavaScriptingNodeSettings {
 
 	/* contains other settings which will be passed to a NodeSettingsService */
 	private final Map<String, SettingsModel> m_otherSettings = new HashMap<String, SettingsModel>();
+
+	private final List<SettingsModel> m_settingsModels;
+
+	public SciJavaScriptingNodeSettings() {
+		m_settingsModels = new ArrayList<>(5);
+		m_settingsModels.add(m_scriptLanguageModel);
+		m_settingsModels.add(m_codeModel);
+		m_settingsModels.add(m_columnInputMappingSettingsModel);
+		m_settingsModels.add(m_columnCreationModeModel);
+		m_settingsModels.add(m_columnSuffixModel);
+	}
 
 	/**
 	 * Create Code SettingsModel with some default example code.
@@ -105,12 +118,27 @@ public class SciJavaScriptingNodeSettings {
 	 */
 	public static SettingsModelString createColumnSuffixModel(
 			final SettingsModelString columnCreationMode) {
+
 		final SettingsModelString suffixModel = new SettingsModelString(
-				SM_KEY_COLUMN_SUFFIX, "");
+				SM_KEY_COLUMN_SUFFIX, "") {
+			@Override
+			protected void validateSettingsForModel(NodeSettingsRO settings)
+					throws InvalidSettingsException {
+				super.validateSettingsForModel(settings);
+
+				// don't accept an empty suffix
+				if (settings.getString(SM_KEY_COLUMN_SUFFIX).equals("")
+						&& columnCreationMode.getStringValue().equals(
+								ColumnCreationMode.APPEND_COLUMNS.toString())) {
+					throw new InvalidSettingsException(
+							"Suffix can not be empty when 'Append Columns' is selected!");
+				}
+			}
+		};
 
 		// set inital state
 		suffixModel.setEnabled(ColumnCreationMode.APPEND_COLUMNS.toString()
-					.equals(columnCreationMode.getStringValue()));
+				.equals(columnCreationMode.getStringValue()));
 
 		// disable suffixModel if columnCreationMode is not APPEND_COLUMNS
 		columnCreationMode.addChangeListener((e) -> {
@@ -266,7 +294,7 @@ public class SciJavaScriptingNodeSettings {
 		m_columnSuffixModel.setStringValue(suffix);
 	}
 
-	// ---- loading / saving ----
+	// ---- loading / saving / validating ----
 
 	/**
 	 * Save settings to <code>settings</code>. "other settings" are <b>not
@@ -276,11 +304,9 @@ public class SciJavaScriptingNodeSettings {
 	 * @throws InvalidSettingsException
 	 */
 	public void saveSettingsTo(final NodeSettingsWO settings) {
-		m_scriptLanguageModel.saveSettingsTo(settings);
-		m_codeModel.saveSettingsTo(settings);
-		m_columnInputMappingSettingsModel.saveSettingsTo(settings);
-		m_columnCreationModeModel.saveSettingsTo(settings);
-		m_columnSuffixModel.saveSettingsTo(settings);
+		for (SettingsModel model : m_settingsModels) {
+			model.saveSettingsTo(settings);
+		}
 	}
 
 	/**
@@ -292,10 +318,16 @@ public class SciJavaScriptingNodeSettings {
 	 */
 	public void loadSettingsFrom(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		m_scriptLanguageModel.loadSettingsFrom(settings);
-		m_codeModel.loadSettingsFrom(settings);
-		m_columnInputMappingSettingsModel.loadSettingsFrom(settings);
-		m_columnCreationModeModel.loadSettingsFrom(settings);
-		m_columnSuffixModel.loadSettingsFrom(settings);
+		for (SettingsModel model : m_settingsModels) {
+			model.loadSettingsFrom(settings);
+		}
+
+	}
+
+	public void validateSettings(NodeSettingsRO settings)
+			throws InvalidSettingsException {
+		for (SettingsModel model : m_settingsModels) {
+			model.validateSettings(settings);
+		}
 	}
 }

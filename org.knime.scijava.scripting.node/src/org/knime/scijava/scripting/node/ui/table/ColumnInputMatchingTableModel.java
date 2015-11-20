@@ -1,11 +1,7 @@
 package org.knime.scijava.scripting.node.ui.table;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.table.AbstractTableModel;
 
-import org.knime.scijava.commands.mapping.ColumnModuleItemMapping;
 import org.knime.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.scijava.Context;
 import org.scijava.Contextual;
@@ -39,8 +35,8 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	@Parameter
 	private ColumnModuleItemMappingService m_colModuleMappingService;
 
-	// can only be read from  
-	private List<ColumnModuleItemMapping> m_mappings;
+	// can only be read from
+	// private List<ColumnModuleItemMapping> m_mappings;
 
 	/**
 	 * Constructor.
@@ -58,19 +54,12 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 			// Needs to be set via context first.
 			return;
 		}
-
-		// reference should stay valid as long as m_cimService exists
-		m_mappings = m_colModuleMappingService.getMappingsList();
-
 		fireTableDataChanged();
 	}
 
 	@Override
 	public int getRowCount() {
-		if (m_mappings == null) {
-			updateModel();
-		}
-		return m_mappings.size();
+		return m_colModuleMappingService.numMappings();
 	}
 
 	@Override
@@ -82,11 +71,11 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	public Object getValueAt(final int rowIndex, final int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
-			return m_mappings.get(rowIndex).getColumnName();
+			return m_colModuleMappingService.getColumnNameByPosition(rowIndex);
 		case ACTIVE:
-			return m_mappings.get(rowIndex).isActive();
+			return m_colModuleMappingService.isActiveByPosition(rowIndex);
 		case INPUT:
-			return m_mappings.get(rowIndex).getItemName();
+			return m_colModuleMappingService.getItemNameByPosition(rowIndex);
 		default:
 			return new String("<Column Index Out Of Bounds!>");
 		}
@@ -116,18 +105,9 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	 *            input name to map to
 	 */
 	public void addItem(final String columnName, final String inputName) {
-		final int row = m_mappings.size();
 		m_colModuleMappingService.addMapping(columnName, inputName);
-
-		if (row != m_mappings.size()) {
-			// adding the mapping changed the size of the table, therefore it
-			// was added to the end of the list.
-			this.fireTableRowsInserted(row, row);
-		} else {
-			// we cannot simply determine which row changed.
-			// TODO: prevent multiple mapping to input.
-			this.fireTableDataChanged();
-		}
+		//
+		this.fireTableDataChanged();
 	}
 
 	/**
@@ -140,27 +120,22 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	 * @param row
 	 *            row index to remove
 	 */
-	public void removeItems(final int...rows){
-		List<ColumnModuleItemMapping> mappings = new ArrayList<>();
-		for (int row : rows) {
-			mappings.add(m_mappings.get(row));
-		}
-		for (ColumnModuleItemMapping mapping : mappings) {
-			m_colModuleMappingService.removeMapping(mapping);
-		}
+	public void removeItems(final int... rows) {
+
+		m_colModuleMappingService.removeMappingsByPosition(rows);
 		this.fireTableDataChanged();
 	}
-	
 
 	@Override
 	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
+		// all existing cells can be edited.
 		if (columnIndex > 2 || columnIndex < 0) {
 			return false;
 		}
-		if (rowIndex >= m_mappings.size() || rowIndex < 0) {
+		if (rowIndex >= m_colModuleMappingService.numMappings()
+				|| rowIndex < 0) {
 			return false;
 		}
-		// all existing cells can be edited
 		return true;
 	}
 
@@ -169,17 +144,18 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 			final int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
-			m_mappings.get(rowIndex).setColumnName((String) value);
+			m_colModuleMappingService.setColumnNameByPosition(rowIndex, (String) value);
 			break;
 		case ACTIVE:
-			m_mappings.get(rowIndex).setActive((Boolean) value);
+			m_colModuleMappingService.setActiveByPosition(rowIndex,
+					(Boolean) value);
 			break;
 		case INPUT:
-			m_mappings.get(rowIndex).setItemName((String) value);
+			m_colModuleMappingService.setItemNameByPosition(rowIndex,
+					(String) value);
 			break;
 		default:
-			// Column index out of bounds
-			break;
+			throw new IllegalArgumentException("Column index out of bounds!");
 		}
 
 		this.fireTableCellUpdated(rowIndex, columnIndex);
@@ -212,5 +188,4 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 	public Context getContext() {
 		return m_context;
 	}
-
 }

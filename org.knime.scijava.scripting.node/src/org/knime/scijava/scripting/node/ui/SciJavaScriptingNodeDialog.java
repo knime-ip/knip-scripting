@@ -153,8 +153,10 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	/**
 	 * Default constructor
 	 */
-	public SciJavaScriptingNodeDialog( Context scijavaContext, KNIMEScijavaContext knimeContext) {
-		m_gui = new SciJavaScriptingNodeDialogPane(getLogger(), m_settings.getScriptCodeModel());
+	public SciJavaScriptingNodeDialog(Context scijavaContext,
+			KNIMEScijavaContext knimeContext) {
+		m_gui = new SciJavaScriptingNodeDialogPane(getLogger(),
+				m_settings.getScriptCodeModel());
 
 		m_errorWriter = new StringWriter();
 		m_outputWriter = new StringWriter();
@@ -163,11 +165,11 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 				NodeLogger.LEVEL.ERROR);
 		NodeLogger.addKNIMEConsoleWriter(m_outputWriter, NodeLogger.LEVEL.INFO,
 				NodeLogger.LEVEL.DEBUG);
-		
+
 		m_context = scijavaContext;
 		m_context.inject(this);
 		m_knimeContext = knimeContext;
-		
+
 		m_knimeContext.nodeDialogSettings()
 				.setSettingsModels(m_settings.otherSettings());
 
@@ -196,8 +198,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			}
 
 			m_gui.setContext(m_context);
-			m_listener = new SciJavaScriptingNodeDialogListener(m_gui, getLogger(),
-					m_settings);
+			m_listener = new SciJavaScriptingNodeDialogListener(m_gui,
+					getLogger(), m_settings);
 			m_listener.setContext(m_context);
 			m_gui.addListener(m_listener);
 		}
@@ -266,7 +268,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		JPanel comp = colCreationModeComp.getComponentPanel();
 		contents.add(comp);
 
-		SettingsModelString columnSuffixModel = m_settings.getColumnSuffixModel();
+		SettingsModelString columnSuffixModel = m_settings
+				.getColumnSuffixModel();
 		/* Column suffix */
 		final DialogComponentString colSuffixComp = new DialogComponentString(
 				columnSuffixModel, "Column Suffix");
@@ -291,9 +294,10 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			// Hack to set language of the EditorPane: TODO Fix in imagej-ui-swing!
-			m_gui.codeEditor().getEditorPane()
-			.setFileName(new File("." + language.getExtensions().get(0)));
+			// Hack to set language of the EditorPane: TODO Fix in
+			// imagej-ui-swing!
+			m_gui.codeEditor().getEditorPane().setFileName(
+					new File("." + language.getExtensions().get(0)));
 		}
 	}
 
@@ -412,11 +416,10 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 					.createModule(getCurrentLanguage());
 			for (final ModuleItem<?> input : m_compilationResult.inputs()) {
 				final String inputName = input.getName();
-				final ColumnModuleItemMapping mapping = m_knimeContext
-						.inputMapping().getMappingForModuleItemName(inputName);
-				// If this input is filled by a column mapping don't generate UI
-				// for it
-				final boolean noUI = (mapping != null) && mapping.isActive();
+
+				// don't generate ui for mapped inputs
+				boolean noUI = m_knimeContext.inputMapping()
+						.isInputMapped(inputName);
 				module.setResolved(inputName, noUI);
 			}
 			builder.buildPanel(inputPanel, module);

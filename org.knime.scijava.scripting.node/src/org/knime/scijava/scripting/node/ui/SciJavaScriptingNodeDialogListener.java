@@ -37,7 +37,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	private final SciJavaScriptingNodeDialogPane m_gui;
 
 	private final SciJavaScriptingNodeSettings m_settings;
-	
+
 	@Parameter
 	private Context context;
 	@Parameter
@@ -65,8 +65,9 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	 * @param logger
 	 *            NodeLogger to output messages to
 	 */
-	public SciJavaScriptingNodeDialogListener(final SciJavaScriptingNodeDialogPane gui,
-			final NodeLogger logger, final SciJavaScriptingNodeSettings settings) {
+	public SciJavaScriptingNodeDialogListener(
+			final SciJavaScriptingNodeDialogPane gui, final NodeLogger logger,
+			final SciJavaScriptingNodeSettings settings) {
 		m_gui = gui;
 		m_logger = logger;
 		m_settings = settings;
@@ -98,58 +99,62 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		if (index >= 0) {
 			final Object o = m_gui.columnList().getModel().getElementAt(index);
 
-			if (o instanceof DataColumnSpec) {
-				// better safe than sorry, should always be the case,
-				// though
-				final DataColumnSpec cspec = (DataColumnSpec) o;
+			final DataColumnSpec cspec = (DataColumnSpec) o;
 
-				final String columnName = cspec.getName();
-				String memberName = cleanupMemberName(columnName);
+			final String columnName = cspec.getName();
+			String memberName = cleanupMemberName(columnName);
 
-				// get the Name of the first createable type
-				@SuppressWarnings("rawtypes")
-				final Iterator<InputAdapter> itor = m_inputAdapters
-						.getMatchingInputAdapters(
-								cspec.getType().getPreferredValueClass())
-						.iterator();
+			// get the Name of the first createable type
+			@SuppressWarnings("rawtypes")
+			final Iterator<InputAdapter> itor = m_inputAdapters
+					.getMatchingInputAdapters(
+							cspec.getType().getPreferredValueClass())
+					.iterator();
 
-				final Class<?> type;
-				if (itor.hasNext()) {
-					type = itor.next().getOutputType();
-				} else {
-					// no adapter found, error out
-					JOptionPane.showMessageDialog(null,
-							"The column you selected has a datatype which\n"
-									+ "currently cannot be used in Scripts.",
-							"No matching adapter", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-
-				final ParameterCodeGenerator generator = m_parameterGenerators
-						.getGeneratorForLanguage(getCurrentLanguage());
-
-				if (generator == null) {
-					m_logger.error(
-							"No way of generating input parameter code for language \""
-									+ m_settings.getScriptLanguageName()
-									+ "\".");
-				}
-
-				// find position for inserting @Parameter declaration
-				final String code = m_gui.codeEditor().getCode();
-				final int pos = generator.getPosition(code);
-
-				final String parameterCode = generator
-						.generateInputParameter(code, memberName, type);
-
-				m_gui.codeEditor().getEditorPane().insert(parameterCode, pos);
-				m_gui.codeEditor().updateModel();
-
-				// add a mapping for the newly created parameter
-				m_gui.columnInputMatchingTable().getModel().addItem(columnName,
-						memberName);
+			final Class<?> type;
+			if (itor.hasNext()) {
+				type = itor.next().getOutputType();
+			} else {
+				// no adapter found, error out
+				JOptionPane.showMessageDialog(null,
+						"The column you selected has a datatype which\n"
+								+ "currently cannot be used in Scripts.",
+						"No matching adapter", JOptionPane.ERROR_MESSAGE);
+				return;
 			}
+
+			final ParameterCodeGenerator generator = m_parameterGenerators
+					.getGeneratorForLanguage(getCurrentLanguage());
+
+			if (generator == null) {
+				m_logger.error(
+						"No way of generating input parameter code for language \""
+								+ m_settings.getScriptLanguageName() + "\".");
+			}
+
+			// find position for inserting @Parameter declaration
+			final String code = m_gui.codeEditor().getCode();
+			final int pos = generator.getPosition(code);
+
+			final String parameterCode = generator.generateInputParameter(code,
+					memberName, type);
+
+			m_gui.codeEditor().getEditorPane().insert(parameterCode, pos);
+			m_gui.codeEditor().updateModel();
+
+			// add a mapping for the newly created parameter
+			addMapping(columnName, memberName);
 		}
+	}
+
+	/**
+	 * Sets the the mapping for the given 
+	 * @param columnName
+	 * @param memberName
+	 */
+	private void addMapping(final String columnName, String memberName) {
+		m_gui.columnInputMatchingTable().getModel().addItem(columnName,
+				memberName);
 	}
 
 	/**
@@ -172,10 +177,8 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		// replace all illegal characters with '_'
 		// Used regex without java escapes for readability:
 		// \\|\#|\[|\]|\(|\)\{|\}|\%|\+|\?|\~|/|\&|\.|\:|\;|\|
-		name = name.replaceAll(
-				"\\\\|\\#|\\[|\\]|\\(|\\)\\{|\\}|\\%|\\+|"
-				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\|",
-				"_");
+		name = name.replaceAll("\\\\|\\#|\\[|\\]|\\(|\\)\\{|\\}|\\%|\\+|"
+				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\|", "_");
 
 		// ensure uniqueness
 		String chosen = name;
@@ -241,8 +244,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 			return;
 		}
 
-		m_gui.columnInputMatchingTable().getModel().addItem(cs.getName(),
-				i.getName());
+		addMapping(cs.getName(), i.getName());
 	}
 
 	/**
@@ -253,8 +255,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		final int[] rows = m_gui.columnInputMatchingTable().getSelectedRows();
 		m_gui.columnInputMatchingTable().getModel().removeItems(rows);
 	}
-	
-	
+
 	/**
 	 * @return The currently set language for the node
 	 */

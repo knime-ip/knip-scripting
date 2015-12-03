@@ -9,6 +9,7 @@ import java.io.Writer;
 import javax.script.ScriptException;
 
 import org.knime.core.util.FileUtil;
+import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandInfo;
 import org.scijava.plugins.scripting.java.JavaEngine;
@@ -17,7 +18,7 @@ import org.scijava.script.ScriptInfo;
 import org.scijava.script.ScriptLanguage;
 
 /**
- * 
+ *
  * @author Jonathan Hale
  */
 public class CompileHelper {
@@ -25,17 +26,21 @@ public class CompileHelper {
 	private File m_tempDir;
 	private String m_script;
 
+	private Context m_context;
+
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param context
 	 * @throws IOException
 	 */
-	public CompileHelper() throws IOException {
+	public CompileHelper(Context context) throws IOException {
 
 		File dir = null;
 		dir = FileUtil.createTempDir("ScriptingNode");
 		m_tempDir = dir;
+
+		m_context = context;
 	}
 
 	/*
@@ -58,7 +63,7 @@ public class CompileHelper {
 	/**
 	 * Compile the script from settings with the given language Note that
 	 * compilation may be done lazily.
-	 * 
+	 *
 	 * @param language
 	 *            for compiling the script
 	 * @return The resulting scriptInfo.
@@ -73,23 +78,22 @@ public class CompileHelper {
 			Class<? extends Command> commandClass = (Class<? extends Command>) scriptEngine
 					.compile(new StringReader(m_script));
 			return new CommandCompileProductHelper(
-					new CommandInfo(commandClass));
+					new CommandInfo(commandClass), m_context);
 		}
 
 		// create script module for execution
 		final File scriptFile = new File(m_tempDir,
 				"script." + language.getExtensions().get(0));
 
-		final ScriptInfo info = new ScriptInfo(
-				ScriptingGateway.get().getGlobalContext(),
+		final ScriptInfo info = new ScriptInfo(m_context,
 				scriptFile.getAbsolutePath(), new StringReader(m_script));
 
-		return new ScriptCompileProductHelper(info);
+		return new ScriptCompileProductHelper(info, m_context);
 	}
 
 	/**
 	 * Set the script to compile.
-	 * 
+	 *
 	 * @param script
 	 * @param language
 	 */

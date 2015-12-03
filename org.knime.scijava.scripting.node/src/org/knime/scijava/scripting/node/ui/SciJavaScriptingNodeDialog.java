@@ -78,8 +78,6 @@ import org.knime.core.node.defaultnodesettings.DialogComponentString;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.scijava.commands.KNIMEScijavaContext;
-import org.knime.scijava.commands.mapping.ColumnModuleItemMapping;
-import org.knime.scijava.commands.mapping.ColumnToModuleItemMappingUtil;
 import org.knime.scijava.commands.widget.KnimeSwingInputPanel;
 import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.CompileHelper;
@@ -178,7 +176,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			try {
-				m_compiler = new CompileHelper();
+				m_compiler = new CompileHelper(m_context);
 			} catch (final IOException e) {
 				// caused only by temporary directory not createable
 			}
@@ -309,9 +307,11 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			throws InvalidSettingsException {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(
-					m_knimeContext.inputMapping(),
-					m_settings.getColumnInputMappingModel());
+
+			// store the inputmapping into the settings model
+			m_settings.getColumnInputMappingModel().setStringArrayValue(
+					m_knimeContext.inputMapping().serialize());
+			m_settings.saveSettingsTo(settings);
 
 			for (final DialogComponent c : m_gui.dialogComponents()) {
 				c.saveSettingsTo(settings);
@@ -360,9 +360,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			}
 
 			m_knimeContext.inputMapping().clear();
-			ColumnToModuleItemMappingUtil.fillColumnToModuleItemMappingService(
-					m_settings.getColumnInputMapping(),
-					m_knimeContext.inputMapping());
+			m_knimeContext.inputMapping()
+					.deserialize(m_settings.getColumnInputMapping());
 
 			// load Settings for common DialogComponents
 			for (final DialogComponent c : m_gui.dialogComponents()) {

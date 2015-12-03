@@ -1,5 +1,6 @@
 package org.knime.scijava.scripting.base;
 
+import org.scijava.Context;
 import org.scijava.command.CommandInfo;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleException;
@@ -10,9 +11,11 @@ import org.scijava.script.ScriptLanguage;
 public class CommandCompileProductHelper implements CompileProductHelper {
 
 	private final CommandInfo m_info;
+	private final Context m_context;
 
-	public CommandCompileProductHelper(CommandInfo info) {
+	public CommandCompileProductHelper(CommandInfo info, Context context) {
 		m_info = info;
+		m_context = context;
 	}
 
 	@Override
@@ -29,7 +32,7 @@ public class CommandCompileProductHelper implements CompileProductHelper {
 	public Module createModule(final ScriptLanguage lang)
 			throws ModuleException {
 		final Module module = m_info.createModule();
-		ScriptingGateway.get().getGlobalContext().inject(module);
+		m_context.inject(module);
 
 		return module;
 	}

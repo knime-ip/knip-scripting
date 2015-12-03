@@ -14,6 +14,7 @@ import org.knime.scijava.commands.io.DefaultOutputDataRowService;
 import org.knime.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
+import org.knime.scijava.core.DelegateableContext;
 import org.knime.scijava.core.ResourceAwareClassLoader;
 import org.knime.scijava.core.pluginindex.ReusablePluginIndex;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
@@ -60,7 +61,10 @@ public class ScriptingGateway {
 	 */
 	protected PluginIndex m_pluginIndex = null;
 
-	private Context completeContex;
+	/**
+	 * The global context for all KNIP-2.0 Nodes.
+	 */
+	private Context m_globalContext;
 
 	/** a list of services which need to be present in newly created contexts */
 	protected static List<Class<? extends Service>> requiredServices = Arrays
@@ -103,11 +107,12 @@ public class ScriptingGateway {
 	/**
 	 * Create a new Scijava {@link Context} with Services required for the
 	 * ScriptingNode.
-	 * 
+	 *
 	 * @return the created context
 	 */
 	public Context createContext() {
-		final Context context = new Context(requiredServices, m_pluginIndex);
+		final Context context = new DelegateableContext(getGlobalContext(),
+				requiredServices, m_pluginIndex);
 
 		/* Make sure custom plugins have been added */
 		final PluginService plugins = context.getService(PluginService.class);
@@ -116,11 +121,11 @@ public class ScriptingGateway {
 		return context;
 	}
 
-	public Context getGlobalContext() {
-		if (completeContex == null)
-			completeContex = new Context(m_pluginIndex);
+	private Context getGlobalContext() {
+		if (m_globalContext == null)
+			m_globalContext = new Context(m_pluginIndex);
 
-		return completeContex;
+		return m_globalContext;
 	}
 
 	/**
@@ -137,7 +142,7 @@ public class ScriptingGateway {
 	/**
 	 * Create a {@link URLClassLoader} which contains scijava plugins and
 	 * services.
-	 * 
+	 *
 	 * @return the class laoder
 	 */
 	public ClassLoader createUrlClassLoader() {

@@ -27,6 +27,7 @@ public class JoinClassLoader extends ClassLoader {
 		this.delegateClassLoaders = delegateClassLoaders;
 	}
 
+	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
 		// It would be easier to call the loadClass() methods of the
 		// delegateClassLoaders here, but we have to load the class from the
@@ -78,6 +79,7 @@ public class JoinClassLoader extends ClassLoader {
 		}
 	}
 
+	@Override
 	protected URL findResource(String name) {
 		for (ClassLoader delegate : delegateClassLoaders) {
 			URL resource = delegate.getResource(name);
@@ -87,6 +89,7 @@ public class JoinClassLoader extends ClassLoader {
 		return null;
 	}
 
+	@Override
 	protected Enumeration<URL> findResources(String name) throws IOException {
 		Vector<URL> vector = new Vector<URL>();
 		for (ClassLoader delegate : delegateClassLoaders) {

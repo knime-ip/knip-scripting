@@ -39,8 +39,8 @@ import org.knime.core.node.streamable.StreamableOperatorInternals;
 import org.knime.scijava.commands.KNIMEScijavaContext;
 import org.knime.scijava.commands.adapter.OutputAdapter;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
-import org.knime.scijava.commands.mapping.ColumnModuleItemMapping;
-import org.knime.scijava.commands.mapping.ColumnToModuleItemMappingUtil;
+import org.knime.scijava.commands.mapping.process.KnimePostprocessor;
+import org.knime.scijava.commands.mapping.process.KnimePreprocessor;
 import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.CompileHelper;
 import org.knime.scijava.scripting.base.CompileProductHelper;
@@ -53,7 +53,6 @@ import org.scijava.module.Module;
 import org.scijava.module.ModuleException;
 import org.scijava.module.ModuleItem;
 import org.scijava.module.ModuleService;
-import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
@@ -75,11 +74,6 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	/* Node settings */
 	private final SciJavaScriptingNodeSettings m_settings = new SciJavaScriptingNodeSettings();
 
-	@Parameter
-	private ObjectService m_objectService;
-	/* service responsible for running modules */
-	@Parameter
-	private ModuleService m_moduleService;
 	/* Service providing access to ScriptLanguages plugins */
 	@Parameter
 	private ScriptService m_scriptService;
@@ -122,7 +116,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 				.setSettingsModels(m_settings.otherSettings());
 
 		try {
-			m_compiler = new CompileHelper();
+			m_compiler = new CompileHelper(scijavaContext);
 		} catch (final IOException e) {
 			getLogger().error(
 					"Could not create temporary directory for Scripting Node.");
@@ -303,30 +297,29 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			final ScriptLanguage lang = m_scriptService
-					.getLanguageByName(m_settings.getScriptLanguageName());
-			if (lang == null) {
-				getLogger()
-						.error("Language " + m_settings.getScriptLanguageName()
-								+ " could not be found.");
-				return;
-			}
-
-			try {
-				m_compileProduct = m_compiler.compile(
-						m_settings.getScriptCode(), getCurrentLanguage());
-			} catch (NullPointerException | ScriptException e) {
-				// compilation failed
-				getLogger().info(
-						"Code did not compile, failed to load all settings.");
-				return;
-			}
+			// final ScriptLanguage lang = m_scriptService
+			// .getLanguageByName(m_settings.getScriptLanguageName());
+			// if (lang == null) {
+			// getLogger()
+			// .error("Language " + m_settings.getScriptLanguageName()
+			// + " could not be found.");
+			// return;
+			// }
+			//
+			// try {
+			// m_compileProduct = m_compiler.compile(
+			// m_settings.getScriptCode(), getCurrentLanguage());
+			// } catch (NullPointerException | ScriptException e) {
+			// // compilation failed
+			// getLogger().info(
+			// "Code did not compile, failed to load all settings.");
+			// return;
+			// }
 
 			// load column input mappings
 			m_knimeContext.inputMapping().clear();
-			ColumnToModuleItemMappingUtil.fillColumnToModuleItemMappingService(
-					m_settings.getColumnInputMapping(),
-					m_knimeContext.inputMapping());
+			m_knimeContext.inputMapping()
+					.deserialize(m_settings.getColumnInputMapping());
 
 			createSettingsForCompileProduct();
 			m_knimeContext.nodeDialogSettings().loadSettingsFrom(settings,
@@ -352,30 +345,31 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 	@Override
 	protected void saveSettingsTo(final NodeSettingsWO settings) {
-		ColumnToModuleItemMappingUtil.fillStringArraySettingsModel(
-				m_knimeContext.inputMapping(),
-				m_settings.getColumnInputMappingModel());
+
+		// store the inputmapping into the settings model
+		m_settings.getColumnInputMappingModel()
+				.setStringArrayValue(m_knimeContext.inputMapping().serialize());
 		m_settings.saveSettingsTo(settings);
 
-		try (final TempClassLoader tempCl = new TempClassLoader(
-				ScriptingGateway.get().createUrlClassLoader())) {
-			m_compileProduct = m_compiler.compile(m_settings.getScriptCode(),
-					getCurrentLanguage());
-
-			createSettingsForCompileProduct();
-			m_knimeContext.nodeModelSettings().saveSettingsTo(settings);
-
-		} catch (final ScriptException e) {
-			// Compilation failure
-			return;
-		}
+		// try (final TempClassLoader tempCl = new TempClassLoader(
+		// ScriptingGateway.get().createUrlClassLoader())) {
+		// m_compileProduct = m_compiler.compile(m_settings.getScriptCode(),
+		// getCurrentLanguage());
+		//
+		// createSettingsForCompileProduct();
+		// m_knimeContext.nodeModelSettings().saveSettingsTo(settings);
+		//
+		// } catch (final ScriptException e) {
+		// // Compilation failure
+		// return;
+		// }
 	}
 
 	// --- nested classes ---
 
 	/**
 	 * CellFactory for ScriptingNode.
-	 * 
+	 *
 	 * @author Jonathan Hale
 	 */
 	protected class ScriptingCellFactory extends AbstractContextual
@@ -387,9 +381,11 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		@Parameter
 		OutputAdapterService m_outAdapters;
 
+		@Parameter
+		ModuleService m_moduleService;
+
 		public ScriptingCellFactory(Context context, Module module) {
 			m_module = module;
-
 			setContext(context);
 			m_spec = createDataColumnSpecs();
 		}
@@ -432,12 +428,14 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		@Override
 		public DataCell[] getCells(final DataRow row) {
 			m_knimeContext.input().setInputDataRow(row);
+
 			try {
 				m_moduleService.run(m_module, true).get();
 			} catch (InterruptedException | ExecutionException e) {
 				getLogger().error(
 						"Module execution failed in Row: " + row.getKey());
 			}
+
 			DataCell[] cells = m_knimeContext.output().getOutputDataCells();
 
 			m_compileProduct.resetModule(m_module);
@@ -465,7 +463,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 	/**
 	 * Streamable function for ScriptingNode.
-	 * 
+	 *
 	 * @author Jonathan Hale
 	 */
 	protected class ScriptingStreamableFunction extends StreamableFunction {
@@ -499,7 +497,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 	/**
 	 * Streamable function for ScriptingNode using a column rearranger.
-	 * 
+	 *
 	 * @author Jonathan Hale
 	 */
 	protected class RearrangingScriptingStreamableFunction
@@ -509,7 +507,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 		/**
 		 * Constructor
-		 * 
+		 *
 		 * @param streamableFunction
 		 *            Function of the column rearranger
 		 */

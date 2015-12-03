@@ -3,6 +3,7 @@ package org.knime.scijava.scripting.base;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 
+import org.scijava.Context;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleException;
 import org.scijava.module.ModuleInfo;
@@ -15,9 +16,11 @@ public class ScriptCompileProductHelper implements CompileProductHelper {
 
 	private final ScriptInfo m_info;
 	private Iterable<ModuleItem<?>> m_inputs = null;
+	private Context m_context;
 
-	public ScriptCompileProductHelper(final ScriptInfo info) {
+	public ScriptCompileProductHelper(final ScriptInfo info, Context context) {
 		m_info = info;
+		m_context = context;
 	}
 
 	@Override
@@ -37,12 +40,13 @@ public class ScriptCompileProductHelper implements CompileProductHelper {
 	}
 
 	@Override
-	public Module createModule(final ScriptLanguage language) throws ModuleException {
+	public Module createModule(final ScriptLanguage language)
+			throws ModuleException {
 		final ScriptModule module = m_info.createModule();
 
 		// use the currently selected language to execute the script
 		module.setLanguage(language);
-		ScriptingGateway.get().getGlobalContext().inject(module);
+		m_context.inject(module);
 
 		return module;
 	}

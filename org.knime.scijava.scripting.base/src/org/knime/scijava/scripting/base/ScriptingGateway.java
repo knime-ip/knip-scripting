@@ -14,7 +14,7 @@ import org.knime.scijava.commands.io.DefaultOutputDataRowService;
 import org.knime.scijava.commands.mapping.ColumnModuleItemMappingService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
-import org.knime.scijava.core.DelegateableContext;
+import org.knime.scijava.core.SubContext;
 import org.knime.scijava.core.ResourceAwareClassLoader;
 import org.knime.scijava.core.pluginindex.ReusablePluginIndex;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
@@ -111,7 +111,7 @@ public class ScriptingGateway {
 	 * @return the created context
 	 */
 	public Context createContext() {
-		final Context context = new DelegateableContext(getGlobalContext(),
+		final Context context = new SubContext(getGlobalContext(),
 				requiredServices, m_pluginIndex);
 
 		/* Make sure custom plugins have been added */

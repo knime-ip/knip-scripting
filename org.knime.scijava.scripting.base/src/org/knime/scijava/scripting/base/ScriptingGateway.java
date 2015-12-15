@@ -9,13 +9,17 @@ import java.util.List;
 import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.adapter.InputAdapterService;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
-import org.knime.scijava.commands.io.DefaultInputDataRowService;
-import org.knime.scijava.commands.io.DefaultOutputDataRowService;
+import org.knime.scijava.commands.io.InputDataRowService;
+import org.knime.scijava.commands.io.OutputDataRowService;
 import org.knime.scijava.commands.mapping.ColumnModuleItemMappingService;
+import org.knime.scijava.commands.mapping.ColumnToInputMappingService;
+import org.knime.scijava.commands.mapping.OutputToColumnMappingService;
+import org.knime.scijava.commands.settings.NodeModelSettingsService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
+import org.knime.scijava.commands.settings.SettingsModelTypeService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
-import org.knime.scijava.core.SubContext;
 import org.knime.scijava.core.ResourceAwareClassLoader;
+import org.knime.scijava.core.SubContext;
 import org.knime.scijava.core.pluginindex.ReusablePluginIndex;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.Context;
@@ -25,13 +29,13 @@ import org.scijava.object.ObjectService;
 import org.scijava.plugin.DefaultPluginFinder;
 import org.scijava.plugin.PluginIndex;
 import org.scijava.plugin.PluginService;
-import org.scijava.plugins.scripting.java.DefaultJavaService;
+import org.scijava.plugins.scripting.java.JavaService;
 import org.scijava.prefs.PrefService;
 import org.scijava.script.ScriptHeaderService;
 import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
 import org.scijava.ui.UIService;
-import org.scijava.widget.DefaultWidgetService;
+import org.scijava.widget.WidgetService;
 
 import net.imagej.ui.swing.script.LanguageSupportService;
 
@@ -69,16 +73,20 @@ public class ScriptingGateway {
 	/** a list of services which need to be present in newly created contexts */
 	protected static List<Class<? extends Service>> requiredServices = Arrays
 			.<Class<? extends Service>> asList(ScriptService.class,
-					DefaultJavaService.class, DefaultInputDataRowService.class,
-					DefaultOutputDataRowService.class, PrefService.class,
+					JavaService.class, InputDataRowService.class,
+					OutputDataRowService.class, PrefService.class,
 					KNIMEExecutionService.class, NodeSettingsService.class,
-					ObjectService.class, DefaultWidgetService.class,
+					ObjectService.class, WidgetService.class,
 					KNIMEWidgetService.class, InputAdapterService.class,
 					UIService.class, OutputAdapterService.class,
 					CommandService.class, LanguageSupportService.class,
 					ScriptHeaderService.class,
 					ParameterCodeGeneratorService.class,
-					ColumnModuleItemMappingService.class);
+					ColumnModuleItemMappingService.class,
+					ColumnToInputMappingService.class,
+					OutputToColumnMappingService.class,
+					NodeModelSettingsService.class, InputAdapterService.class,
+					JavaService.class, SettingsModelTypeService.class);
 
 	/**
 	 * Constructor. Only to be called from {@link #get()}.
@@ -110,11 +118,12 @@ public class ScriptingGateway {
 	 *
 	 * @return the created context
 	 */
-	public Context createContext() {
+	public Context createSubContext() {
 		final Context context = new SubContext(getGlobalContext(),
-				requiredServices, m_pluginIndex);
+				requiredServices,
+				new PluginIndex(new DefaultPluginFinder(m_classLoader)));
 
-		/* Make sure custom plugins have been added */
+		// cleanup unwanted services
 		final PluginService plugins = context.getService(PluginService.class);
 		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
 
@@ -122,9 +131,15 @@ public class ScriptingGateway {
 	}
 
 	private Context getGlobalContext() {
-		if (m_globalContext == null)
+		if (m_globalContext == null) {
 			m_globalContext = new Context(m_pluginIndex);
 
+			// NB: required services are local for the subcontext.
+			// FIXME: make the required services list as small as possible, then
+			// remove.
+			// m_globalContext.getServiceIndex().removeAll(requiredServices);
+			// m_globalContext.getPluginIndex().removeAll(requiredServices);
+		}
 		return m_globalContext;
 	}
 

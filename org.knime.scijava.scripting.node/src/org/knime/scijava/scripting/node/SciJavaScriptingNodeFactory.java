@@ -74,7 +74,7 @@ public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNod
 
 	public SciJavaScriptingNodeFactory() {
 		super();
-		m_context = ScriptingGateway.get().createContext();
+		m_context = ScriptingGateway.get().createSubContext();
 		m_knimeContext = new DefaultKNIMEScijavaContext();
 		m_knimeContext.setContext(m_context);
 	}

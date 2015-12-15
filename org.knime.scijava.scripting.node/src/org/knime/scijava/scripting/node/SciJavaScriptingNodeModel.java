@@ -297,24 +297,24 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			// final ScriptLanguage lang = m_scriptService
-			// .getLanguageByName(m_settings.getScriptLanguageName());
-			// if (lang == null) {
-			// getLogger()
-			// .error("Language " + m_settings.getScriptLanguageName()
-			// + " could not be found.");
-			// return;
-			// }
-			//
-			// try {
-			// m_compileProduct = m_compiler.compile(
-			// m_settings.getScriptCode(), getCurrentLanguage());
-			// } catch (NullPointerException | ScriptException e) {
-			// // compilation failed
-			// getLogger().info(
-			// "Code did not compile, failed to load all settings.");
-			// return;
-			// }
+			 final ScriptLanguage lang = m_scriptService
+			 .getLanguageByName(m_settings.getScriptLanguageName());
+			 if (lang == null) {
+			 getLogger()
+			 .error("Language " + m_settings.getScriptLanguageName()
+			 + " could not be found.");
+			 return;
+			 }
+
+			 try {
+			 m_compileProduct = m_compiler.compile(
+			 m_settings.getScriptCode(), getCurrentLanguage());
+			 } catch (NullPointerException | ScriptException e) {
+			 // compilation failed
+			 getLogger().info(
+			 "Code did not compile, failed to load all settings.");
+			 return;
+			 }
 
 			// load column input mappings
 			m_knimeContext.inputMapping().clear();

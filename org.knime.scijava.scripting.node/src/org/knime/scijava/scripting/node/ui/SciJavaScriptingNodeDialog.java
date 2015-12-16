@@ -178,7 +178,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			try {
 				m_compiler = new CompileHelper(m_context);
 			} catch (final IOException e) {
-				// caused only by temporary directory not createable
+				// caused only by temporary directory not createable // FIXME: this should throw an error!
 			}
 
 			// Initialize syntax hilighting plugins, so that the editor can
@@ -418,7 +418,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 				// don't generate ui for mapped inputs
 				boolean noUI = m_knimeContext.inputMapping()
-						.isInputMapped(inputName);
+						.isItemMapped(inputName);
 				module.setResolved(inputName, noUI);
 			}
 			builder.buildPanel(inputPanel, module);

@@ -297,24 +297,24 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			 final ScriptLanguage lang = m_scriptService
-			 .getLanguageByName(m_settings.getScriptLanguageName());
-			 if (lang == null) {
-			 getLogger()
-			 .error("Language " + m_settings.getScriptLanguageName()
-			 + " could not be found.");
-			 return;
-			 }
+			final ScriptLanguage lang = m_scriptService
+					.getLanguageByName(m_settings.getScriptLanguageName());
+			if (lang == null) {
+				getLogger()
+						.error("Language " + m_settings.getScriptLanguageName()
+								+ " could not be found.");
+				return;
+			}
 
-			 try {
-			 m_compileProduct = m_compiler.compile(
-			 m_settings.getScriptCode(), getCurrentLanguage());
-			 } catch (NullPointerException | ScriptException e) {
-			 // compilation failed
-			 getLogger().info(
-			 "Code did not compile, failed to load all settings.");
-			 return;
-			 }
+			try {
+				m_compileProduct = m_compiler.compile(
+						m_settings.getScriptCode(), getCurrentLanguage());
+			} catch (NullPointerException | ScriptException e) {
+				// compilation failed
+				getLogger().info(
+						"Code did not compile, failed to load all settings.");
+				return;
+			}
 
 			// load column input mappings
 			m_knimeContext.inputMapping().clear();
@@ -328,8 +328,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	}
 
 	private void createSettingsForCompileProduct() {
-		// Create settings models for module inputs which do not have a
-		// ColumnToModuleInputMapping that maps to them
+		// cleanup settingsmodels
+		m_knimeContext.nodeModelSettings().clear();
 		for (final ModuleItem<?> i : m_compileProduct.inputs()) {
 			final String inputName = i.getName();
 
@@ -351,18 +351,18 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 				.setStringArrayValue(m_knimeContext.inputMapping().serialize());
 		m_settings.saveSettingsTo(settings);
 
-		// try (final TempClassLoader tempCl = new TempClassLoader(
-		// ScriptingGateway.get().createUrlClassLoader())) {
-		// m_compileProduct = m_compiler.compile(m_settings.getScriptCode(),
-		// getCurrentLanguage());
-		//
-		// createSettingsForCompileProduct();
-		// m_knimeContext.nodeModelSettings().saveSettingsTo(settings);
-		//
-		// } catch (final ScriptException e) {
-		// // Compilation failure
-		// return;
-		// }
+		try (final TempClassLoader tempCl = new TempClassLoader(
+				ScriptingGateway.get().createUrlClassLoader())) {
+			m_compileProduct = m_compiler.compile(m_settings.getScriptCode(),
+					getCurrentLanguage());
+
+			createSettingsForCompileProduct();
+			m_knimeContext.nodeModelSettings().saveSettingsTo(settings);
+
+		} catch (final ScriptException e) {
+			// Compilation failure
+			return;
+		}
 	}
 
 	// --- nested classes ---

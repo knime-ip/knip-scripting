@@ -120,8 +120,7 @@ public class ScriptingGateway {
 	 */
 	public Context createSubContext() {
 		final Context context = new SubContext(getGlobalContext(),
-				requiredServices,
-				new PluginIndex(new DefaultPluginFinder(m_classLoader)));
+				requiredServices, m_pluginIndex);
 
 		// cleanup unwanted services
 		final PluginService plugins = context.getService(PluginService.class);

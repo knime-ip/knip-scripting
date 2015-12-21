@@ -457,9 +457,9 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		for (final ModuleItem<?> i : m_compileProduct.inputs()) {
 			final String inputName = i.getName();
 
-			// unmapped inputs need an ui element.
-			boolean needsUI = m_knimeContext.inputMapping()
-					.isItemMapped(inputName);
+			// only unmapped inputs need an ui element.
+			boolean needsUI = !(m_knimeContext.inputMapping()
+					.isItemMapped(inputName));
 
 			if (needsUI) {
 				m_knimeContext.nodeDialogSettings()

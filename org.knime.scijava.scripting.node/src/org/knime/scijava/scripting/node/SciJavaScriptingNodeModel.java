@@ -334,8 +334,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			final String inputName = i.getName();
 
 			// unmapped inputs need an ui element.
-			boolean needsUI = m_knimeContext.inputMapping()
-					.isItemMapped(inputName);
+			boolean needsUI = !(m_knimeContext.inputMapping()
+					.isItemMapped(inputName));
 
 			if (needsUI) {
 				m_knimeContext.nodeModelSettings().createAndAddSettingsModel(i);

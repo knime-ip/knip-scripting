@@ -432,8 +432,9 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			try {
 				m_moduleService.run(m_module, true).get();
 			} catch (InterruptedException | ExecutionException e) {
-				getLogger().error(
-						"Module execution failed in Row: " + row.getKey());
+				throw new IllegalStateException(
+						"Module execution failed in Row: " + row.getKey()
+								+ ": \n" + " " + e.getMessage());
 			}
 
 			DataCell[] cells = m_knimeContext.output().getOutputDataCells();

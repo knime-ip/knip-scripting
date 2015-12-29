@@ -63,7 +63,7 @@ import org.knime.core.node.config.ConfigRO;
  */
 public class SciJavaScriptingNodeSetFactory implements NodeSetFactory {
 
-	private final Map<String, String> m_nodeFactories = new HashMap<String, String>();
+	private final Map<String, String> m_nodeFactories = new HashMap<>();
 
 	/**
 	 * {@inheritDoc}

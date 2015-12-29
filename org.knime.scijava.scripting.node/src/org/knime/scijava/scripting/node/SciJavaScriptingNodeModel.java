@@ -157,7 +157,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			throws InvalidSettingsException {
 		final ScriptLanguage language = getCurrentLanguage();
 		try {
-			recompile(m_compiler, m_settings.getScriptCode(), language);
+			m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
+					language);
 
 			m_cellFactory = new ScriptingCellFactory(m_context,
 					m_compileProduct.createModule(language));
@@ -301,7 +302,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		}
 
 		try {
-			recompile(m_compiler, m_settings.getScriptCode(), language);
+			m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
+					language);
 		} catch (NullPointerException | ScriptException e) {
 			// compilation failed
 			getLogger()
@@ -314,7 +316,18 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		m_knimeContext.inputMapping()
 				.deserialize(m_settings.getColumnInputMapping());
 
-		m_knimeContext.nodeDialogSettings().loadSettingsFrom(settings, true);
+		// load settings for generated dialog components
+		NodeSettingsRO dialogSettings;
+		try {
+			dialogSettings = settings.getNodeSettings(
+					SciJavaScriptingNodeSettings.SM_KEY_OTHER_SETTINGS);
+		} catch (InvalidSettingsException e) {
+			// no settings found -> no generated dialog components, skipping the 
+			return;
+		}
+
+		m_knimeContext.nodeDialogSettings().loadSettingsFrom(dialogSettings,
+				true);
 	}
 
 	@Override
@@ -326,7 +339,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		m_settings.saveSettingsTo(settings);
 
 		try {
-			recompile(m_compiler, m_settings.getScriptCode(),
+			m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
 					getCurrentLanguage());
 		} catch (final ScriptException e) {
 			// Compilation failure
@@ -335,7 +348,10 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		ScriptingUtils.createSettingsForCompileProduct(
 				m_knimeContext.nodeModelSettings(),
 				m_knimeContext.inputMapping(), m_compileProduct);
-		m_knimeContext.nodeModelSettings().saveSettingsTo(settings);
+
+		m_knimeContext.nodeModelSettings()
+				.saveSettingsTo(settings.addNodeSettings(
+						SciJavaScriptingNodeSettings.SM_KEY_OTHER_SETTINGS));
 
 	}
 

@@ -40,6 +40,7 @@ public class SciJavaScriptingNodeSettings {
 	public static final String SM_KEY_INPUT_MAPPING = "ColumnInputMappings";
 	public static final String SM_KEY_COLUMN_CREATION_MODE = "ColumnCreationMode";
 	public static final String SM_KEY_COLUMN_SUFFIX = "ColumnSuffix";
+	public static final String SM_KEY_OTHER_SETTINGS = "OtherSettings";
 
 	/* contains the language to execute the script code with */
 	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
@@ -58,7 +59,7 @@ public class SciJavaScriptingNodeSettings {
 			m_columnCreationModeModel);
 
 	/* contains other settings which will be passed to a NodeSettingsService */
-	private final Map<String, SettingsModel> m_otherSettings = new HashMap<String, SettingsModel>();
+	private Map<String, SettingsModel> m_otherSettings = new HashMap<>();
 
 	private final List<SettingsModel> m_settingsModels;
 
@@ -307,6 +308,7 @@ public class SciJavaScriptingNodeSettings {
 		for (SettingsModel model : m_settingsModels) {
 			model.saveSettingsTo(settings);
 		}
+//		SettingsModelUtils.saveSettingsModelsMap(settings.addNodeSettings(SM_KEY_OTHER_SETTINGS), m_otherSettings);
 	}
 
 	/**
@@ -321,7 +323,7 @@ public class SciJavaScriptingNodeSettings {
 		for (SettingsModel model : m_settingsModels) {
 			model.loadSettingsFrom(settings);
 		}
-
+//		m_otherSettings = SettingsModelUtils.loadSettingsModelsMap(settings.getNodeSettings(SM_KEY_OTHER_SETTINGS));
 	}
 
 	public void validateSettings(NodeSettingsRO settings)

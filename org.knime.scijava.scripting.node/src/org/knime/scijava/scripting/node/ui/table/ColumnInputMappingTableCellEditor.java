@@ -34,7 +34,7 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 	private final ModuleInfo m_info;
 
 	public ColumnInputMappingTableCellEditor(final DataTableSpec spec) {
-		super(new JComboBox<DataColumnSpec>(dataTableSpecToArray(spec)));
+		super(new JComboBox<>(dataTableSpecToArray(spec)));
 		m_mode = EditorMode.COLUMN;
 
 		m_spec = spec;
@@ -42,7 +42,7 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 	}
 
 	public ColumnInputMappingTableCellEditor(final ModuleInfo info) {
-		super(new JComboBox<ModuleItem<?>>(moduleToArray(info)));
+		super(new JComboBox<>(moduleToArray(info)));
 		m_mode = EditorMode.INPUT;
 
 		m_spec = null;
@@ -103,7 +103,7 @@ public class ColumnInputMappingTableCellEditor extends DefaultCellEditor {
 			return new ModuleItem<?>[] {};
 		}
 
-		final ArrayList<ModuleItem<?>> list = new ArrayList<ModuleItem<?>>();
+		final ArrayList<ModuleItem<?>> list = new ArrayList<>();
 
 		for (final ModuleItem<?> item : items.inputs()) {
 			list.add(item);

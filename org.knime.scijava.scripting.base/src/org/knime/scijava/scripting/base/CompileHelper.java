@@ -48,11 +48,8 @@ public class CompileHelper {
 	 * directory.
 	 */
 	private void writeScriptToFile(final ScriptLanguage lang) {
-		try {
-			File scriptFile = new File(m_tempDir,
-					"script." + lang.getExtensions().get(0));
-
-			Writer w = new FileWriter(scriptFile);
+		try (Writer w = new FileWriter(
+				new File(m_tempDir, "script." + lang.getExtensions().get(0)))) {
 			w.write(m_script);
 			w.close();
 		} catch (IOException exc) {

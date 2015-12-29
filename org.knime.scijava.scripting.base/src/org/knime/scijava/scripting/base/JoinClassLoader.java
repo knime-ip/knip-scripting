@@ -48,9 +48,7 @@ public class JoinClassLoader extends ClassLoader {
 	}
 
 	private ByteBuffer loadResource(URL url) throws IOException {
-		InputStream stream = null;
-		try {
-			stream = url.openStream();
+		try (InputStream stream = url.openStream()) {
 			int initialBufferCapacity = Math.min(0x40000,
 					stream.available() + 1);
 			if (initialBufferCapacity <= 2)
@@ -73,9 +71,6 @@ public class JoinClassLoader extends ClassLoader {
 			}
 			buf.flip();
 			return buf;
-		} finally {
-			if (stream != null)
-				stream.close();
 		}
 	}
 
@@ -91,7 +86,7 @@ public class JoinClassLoader extends ClassLoader {
 
 	@Override
 	protected Enumeration<URL> findResources(String name) throws IOException {
-		Vector<URL> vector = new Vector<URL>();
+		Vector<URL> vector = new Vector<>();
 		for (ClassLoader delegate : delegateClassLoaders) {
 			Enumeration<URL> enumeration = delegate.getResources(name);
 			while (enumeration.hasMoreElements()) {

@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -38,7 +39,7 @@ import org.scijava.Contextual;
 public class SciJavaScriptingNodeDialogPane implements Contextual {
 
 	/* containers */
-	private final ArrayList<DialogComponent> m_dialogComponents = new ArrayList<DialogComponent>();
+	private final List<DialogComponent> m_dialogComponents = new ArrayList<>();
 
 	/*
 	 * options for easy debugging: WARNING: This is for debugging the UI layout
@@ -69,7 +70,7 @@ public class SciJavaScriptingNodeDialogPane implements Contextual {
 	private final JPanel m_editorPanel = new JPanel(new GridBagLayout());
 
 	// Language selection Combobox
-	private final JComboBox<String> m_langSelection = new JComboBox<String>(
+	private final JComboBox<String> m_langSelection = new JComboBox<>(
 			new String[] { "Java" });
 
 	// column selection list for generating inputs with column matchings

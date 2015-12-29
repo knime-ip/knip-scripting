@@ -10,8 +10,8 @@ import java.util.Set;
  */
 public class ClassUtils {
 
-	private static final Set<Class<?>> primitives = new HashSet<Class<?>>();
-	private static final Set<Class<?>> wrappers = new HashSet<Class<?>>();
+	private static final Set<Class<?>> primitives = new HashSet<>();
+	private static final Set<Class<?>> wrappers = new HashSet<>();
 
 	static {
 		primitives.add(boolean.class);

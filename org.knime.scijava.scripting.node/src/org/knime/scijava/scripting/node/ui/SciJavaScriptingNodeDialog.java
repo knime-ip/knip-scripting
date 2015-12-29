@@ -179,7 +179,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			try {
 				m_compiler = new CompileHelper(m_context);
 			} catch (final IOException e) {
-				// caused only by temporary directory not createable // FIXME: this should throw an error!
+				// caused only by temporary directory not createable // FIXME:
+				// this should throw an error!
 			}
 
 			// Initialize syntax hilighting plugins, so that the editor can
@@ -221,7 +222,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 			if (languages.length != 0) {
 				m_gui.languageSelection()
-						.setModel(new DefaultComboBoxModel<String>(languages));
+						.setModel(new DefaultComboBoxModel<>(languages));
 			} /* else, stays String[]{"Java"} */
 
 			m_gui.languageSelection()
@@ -312,7 +313,6 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			// store the inputmapping into the settings model
 			m_settings.getColumnInputMappingModel().setStringArrayValue(
 					m_knimeContext.inputMapping().serialize());
-			
 
 			for (final DialogComponent c : m_gui.dialogComponents()) {
 				c.saveSettingsTo(settings);
@@ -334,7 +334,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			ScriptingUtils.createSettingsForCompileProduct(
 					m_knimeContext.nodeDialogSettings(),
 					m_knimeContext.inputMapping(), m_compileProduct);
-			
+
 			m_knimeContext.nodeDialogSettings().saveSettingsTo(settings);
 			m_settings.saveSettingsTo(settings);
 		} catch (final Throwable t) {
@@ -415,7 +415,6 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		final KnimeSwingInputPanel inputPanel = new KnimeSwingInputPanel();
 
 		try {
-
 			final Module module = m_compileProduct
 					.createModule(getCurrentLanguage());
 			for (final ModuleItem<?> input : m_compileProduct.inputs()) {
@@ -428,7 +427,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			}
 			builder.buildPanel(inputPanel, module);
 		} catch (final ModuleException e) {
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 		m_autogenPanel.add(inputPanel.getComponent());
 

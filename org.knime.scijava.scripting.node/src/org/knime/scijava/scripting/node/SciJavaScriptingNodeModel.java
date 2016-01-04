@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.script.ScriptException;
@@ -95,6 +96,14 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 	private ColumnRearranger m_colRearranger;
 
+	/* DataTableSpec of the output data table, created from module outputs */
+	private ScriptingCellFactory m_cellFactory;
+
+	/* Output data table specification */
+	private DataTableSpec m_outTableSpec = null;
+
+	// --- node lifecycle: configure/execute/reset ---
+
 	/**
 	 * @param context
 	 * @param knimeContext
@@ -128,29 +137,6 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		NodeLogger.addKNIMEConsoleWriter(m_outputWriter, NodeLogger.LEVEL.INFO,
 				NodeLogger.LEVEL.DEBUG);
 	}
-
-	/* DataTableSpec of the output data table, created from module outputs */
-	private ScriptingCellFactory m_cellFactory;
-
-	/* Output data table specification */
-	private DataTableSpec m_outTableSpec = null;
-
-	/**
-	 * @return {@link ScriptLanguage} with name
-	 *         <code>m_settings.getScriptLanguageName()</code>.
-	 */
-	protected ScriptLanguage getCurrentLanguage() {
-		final String languageName = m_settings.getScriptLanguageName();
-		final ScriptLanguage language = m_scriptService
-				.getLanguageByName(languageName);
-		if (language == null) {
-			throw new NullPointerException("Could not load language "
-					+ languageName + " for Scripting Node.");
-		}
-		return language;
-	}
-
-	// --- node lifecycle: configure/execute/reset ---
 
 	@Override
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
@@ -247,12 +233,17 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			final PartitionInfo partitionInfo, final PortObjectSpec[] inSpecs)
 					throws InvalidSettingsException {
 
-		if (m_settings
-				.getColumnCreationMode() == ColumnCreationMode.APPEND_COLUMNS) {
+		switch (m_settings.getColumnCreationMode()) {
+		case APPEND_COLUMNS:
 			return new RearrangingScriptingStreamableFunction(
 					m_colRearranger.createStreamableFunction());
+		case NEW_TABLE:
+			return new ScriptingStreamableFunction();
+		default:
+			throw new IllegalArgumentException(
+					"Setting: " + m_settings.getColumnCreationMode()
+							+ " is not supported!");
 		}
-		return new ScriptingStreamableFunction();
 	}
 
 	@Override
@@ -322,7 +313,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			dialogSettings = settings.getNodeSettings(
 					SciJavaScriptingNodeSettings.SM_KEY_OTHER_SETTINGS);
 		} catch (InvalidSettingsException e) {
-			// no settings found -> no generated dialog components, skipping the 
+			// no settings found -> no generated dialog components, skipping the
 			return;
 		}
 
@@ -353,6 +344,21 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 				.saveSettingsTo(settings.addNodeSettings(
 						SciJavaScriptingNodeSettings.SM_KEY_OTHER_SETTINGS));
 
+	}
+
+	/**
+	 * @return {@link ScriptLanguage} with name
+	 *         <code>m_settings.getScriptLanguageName()</code>.
+	 */
+	private ScriptLanguage getCurrentLanguage() {
+		final String languageName = m_settings.getScriptLanguageName();
+		final ScriptLanguage language = m_scriptService
+				.getLanguageByName(languageName);
+		if (language == null) {
+			throw new NullPointerException("Could not load language "
+					+ languageName + " for Scripting Node.");
+		}
+		return language;
 	}
 
 	private static CompileProductHelper recompile(CompileHelper compiler,
@@ -390,7 +396,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		}
 
 		protected DataColumnSpec[] createDataColumnSpecs() {
-			final ArrayList<DataColumnSpec> tableSpecs = new ArrayList<>();
+			final List<DataColumnSpec> tableSpecs = new ArrayList<>();
 
 			final String suffix = (m_settings.getColumnSuffixModel()
 					.isEnabled()) ? m_settings.getColumnSuffix() : "";
@@ -519,7 +525,6 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		/** {@inheritDoc} */
 		@Override
 		public final void init(final ExecutionContext exec) throws Exception {
-			super.init(exec);
 			m_colRearrangerFunction.init(exec);
 		}
 

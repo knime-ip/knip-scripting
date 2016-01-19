@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.knime.knip.base.data.img.ImgPlusCell;
 import org.knime.knip.base.data.img.ImgPlusCellFactory;
+import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.adapter.AbstractOutputAdapter;
 import org.knime.scijava.commands.adapter.OutputAdapter;
@@ -21,7 +22,7 @@ import net.imagej.ImgPlus;
 @SuppressWarnings("rawtypes")
 @Plugin(type = OutputAdapter.class)
 public class ImgPlusOutputAdapter
-		extends AbstractOutputAdapter<ImgPlus, ImgPlusCell> {
+		extends AbstractOutputAdapter<ImgPlus, ImgPlusValue> {
 
 	@Parameter
 	private KNIMEExecutionService execService;
@@ -39,8 +40,8 @@ public class ImgPlusOutputAdapter
 	}
 
 	@Override
-	public Class<ImgPlusCell> getOutputType() {
-		return ImgPlusCell.class;
+	public Class<ImgPlusValue> getOutputType() {
+		return ImgPlusValue.class;
 	}
 
 	@Override

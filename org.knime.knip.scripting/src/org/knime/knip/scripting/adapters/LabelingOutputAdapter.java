@@ -24,7 +24,7 @@ import net.imagej.ops.OpService;
 @SuppressWarnings("rawtypes")
 @Plugin(type = OutputAdapter.class, priority = Priority.HIGH_PRIORITY)
 public class LabelingOutputAdapter
-		extends AbstractOutputAdapter<LabelingValue, LabelingCell> {
+		extends AbstractOutputAdapter<LabelingValue, LabelingValue> {
 
 	@Parameter
 	private KNIMEExecutionService execService;
@@ -45,8 +45,8 @@ public class LabelingOutputAdapter
 	}
 
 	@Override
-	public Class<LabelingCell> getOutputType() {
-		return LabelingCell.class;
+	public Class<LabelingValue> getOutputType() {
+		return LabelingValue.class;
 	}
 
 	@Override

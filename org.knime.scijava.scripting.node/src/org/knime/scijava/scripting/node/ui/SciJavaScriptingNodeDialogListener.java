@@ -102,7 +102,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 			final DataColumnSpec cspec = (DataColumnSpec) o;
 
 			final String columnName = cspec.getName();
-			String memberName = cleanupMemberName(columnName);
+			final String memberName = cleanupMemberName(columnName);
 
 			// get the Name of the first createable type
 			@SuppressWarnings("rawtypes")
@@ -148,11 +148,12 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	}
 
 	/**
-	 * Sets the the mapping for the given 
+	 * Sets the the mapping for the given
+	 * 
 	 * @param columnName
 	 * @param memberName
 	 */
-	private void addMapping(final String columnName, String memberName) {
+	private void addMapping(final String columnName, final String memberName) {
 		m_gui.columnInputMatchingTable().getModel().addItem(columnName,
 				memberName);
 	}
@@ -160,7 +161,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	/**
 	 * Cleans the columnname from illegal characters to make it usable as a
 	 * parameter.
-	 * 
+	 *
 	 * @param columnName
 	 *            the name of the column
 	 * @return name of the parameter

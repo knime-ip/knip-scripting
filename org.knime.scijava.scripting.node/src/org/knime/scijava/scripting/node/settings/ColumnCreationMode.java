@@ -2,7 +2,7 @@ package org.knime.scijava.scripting.node.settings;
 
 /**
  * Enum for column creation mode settings values.
- * 
+ *
  * @author Jonathan Hale (University of Konstanz)
  */
 public enum ColumnCreationMode {
@@ -18,7 +18,7 @@ public enum ColumnCreationMode {
 	/**
 	 * Get a {@link ColumnCreationMode} enum value whose {@link #toString()}
 	 * method returns <code>name</code>
-	 * 
+	 *
 	 * @param name
 	 * @throws IllegalArgumentException
 	 *             if name did not match any of the values.

@@ -18,7 +18,7 @@ public class LabelingInputAdapter
 		extends AbstractInputAdapter<LabelingValue, LabelingValue> {
 
 	@Override
-	protected LabelingValue getValue(LabelingValue value) {
+	protected LabelingValue getValue(final LabelingValue value) {
 		return value;
 	}
 

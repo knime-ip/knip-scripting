@@ -109,8 +109,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	 * @param knimeContext
 	 *
 	 */
-	protected SciJavaScriptingNodeModel(Context scijavaContext,
-			KNIMEScijavaContext knimeContext) {
+	protected SciJavaScriptingNodeModel(final Context scijavaContext,
+			final KNIMEScijavaContext knimeContext) {
 		super(1, 1);
 
 		m_context = scijavaContext;
@@ -276,7 +276,6 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		m_settings.validateSettings(settings);
-		/* nothing to do */
 	}
 
 	@Override
@@ -312,7 +311,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		try {
 			dialogSettings = settings.getNodeSettings(
 					SciJavaScriptingNodeSettings.SM_KEY_OTHER_SETTINGS);
-		} catch (InvalidSettingsException e) {
+		} catch (final InvalidSettingsException e) {
 			// no settings found -> no generated dialog components, skipping the
 			return;
 		}
@@ -361,8 +360,9 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		return language;
 	}
 
-	private static CompileProductHelper recompile(CompileHelper compiler,
-			String scriptCode, ScriptLanguage language) throws ScriptException {
+	private static CompileProductHelper recompile(final CompileHelper compiler,
+			final String scriptCode, final ScriptLanguage language)
+					throws ScriptException {
 		try (final TempClassLoader cl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			return compiler.compile(scriptCode, language);
@@ -389,7 +389,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		@Parameter
 		ModuleService m_moduleService;
 
-		public ScriptingCellFactory(Context context, Module module) {
+		public ScriptingCellFactory(final Context context,
+				final Module module) {
 			m_module = module;
 			setContext(context);
 			m_spec = createDataColumnSpecs();
@@ -442,7 +443,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 								+ ": \n" + " " + e.getMessage());
 			}
 
-			DataCell[] cells = m_knimeContext.output().getOutputDataCells();
+			final DataCell[] cells = m_knimeContext.output()
+					.getOutputDataCells();
 
 			m_compileProduct.resetModule(m_module);
 
@@ -533,7 +535,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		public final DataRow compute(final DataRow inputRow) {
 			try {
 				return m_colRearrangerFunction.compute(inputRow);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				throw new IllegalArgumentException(
 						"Exception caught while reading row "
 								+ inputRow.getKey() + "! Caught exception "

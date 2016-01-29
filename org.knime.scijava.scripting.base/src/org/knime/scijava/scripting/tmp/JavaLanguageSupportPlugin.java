@@ -63,7 +63,8 @@ public class JavaLanguageSupportPlugin extends JavaLanguageSupport
 		super();
 		getJarManager().addCurrentJreClassFileSource();
 
-		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		final ClassLoader classLoader = Thread.currentThread()
+				.getContextClassLoader();
 		if (classLoader instanceof URLClassLoader) {
 			for (final URL url : ((URLClassLoader) classLoader).getURLs()) {
 				if (url.getFile().endsWith(".jar")) {

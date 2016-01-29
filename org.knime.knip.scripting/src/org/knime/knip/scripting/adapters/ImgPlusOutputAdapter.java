@@ -29,11 +29,11 @@ public class ImgPlusOutputAdapter
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	protected ImgPlusCell createCell(ImgPlus imp) {
+	protected ImgPlusCell createCell(final ImgPlus imp) {
 		try {
 			return new ImgPlusCellFactory(execService.getExecutionContext())
 					.createCell(imp);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new IllegalArgumentException(
 					"Can't convert value: " + e.getMessage());
 		}

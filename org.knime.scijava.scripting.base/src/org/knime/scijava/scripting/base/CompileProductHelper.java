@@ -19,7 +19,7 @@ public interface CompileProductHelper {
 	public ModuleInfo getModuleInfo();
 
 	public Module createModule(ScriptLanguage language) throws ModuleException;
-	
+
 	public void resetModule(Module m);
 
 }

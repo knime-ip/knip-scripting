@@ -59,7 +59,7 @@ public class SciJavaScriptingNodeSettings {
 			m_columnCreationModeModel);
 
 	/* contains other settings which will be passed to a NodeSettingsService */
-	private Map<String, SettingsModel> m_otherSettings = new HashMap<>();
+	private final Map<String, SettingsModel> m_otherSettings = new HashMap<>();
 
 	private final List<SettingsModel> m_settingsModels;
 
@@ -123,8 +123,9 @@ public class SciJavaScriptingNodeSettings {
 		final SettingsModelString suffixModel = new SettingsModelString(
 				SM_KEY_COLUMN_SUFFIX, "") {
 			@Override
-			protected void validateSettingsForModel(NodeSettingsRO settings)
-					throws InvalidSettingsException {
+			protected void validateSettingsForModel(
+					final NodeSettingsRO settings)
+							throws InvalidSettingsException {
 				super.validateSettingsForModel(settings);
 
 				// don't accept an empty suffix
@@ -305,10 +306,11 @@ public class SciJavaScriptingNodeSettings {
 	 * @throws InvalidSettingsException
 	 */
 	public void saveSettingsTo(final NodeSettingsWO settings) {
-		for (SettingsModel model : m_settingsModels) {
+		for (final SettingsModel model : m_settingsModels) {
 			model.saveSettingsTo(settings);
 		}
-//		SettingsModelUtils.saveSettingsModelsMap(settings.addNodeSettings(SM_KEY_OTHER_SETTINGS), m_otherSettings);
+		// SettingsModelUtils.saveSettingsModelsMap(settings.addNodeSettings(SM_KEY_OTHER_SETTINGS),
+		// m_otherSettings);
 	}
 
 	/**
@@ -320,15 +322,16 @@ public class SciJavaScriptingNodeSettings {
 	 */
 	public void loadSettingsFrom(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		for (SettingsModel model : m_settingsModels) {
+		for (final SettingsModel model : m_settingsModels) {
 			model.loadSettingsFrom(settings);
 		}
-//		m_otherSettings = SettingsModelUtils.loadSettingsModelsMap(settings.getNodeSettings(SM_KEY_OTHER_SETTINGS));
+		// m_otherSettings =
+		// SettingsModelUtils.loadSettingsModelsMap(settings.getNodeSettings(SM_KEY_OTHER_SETTINGS));
 	}
 
-	public void validateSettings(NodeSettingsRO settings)
+	public void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
-		for (SettingsModel model : m_settingsModels) {
+		for (final SettingsModel model : m_settingsModels) {
 			model.validateSettings(settings);
 		}
 	}

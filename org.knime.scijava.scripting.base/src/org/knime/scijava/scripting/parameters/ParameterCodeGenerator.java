@@ -11,8 +11,8 @@ import org.scijava.plugin.SingletonPlugin;
 public interface ParameterCodeGenerator extends SingletonPlugin {
 
 	/**
-	 * Generate an input parameter code snippet for the given <code>code</code> with
-	 * type <code>type<code> and name it <code>var</code>.
+	 * Generate an input parameter code snippet for the given <code>code</code>
+	 * with type <code>type<code> and name it <code>var</code>.
 	 * 
 	 * @param code
 	 *            Code to add the input parameter to
@@ -22,11 +22,14 @@ public interface ParameterCodeGenerator extends SingletonPlugin {
 	 *            Type for the input
 	 * @return Modified code
 	 */
-	public String generateInputParameter(String code, String var, Class<?> type);
-	
+	public String generateInputParameter(String code, String var,
+			Class<?> type);
+
 	/**
 	 * Find a position to insert a input parameter code snippet.
-	 * @param code The code to search for a position to insert the code in
+	 * 
+	 * @param code
+	 *            The code to search for a position to insert the code in
 	 * @return the position at which to insert >= 0
 	 */
 	public int getPosition(String code);

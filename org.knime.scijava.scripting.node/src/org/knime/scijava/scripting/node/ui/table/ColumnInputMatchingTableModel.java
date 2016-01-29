@@ -144,7 +144,8 @@ public class ColumnInputMatchingTableModel extends AbstractTableModel
 			final int columnIndex) {
 		switch (columnIndex) {
 		case COLUMN:
-			m_colModuleMappingService.setColumnNameByPosition(rowIndex, (String) value);
+			m_colModuleMappingService.setColumnNameByPosition(rowIndex,
+					(String) value);
 			break;
 		case ACTIVE:
 			m_colModuleMappingService.setActiveByPosition(rowIndex,

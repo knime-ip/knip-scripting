@@ -109,7 +109,8 @@ public class SciJavaScriptingNodeSetFactory implements NodeSetFactory {
 	 */
 	@Override
 	public Collection<String> getNodeFactoryIds() {
-		m_nodeFactories.put(SciJavaScriptingNodeFactory.class.getCanonicalName(),
+		m_nodeFactories.put(
+				SciJavaScriptingNodeFactory.class.getCanonicalName(),
 				"/community/knip/");
 		return m_nodeFactories.keySet();
 	}

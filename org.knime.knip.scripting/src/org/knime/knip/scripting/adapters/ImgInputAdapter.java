@@ -19,7 +19,7 @@ import net.imglib2.img.Img;
 public class ImgInputAdapter extends AbstractInputAdapter<ImgPlusValue, Img> {
 
 	@Override
-	protected Img getValue(ImgPlusValue value) {
+	protected Img getValue(final ImgPlusValue value) {
 		return value.getImgPlus();
 	}
 

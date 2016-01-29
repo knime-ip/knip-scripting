@@ -20,7 +20,7 @@ public class RAIInputAdapter
 		extends AbstractInputAdapter<ImgPlusValue, RandomAccessibleInterval> {
 
 	@Override
-	protected RandomAccessibleInterval getValue(ImgPlusValue value) {
+	protected RandomAccessibleInterval getValue(final ImgPlusValue value) {
 		return value.getImgPlus();
 	}
 

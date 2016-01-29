@@ -31,11 +31,11 @@ public class RAIOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusValue> {
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	protected ImgPlusCell createCell(Img img) {
+	protected ImgPlusCell createCell(final Img img) {
 		try {
 			return new ImgPlusCellFactory(execService.getExecutionContext())
 					.createCell(ImgPlus.wrap(img));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new IllegalArgumentException(
 					"Can't convert value: " + e.getMessage());
 		}

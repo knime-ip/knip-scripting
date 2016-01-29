@@ -128,7 +128,7 @@ public class CodeEditorDialogComponent extends DialogComponent
 
 	/**
 	 * Set the Scijava Context to use for the {@link EditorPane}.
-	 * 
+	 *
 	 * @param context
 	 *            The Scijava context
 	 */

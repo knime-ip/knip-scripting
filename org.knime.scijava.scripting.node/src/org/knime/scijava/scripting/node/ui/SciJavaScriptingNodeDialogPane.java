@@ -76,7 +76,7 @@ public class SciJavaScriptingNodeDialogPane implements Contextual {
 	// column selection list for generating inputs with column matchings
 	private final ColumnSelectionList m_columnList = new ColumnSelectionList();
 
-	private SettingsModelString m_codeModel;
+	private final SettingsModelString m_codeModel;
 
 	/**
 	 * Constructor

@@ -3,7 +3,6 @@ package org.knime.scijava.scripting.util;
 import org.knime.scijava.commands.mapping.ColumnToInputMappingService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.scripting.base.CompileProductHelper;
-import org.scijava.module.ModuleItem;
 
 public class ScriptingUtils {
 

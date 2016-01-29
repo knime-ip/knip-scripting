@@ -48,7 +48,6 @@
  */
 package org.knime.scijava.scripting.node;
 
-
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
@@ -60,17 +59,17 @@ import org.scijava.Context;
 /**
  * NodeFactory for {@link SciJavaScriptingNodeModel}.
  *
- * Creates {@link SciJavaScriptingNodeModel}s and {@link SciJavaScriptingNodeDialog}s.
+ * Creates {@link SciJavaScriptingNodeModel}s and
+ * {@link SciJavaScriptingNodeDialog}s.
  *
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
-public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNodeModel> {
+public class SciJavaScriptingNodeFactory
+		extends NodeFactory<SciJavaScriptingNodeModel> {
 
-	
-
-	private Context m_context;
-	private DefaultKNIMEScijavaContext m_knimeContext;
+	private final Context m_context;
+	private final DefaultKNIMEScijavaContext m_knimeContext;
 
 	public SciJavaScriptingNodeFactory() {
 		super();
@@ -78,7 +77,7 @@ public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNod
 		m_knimeContext = new DefaultKNIMEScijavaContext();
 		m_knimeContext.setContext(m_context);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -93,8 +92,8 @@ public class SciJavaScriptingNodeFactory extends NodeFactory<SciJavaScriptingNod
 	 * @return null (ScriptingNode does not have views.)
 	 */
 	@Override
-	public NodeView<SciJavaScriptingNodeModel> createNodeView(final int viewIndex,
-			final SciJavaScriptingNodeModel nodeModel) {
+	public NodeView<SciJavaScriptingNodeModel> createNodeView(
+			final int viewIndex, final SciJavaScriptingNodeModel nodeModel) {
 		return null;
 	}
 

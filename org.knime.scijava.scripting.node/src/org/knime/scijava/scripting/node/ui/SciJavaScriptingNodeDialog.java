@@ -152,8 +152,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	/**
 	 * Default constructor
 	 */
-	public SciJavaScriptingNodeDialog(Context scijavaContext,
-			KNIMEScijavaContext knimeContext) {
+	public SciJavaScriptingNodeDialog(final Context scijavaContext,
+			final KNIMEScijavaContext knimeContext) {
 		m_gui = new SciJavaScriptingNodeDialogPane(getLogger(),
 				m_settings.getScriptCodeModel());
 
@@ -249,13 +249,13 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	}
 
 	private JPanel createOutputTablePane() {
-		JPanel outTablePane = new JPanel();
+		final JPanel outTablePane = new JPanel();
 		outTablePane.setLayout(new BorderLayout());
 
-		JPanel contents = new JPanel();
+		final JPanel contents = new JPanel();
 		contents.setLayout(new BoxLayout(contents, BoxLayout.PAGE_AXIS));
 
-		SettingsModelString columnCreationModeModel = m_settings
+		final SettingsModelString columnCreationModeModel = m_settings
 				.getColumnCreationModeModel();
 		/* Column creation mode */
 		final DialogComponentStringSelection colCreationModeComp = new DialogComponentStringSelection(
@@ -268,7 +268,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		JPanel comp = colCreationModeComp.getComponentPanel();
 		contents.add(comp);
 
-		SettingsModelString columnSuffixModel = m_settings
+		final SettingsModelString columnSuffixModel = m_settings
 				.getColumnSuffixModel();
 		/* Column suffix */
 		final DialogComponentString colSuffixComp = new DialogComponentString(
@@ -421,7 +421,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 				final String inputName = input.getName();
 
 				// don't generate ui for mapped inputs
-				boolean noUI = m_knimeContext.inputMapping()
+				final boolean noUI = m_knimeContext.inputMapping()
 						.isItemMapped(inputName);
 				module.setResolved(inputName, noUI);
 			}

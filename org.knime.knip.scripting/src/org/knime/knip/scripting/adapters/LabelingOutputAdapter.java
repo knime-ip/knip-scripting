@@ -34,11 +34,11 @@ public class LabelingOutputAdapter
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	protected LabelingCell createCell(LabelingValue imgL) {
+	protected LabelingCell createCell(final LabelingValue imgL) {
 		try {
 			return new LabelingCellFactory(execService.getExecutionContext())
 					.createCell(imgL.getLabeling(), imgL.getLabelingMetadata());
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new IllegalArgumentException(
 					"Can't convert value: " + e.getMessage());
 		}

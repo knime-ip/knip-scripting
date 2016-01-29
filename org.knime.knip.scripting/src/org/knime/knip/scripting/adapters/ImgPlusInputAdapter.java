@@ -20,7 +20,7 @@ public class ImgPlusInputAdapter
 		extends AbstractInputAdapter<ImgPlusValue, ImgPlus> {
 
 	@Override
-	protected ImgPlus getValue(ImgPlusValue value) {
+	protected ImgPlus getValue(final ImgPlusValue value) {
 		return value.getImgPlus();
 	}
 

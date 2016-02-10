@@ -22,7 +22,7 @@ import net.imagej.ImgPlus;
 @SuppressWarnings("rawtypes")
 @Plugin(type = OutputAdapter.class)
 public class ImgPlusOutputAdapter
-		extends AbstractOutputAdapter<ImgPlus, ImgPlusValue> {
+		extends AbstractOutputAdapter<ImgPlus, ImgPlusCell> {
 
 	@Parameter
 	private KNIMEExecutionService execService;
@@ -40,8 +40,8 @@ public class ImgPlusOutputAdapter
 	}
 
 	@Override
-	public Class<ImgPlusValue> getOutputType() {
-		return ImgPlusValue.class;
+	public Class<ImgPlusCell> getOutputType() {
+		return ImgPlusCell.class;
 	}
 
 	@Override

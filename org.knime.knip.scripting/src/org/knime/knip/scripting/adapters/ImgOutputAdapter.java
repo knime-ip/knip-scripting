@@ -2,6 +2,7 @@ package org.knime.knip.scripting.adapters;
 
 import java.io.IOException;
 
+import org.knime.knip.base.data.img.ImgPlusCell;
 import org.knime.knip.base.data.img.ImgPlusCellFactory;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.base.data.img.ImgPlusValue;
@@ -16,7 +17,7 @@ import net.imagej.ImgPlus;
 import net.imglib2.img.Img;
 
 /**
- * Adapter for Img to {@link ImgPlusValue}.
+ * Adapter for Img to {@link ImgPlusCell}.
  *
  * @author Gabriel Einsdorf (University of Konstanz)
  *
@@ -24,14 +25,14 @@ import net.imglib2.img.Img;
 
 @SuppressWarnings("rawtypes")
 @Plugin(type = OutputAdapter.class, priority = Priority.LOW_PRIORITY)
-public class ImgOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusValue> {
+public class ImgOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusCell> {
 
 	@Parameter
 	private KNIMEExecutionService execService;
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	protected ImgPlusValue createCell(final Img img) {
+	protected ImgPlusCell createCell(final Img img) {
 		try {
 			return new ImgPlusCellFactory(execService.getExecutionContext())
 					.createCell(ImgPlus.wrap(img));
@@ -42,8 +43,8 @@ public class ImgOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusValue> {
 	}
 
 	@Override
-	public Class<ImgPlusValue> getOutputType() {
-		return ImgPlusValue.class;
+	public Class<ImgPlusCell> getOutputType() {
+		return ImgPlusCell.class;
 	}
 
 	@Override

@@ -24,7 +24,7 @@ import net.imglib2.img.Img;
 
 @SuppressWarnings("rawtypes")
 @Plugin(type = OutputAdapter.class, priority = Priority.LOW_PRIORITY - 1)
-public class RAIOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusValue> {
+public class RAIOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusCell> {
 
 	@Parameter
 	private KNIMEExecutionService execService;
@@ -42,8 +42,8 @@ public class RAIOutputAdapter extends AbstractOutputAdapter<Img, ImgPlusValue> {
 	}
 
 	@Override
-	public Class<ImgPlusValue> getOutputType() {
-		return ImgPlusValue.class;
+	public Class<ImgPlusCell> getOutputType() {
+		return ImgPlusCell.class;
 	}
 
 	@Override

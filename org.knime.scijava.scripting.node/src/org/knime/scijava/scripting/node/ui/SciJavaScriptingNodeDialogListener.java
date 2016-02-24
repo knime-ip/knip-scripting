@@ -1,11 +1,8 @@
 package org.knime.scijava.scripting.node.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import javax.swing.JOptionPane;
 
@@ -18,7 +15,6 @@ import org.knime.scijava.scripting.parameters.ParameterCodeGenerator;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
-import org.scijava.module.ModuleItem;
 import org.scijava.plugin.Parameter;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
@@ -32,9 +28,9 @@ import org.scijava.script.ScriptService;
  *
  */
 public class SciJavaScriptingNodeDialogListener extends AbstractContextual
-		implements ActionListener, MouseListener {
+		implements MouseListener {
 
-	private final SciJavaScriptingNodeDialogPane m_gui;
+	private final SciJavaScriptingCodeEditor m_gui;
 
 	private final SciJavaScriptingNodeSettings m_settings;
 
@@ -47,15 +43,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	@Parameter
 	private ParameterCodeGeneratorService m_parameterGenerators;
 
-	// ActionCommands for removing and adding column/input matchings
-	public final static String CMD_ADD = "add";
-	public final static String CMD_REM = "rem";
-
 	private final NodeLogger m_logger;
-
-	private NodeLogger getLogger() {
-		return m_logger;
-	}
 
 	/**
 	 * Constructor
@@ -66,7 +54,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	 *            NodeLogger to output messages to
 	 */
 	public SciJavaScriptingNodeDialogListener(
-			final SciJavaScriptingNodeDialogPane gui, final NodeLogger logger,
+			final SciJavaScriptingCodeEditor gui, final NodeLogger logger,
 			final SciJavaScriptingNodeSettings settings) {
 		m_gui = gui;
 		m_logger = logger;
@@ -133,29 +121,16 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 			}
 
 			// find position for inserting @Parameter declaration
-			final String code = m_gui.codeEditor().getCode();
+			final String code = m_gui.getCodeEditor().getCode();
 			final int pos = generator.getPosition(code);
 
 			final String parameterCode = generator.generateInputParameter(code,
 					memberName, type);
 
-			m_gui.codeEditor().getEditorPane().insert(parameterCode, pos);
-			m_gui.codeEditor().updateModel();
+			m_gui.getCodeEditor().getEditorPane().insert(parameterCode, pos);
+			m_gui.getCodeEditor().updateModel();
 
-			// add a mapping for the newly created parameter
-			addMapping(columnName, memberName);
 		}
-	}
-
-	/**
-	 * Sets the the mapping for the given
-	 * 
-	 * @param columnName
-	 * @param memberName
-	 */
-	private void addMapping(final String columnName, final String memberName) {
-		m_gui.columnInputMatchingTable().getModel().addItem(columnName,
-				memberName);
 	}
 
 	/**
@@ -184,11 +159,13 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		// ensure uniqueness
 		String chosen = name;
 		int i = 0;
-		while (m_gui.columnInputMatchingTable().getModuleInfo()
-				.getInput(chosen) != null) {
-			chosen = name + i;
-			++i;
-		}
+
+		// FIXME: Ensure uniqueness again!
+		// while (m_gui.columnInputMatchingTable().getModuleInfo()
+		// .getInput(chosen) != null) {
+		// chosen = name + i;
+		// ++i;
+		// }
 		return chosen;
 	}
 
@@ -210,51 +187,6 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	@Override
 	public void mouseExited(final MouseEvent e) {
 		// unsused
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void actionPerformed(final ActionEvent e) {
-		if (e.getActionCommand().equals(CMD_ADD)) {
-			addColumnInputMapping();
-		} else if (e.getActionCommand().equals(CMD_REM)) {
-			removeColumnInputMapping();
-		}
-	}
-
-	/**
-	 * Add a new column to input mapping to the ColumnInputMappingTable.
-	 */
-	protected void addColumnInputMapping() {
-		ModuleItem<?> i = null;
-		try {
-			i = m_gui.columnInputMatchingTable().getModuleInfo().inputs()
-					.iterator().next();
-		} catch (final NoSuchElementException exc) {
-			getLogger().error("No input found.");
-			return;
-		}
-
-		final DataColumnSpec cs = m_gui.columnInputMatchingTable()
-				.getDataTableSpec().iterator().next();
-
-		if (cs == null) {
-			getLogger().error("No column found.");
-			return;
-		}
-
-		addMapping(cs.getName(), i.getName());
-	}
-
-	/**
-	 * Remove the currently selected column to input mapping from the
-	 * ColumnInputMappingTable.
-	 */
-	protected void removeColumnInputMapping() {
-		final int[] rows = m_gui.columnInputMatchingTable().getSelectedRows();
-		m_gui.columnInputMatchingTable().getModel().removeItems(rows);
 	}
 
 	/**

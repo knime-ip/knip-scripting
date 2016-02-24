@@ -1,18 +1,8 @@
 package org.knime.scijava.scripting.node.settings;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -22,12 +12,14 @@ import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.scripting.node.SciJavaScriptingNodeModel;
 import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
+import org.knime.scijava.scripting.util.ScriptUtils;
 
 /**
  * Class containing all SettingsModels for {@link SciJavaScriptingNodeDialog}
  * and {@link SciJavaScriptingNodeModel}.
  *
  * @author Jonathan Hale (University of Konstanz)
+ * @author Gabriel Einsdorf (University of Konstanz)
  *
  */
 public class SciJavaScriptingNodeSettings {
@@ -41,6 +33,10 @@ public class SciJavaScriptingNodeSettings {
 	public static final String SM_KEY_COLUMN_CREATION_MODE = "ColumnCreationMode";
 	public static final String SM_KEY_COLUMN_SUFFIX = "ColumnSuffix";
 	public static final String SM_KEY_OTHER_SETTINGS = "OtherSettings";
+	public static final String SM_KEY_EDITMODE = "EditorMode";
+
+	/* contains the mode (code / dialog ) of the node */
+	private SettingsModelString m_editModeModel = createEditModeModel();
 
 	/* contains the language to execute the script code with */
 	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
@@ -58,18 +54,27 @@ public class SciJavaScriptingNodeSettings {
 	private final SettingsModelString m_columnSuffixModel = createColumnSuffixModel(
 			m_columnCreationModeModel);
 
-	/* contains other settings which will be passed to a NodeSettingsService */
-	private final Map<String, SettingsModel> m_otherSettings = new HashMap<>();
-
-	private final List<SettingsModel> m_settingsModels;
+	private final List<SettingsModel> m_dialogSettingsModels;
+	private final List<SettingsModel> m_codeEditSettingsModels;
 
 	public SciJavaScriptingNodeSettings() {
-		m_settingsModels = new ArrayList<>(5);
-		m_settingsModels.add(m_scriptLanguageModel);
-		m_settingsModels.add(m_codeModel);
-		m_settingsModels.add(m_columnInputMappingSettingsModel);
-		m_settingsModels.add(m_columnCreationModeModel);
-		m_settingsModels.add(m_columnSuffixModel);
+
+		m_dialogSettingsModels = new ArrayList<>();
+		m_dialogSettingsModels.add(m_columnInputMappingSettingsModel);
+		m_dialogSettingsModels.add(m_columnCreationModeModel);
+		m_dialogSettingsModels.add(m_columnSuffixModel);
+
+		m_codeEditSettingsModels = new ArrayList<>();
+		m_codeEditSettingsModels.add(m_scriptLanguageModel);
+		m_codeEditSettingsModels.add(m_codeModel);
+	}
+
+	/**
+	 * @return SettingsModel to store if the node dialog is in edit mode or not.
+	 */
+	public static SettingsModelString createEditModeModel() {
+		return new SettingsModelString(SM_KEY_EDITMODE,
+				ScriptDialogMode.CODE_EDIT.toString());
 	}
 
 	/**
@@ -78,7 +83,7 @@ public class SciJavaScriptingNodeSettings {
 	 * @return SettignsModel for the script code
 	 */
 	public static SettingsModelString createCodeSettingsModel() {
-		return new SettingsModelString(SM_KEY_CODE, fileAsString(
+		return new SettingsModelString(SM_KEY_CODE, ScriptUtils.fileAsString(
 				"platform:/plugin/org.knime.scijava.scripting.node/res/DefaultScript.txt"));
 	}
 
@@ -151,27 +156,6 @@ public class SciJavaScriptingNodeSettings {
 		return suffixModel;
 	}
 
-	/**
-	 * Get the entire contents of an URL as String.
-	 *
-	 * @param path
-	 *            url to the file to get the contents of
-	 * @return contents of path as url
-	 */
-	protected static String fileAsString(final String path) {
-		try {
-			final URL resolvedUrl = FileLocator.resolve(new URL(path));
-			final byte[] bytes = Files.readAllBytes(Paths
-					.get(new URI(resolvedUrl.toString().replace(" ", "%20"))));
-			return new String(bytes, Charset.defaultCharset());
-		} catch (final URISyntaxException e) {
-			e.printStackTrace();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
-
 	// ---- getters -----
 
 	/**
@@ -208,13 +192,6 @@ public class SciJavaScriptingNodeSettings {
 	 */
 	public String getColumnSuffix() {
 		return m_columnSuffixModel.getStringValue();
-	}
-
-	/**
-	 * @return map of settings to pass to a {@link NodeSettingsService}.
-	 */
-	public Map<String, SettingsModel> otherSettings() {
-		return m_otherSettings;
 	}
 
 	// ---- access to models ----
@@ -299,40 +276,105 @@ public class SciJavaScriptingNodeSettings {
 	// ---- loading / saving / validating ----
 
 	/**
-	 * Save settings to <code>settings</code>. "other settings" are <b>not
-	 * loaded!</b>
+	 * Save settings from the SettingsModels and the Services to the settings
+	 * object.
 	 *
 	 * @param settings
+	 *            the Settings
+	 * @param service
+	 *            the service
 	 * @throws InvalidSettingsException
 	 */
-	public void saveSettingsTo(final NodeSettingsWO settings) {
-		for (final SettingsModel model : m_settingsModels) {
-			model.saveSettingsTo(settings);
+	public void saveSettingsTo(final NodeSettingsWO settings,
+			final NodeSettingsService service) {
+
+		m_editModeModel.saveSettingsTo(settings);
+		if (getMode() == ScriptDialogMode.CODE_EDIT) {
+			for (final SettingsModel model : m_codeEditSettingsModels) {
+				model.saveSettingsTo(settings);
+			}
+		} else {
+			for (final SettingsModel model : m_dialogSettingsModels) {
+				model.saveSettingsTo(settings);
+			}
+			for (final SettingsModel model : m_codeEditSettingsModels) {
+				model.saveSettingsTo(settings);
+			}
+			service.saveSettingsTo(
+					settings.addNodeSettings(SM_KEY_OTHER_SETTINGS));
 		}
-		// SettingsModelUtils.saveSettingsModelsMap(settings.addNodeSettings(SM_KEY_OTHER_SETTINGS),
-		// m_otherSettings);
 	}
 
 	/**
-	 * Save settings to <code>settings</code>. "other settings" are <b>not
-	 * saved!</b>
-	 *
+	 * Load settings into the Settingsmodels and the NodeSettingsService.
+	 * 
 	 * @param settings
+	 *            the settings
+	 * @param settingsService
+	 *            the settingsService
+	 * @param tolerant
+	 *            if the loading fails on errors or not
 	 * @throws InvalidSettingsException
+	 *             if the settings are invalid
 	 */
-	public void loadSettingsFrom(final NodeSettingsRO settings)
-			throws InvalidSettingsException {
-		for (final SettingsModel model : m_settingsModels) {
-			model.loadSettingsFrom(settings);
+	public void loadSettingsFrom(final NodeSettingsRO settings,
+			final NodeSettingsService settingsService, final boolean tolerant)
+					throws InvalidSettingsException {
+		// in Editmode, load only the coding settings
+		m_editModeModel.loadSettingsFrom(settings);
+
+		if (getMode() == ScriptDialogMode.CODE_EDIT) {
+			for (final SettingsModel model : m_codeEditSettingsModels) {
+				model.loadSettingsFrom(settings);
+			}
+		} else {
+			// in the dialog mode load all settings
+			for (final SettingsModel model : m_dialogSettingsModels) {
+				model.loadSettingsFrom(settings);
+			}
+			for (final SettingsModel model : m_codeEditSettingsModels) {
+				model.loadSettingsFrom(settings);
+			}
+			settingsService.loadSettingsFrom(
+					settings.getNodeSettings(SM_KEY_OTHER_SETTINGS), tolerant);
 		}
-		// m_otherSettings =
-		// SettingsModelUtils.loadSettingsModelsMap(settings.getNodeSettings(SM_KEY_OTHER_SETTINGS));
+
 	}
 
-	public void validateSettings(final NodeSettingsRO settings)
-			throws InvalidSettingsException {
-		for (final SettingsModel model : m_settingsModels) {
-			model.validateSettings(settings);
+	public ScriptDialogMode getMode() {
+		ScriptDialogMode mode = ScriptDialogMode
+				.fromString(m_editModeModel.getStringValue());
+		return mode;
+	}
+
+	/**
+	 * Validate the Settingsmodels.
+	 * 
+	 * @param settings
+	 *            the settings
+	 * @throws InvalidSettingsException
+	 *             if the settings are invalid
+	 */
+	public void validateSettings(final NodeSettingsRO settings,
+			final NodeSettingsService settingsService)
+					throws InvalidSettingsException {
+
+		m_editModeModel.validateSettings(settings);
+		m_editModeModel.loadSettingsFrom(settings); // slightly HACKY!!
+		if (getMode() == ScriptDialogMode.CODE_EDIT) {
+			for (final SettingsModel model : m_codeEditSettingsModels) {
+				model.validateSettings(settings);
+			}
+		} else {
+			for (final SettingsModel model : m_dialogSettingsModels) {
+				model.validateSettings(settings);
+			}
+			settingsService.validateSettings(
+					settings.getNodeSettings(SM_KEY_OTHER_SETTINGS));
 		}
+	}
+
+	public void setMode(ScriptDialogMode codeEdit) {
+		m_editModeModel.setStringValue(codeEdit.toString());
 	}
 }

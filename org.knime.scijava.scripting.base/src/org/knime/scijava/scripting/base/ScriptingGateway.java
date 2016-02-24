@@ -11,12 +11,10 @@ import org.knime.scijava.commands.adapter.InputAdapterService;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
-import org.knime.scijava.commands.mapping.ColumnModuleItemMappingService;
-import org.knime.scijava.commands.mapping.ColumnToInputMappingService;
-import org.knime.scijava.commands.mapping.OutputToColumnMappingService;
 import org.knime.scijava.commands.settings.NodeModelSettingsService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.commands.settings.SettingsModelTypeService;
+import org.knime.scijava.commands.simplemapping.SimpleColumnMappingService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
 import org.knime.scijava.core.ResourceAwareClassLoader;
 import org.knime.scijava.core.SubContext;
@@ -82,11 +80,9 @@ public class ScriptingGateway {
 					CommandService.class, LanguageSupportService.class,
 					ScriptHeaderService.class,
 					ParameterCodeGeneratorService.class,
-					ColumnModuleItemMappingService.class,
-					ColumnToInputMappingService.class,
-					OutputToColumnMappingService.class,
 					NodeModelSettingsService.class, InputAdapterService.class,
-					JavaService.class, SettingsModelTypeService.class);
+					JavaService.class, SettingsModelTypeService.class,
+					SimpleColumnMappingService.class);
 
 	/**
 	 * Constructor. Only to be called from {@link #get()}.

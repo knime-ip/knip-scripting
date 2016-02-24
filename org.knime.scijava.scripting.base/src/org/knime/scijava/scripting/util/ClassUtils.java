@@ -10,6 +10,10 @@ import java.util.Set;
  */
 public class ClassUtils {
 
+	public ClassUtils() {
+		// NB Utility Class
+	}
+
 	private static final Set<Class<?>> primitives = new HashSet<>();
 	private static final Set<Class<?>> wrappers = new HashSet<>();
 

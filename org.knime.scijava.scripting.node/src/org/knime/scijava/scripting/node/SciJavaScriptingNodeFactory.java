@@ -51,8 +51,9 @@ package org.knime.scijava.scripting.node;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
-import org.knime.scijava.commands.DefaultKNIMEScijavaContext;
+import org.knime.core.node.NotConfigurableException;
 import org.knime.scijava.scripting.base.ScriptingGateway;
+import org.knime.scijava.scripting.node.ui.ErrorDialogPane;
 import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
 import org.scijava.Context;
 
@@ -69,13 +70,10 @@ public class SciJavaScriptingNodeFactory
 		extends NodeFactory<SciJavaScriptingNodeModel> {
 
 	private final Context m_context;
-	private final DefaultKNIMEScijavaContext m_knimeContext;
 
 	public SciJavaScriptingNodeFactory() {
 		super();
 		m_context = ScriptingGateway.get().createSubContext();
-		m_knimeContext = new DefaultKNIMEScijavaContext();
-		m_knimeContext.setContext(m_context);
 	}
 
 	/**
@@ -110,7 +108,11 @@ public class SciJavaScriptingNodeFactory
 	 */
 	@Override
 	protected NodeDialogPane createNodeDialogPane() {
-		return new SciJavaScriptingNodeDialog(m_context, m_knimeContext);
+		try {
+			return new SciJavaScriptingNodeDialog(m_context);
+		} catch (NotConfigurableException e) {
+			return new ErrorDialogPane(e);
+		}
 	}
 
 	/**
@@ -118,7 +120,7 @@ public class SciJavaScriptingNodeFactory
 	 */
 	@Override
 	public SciJavaScriptingNodeModel createNodeModel() {
-		return new SciJavaScriptingNodeModel(m_context, m_knimeContext);
+		return new SciJavaScriptingNodeModel(m_context);
 	}
 
 }

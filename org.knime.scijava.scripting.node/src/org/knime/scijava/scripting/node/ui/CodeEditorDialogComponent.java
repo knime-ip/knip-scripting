@@ -57,13 +57,7 @@ public class CodeEditorDialogComponent extends DialogComponent
 		// make tab key not jump to the next component
 		panel.setFocusTraversalKeysEnabled(false);
 
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				m_textArea.setVisible(true);
-			}
-		});
+		SwingUtilities.invokeLater(() -> m_textArea.setVisible(true));
 	}
 
 	@Override

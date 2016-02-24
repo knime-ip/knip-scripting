@@ -338,7 +338,6 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			m_knimeContext.nodeDialogSettings().saveSettingsTo(settings);
 			m_settings.saveSettingsTo(settings);
 		} catch (final Throwable t) {
-			t.printStackTrace();
 			throw new InvalidSettingsException(t);
 		}
 
@@ -389,7 +388,6 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			createAutogenPanel();
 
 		} catch (final Throwable t) {
-			t.printStackTrace();
 			throw new NotConfigurableException("Failed to load settings", t);
 		}
 

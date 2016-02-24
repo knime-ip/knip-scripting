@@ -151,7 +151,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 		} catch (final NullPointerException | ScriptException
 				| ModuleException e) {
-			LOGGER.error(e.getMessage());
+			LOGGER.error(e);
 			// Throw exception to prevent node from being executed.
 			// Warning: some script languages will not fail to compile
 			// until executed.
@@ -296,8 +296,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 					language);
 		} catch (NullPointerException | ScriptException e) {
 			// compilation failed
-			getLogger()
-					.info("Code did not compile, failed to load all settings.");
+			getLogger().warn(
+					"Code did not compile, failed to load all settings: " + e);
 			return;
 		}
 

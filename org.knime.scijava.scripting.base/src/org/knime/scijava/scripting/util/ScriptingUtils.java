@@ -24,9 +24,9 @@ public class ScriptingUtils {
 
 		settings.clear();
 		// create settingsmodels for unmapped inputs
-		compileProduct.inputs().forEach((input) -> {
+		compileProduct.inputs().forEach(input -> {
 			if (!inputMappingService.isItemMapped(input.getName())) {
-				settings.createAndAddSettingsModel(input);
+				settings.createAndAddSettingsModel(input, false);
 			}
 		});
 	}

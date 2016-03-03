@@ -50,6 +50,7 @@ import org.knime.scijava.scripting.base.CompileProductHelper;
 import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
 import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
+import org.knime.scijava.scripting.util.LineWriter;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.module.Module;
@@ -103,8 +104,9 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	 * TODO Error and output writers which could once be used for directing
 	 * script output.
 	 */
-	private final Writer m_errorWriter = new StringWriter();
-	private final Writer m_outputWriter = new StringWriter();
+	private final Writer m_errorWriter = new LineWriter();
+		
+	private final Writer m_outputWriter = new LineWriter();
 
 	private ColumnRearranger m_colRearranger;
 
@@ -131,11 +133,15 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		// setup all required KNIME related Scijava services
 
 		try {
-			m_compiler = new CompileHelper(scijavaContext);
+			m_compiler = new CompileHelper(scijavaContext, m_errorWriter, m_outputWriter);
 		} catch (final IOException e) {
 			getLogger().error(
 					"Could not create temporary directory for Scripting Node.");
 		}
+//		NodeLogger.addKNIMEConsoleWriter(m_errorWriter, NodeLogger.LEVEL.WARN,
+//				NodeLogger.LEVEL.ERROR);
+//		NodeLogger.addKNIMEConsoleWriter(m_outputWriter, NodeLogger.LEVEL.INFO,
+//				NodeLogger.LEVEL.DEBUG);
 	}
 
 	@Override

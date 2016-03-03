@@ -27,18 +27,22 @@ public class CompileHelper {
 	private String m_script;
 
 	private Context m_context;
+	private Writer m_errorWriter;
+	private Writer m_outputWriter;
 
 	/**
 	 * Constructor
 	 *
 	 * @param context
+	 * @param outputWriter
 	 * @throws IOException
 	 */
-	public CompileHelper(Context context) throws IOException {
+	public CompileHelper(Context context, Writer errorWriter,
+			Writer outputWriter) throws IOException {
 
-		File dir = null;
-		dir = FileUtil.createTempDir("ScriptingNode");
-		m_tempDir = dir;
+		m_errorWriter = errorWriter;
+		m_outputWriter = outputWriter;
+		m_tempDir = FileUtil.createTempDir("ScriptingNode");
 
 		m_context = context;
 	}
@@ -72,8 +76,13 @@ public class CompileHelper {
 
 		if (language instanceof JavaScriptLanguage) {
 			JavaEngine scriptEngine = (JavaEngine) language.getScriptEngine();
+			scriptEngine.getContext().setErrorWriter(m_errorWriter);
+			scriptEngine.getContext().setWriter(m_outputWriter);
 			Class<? extends Command> commandClass = (Class<? extends Command>) scriptEngine
 					.compile(new StringReader(m_script));
+			if (commandClass == null) {
+				throw new ScriptException("");
+			}
 			return new CommandCompileProductHelper(
 					new CommandInfo(commandClass), m_context);
 		}

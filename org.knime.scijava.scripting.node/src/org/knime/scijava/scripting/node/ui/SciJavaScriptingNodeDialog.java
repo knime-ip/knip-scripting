@@ -53,22 +53,21 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
@@ -87,6 +86,7 @@ import org.knime.scijava.scripting.node.SciJavaScriptingNodeModel;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
 import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.node.settings.ScriptDialogMode;
+import org.knime.scijava.scripting.util.LineWriter;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.module.Module;
@@ -116,8 +116,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	private final SciJavaScriptingNodeSettings m_settings = new SciJavaScriptingNodeSettings();
 
 	/* script output and error writers */
-	Writer m_errorWriter;
-	Writer m_outputWriter;
+	LineWriter m_errorWriter;
+	LineWriter m_outputWriter;
 
 	/* panel generated from current script */
 	private final JPanel m_autogenPanel = new JPanel(new GridBagLayout());
@@ -153,19 +153,23 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 	private Component m_outputTablePanel;
 
+	private JPanel m_errorPanel;
+
 	/**
 	 * Default constructor
 	 */
 	public SciJavaScriptingNodeDialog(final Context scijavaContext)
 			throws NotConfigurableException {
 
-		m_errorWriter = new StringWriter();
-		m_outputWriter = new StringWriter();
+		m_errorWriter = new LineWriter();
+		m_outputWriter = new LineWriter();
 
-		NodeLogger.addKNIMEConsoleWriter(m_errorWriter, NodeLogger.LEVEL.WARN,
-				NodeLogger.LEVEL.ERROR);
-		NodeLogger.addKNIMEConsoleWriter(m_outputWriter, NodeLogger.LEVEL.INFO,
-				NodeLogger.LEVEL.DEBUG);
+		// NodeLogger.addKNIMEConsoleWriter(m_errorWriter,
+		// NodeLogger.LEVEL.WARN,
+		// NodeLogger.LEVEL.ERROR);
+		// NodeLogger.addKNIMEConsoleWriter(m_outputWriter,
+		// NodeLogger.LEVEL.INFO,
+		// NodeLogger.LEVEL.DEBUG);
 
 		m_context = scijavaContext;
 		m_context.inject(this);
@@ -175,7 +179,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			try {
-				m_compiler = new CompileHelper(m_context);
+				m_compiler = new CompileHelper(m_context, m_errorWriter,
+						m_outputWriter);
 			} catch (final IOException e) {
 				throw new NotConfigurableException(
 						"Unable to create tmp directory to complile scripts: "
@@ -201,12 +206,14 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		m_outputTablePanel = createOutputTablePane();
 		addTab("content", m_component);
 		getPanel().revalidate();
+		getPanel().repaint();
 	}
 
 	/**
 	 * creates the main component
 	 * 
 	 * @return
+	 * @throws IOException
 	 */
 	private void createComponent() {
 		m_component = new JPanel();
@@ -246,39 +253,54 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	}
 
 	private void recreateCodeEditor() {
-		if (m_codeEditor == null) {
-			createCodeEditorPanel();
-		}
+		// cleanup panel
 		if (m_autogenPanel != null) {
 			m_component.remove(m_autogenPanel);
 		}
 		if (m_outputTablePanel != null) {
 			m_component.remove(m_outputTablePanel);
 		}
+		if (m_errorPanel != null) {
+			m_component.remove(m_errorPanel);
+		}
+
+		// create editor
+		if (m_codeEditor == null) {
+			createCodeEditorPanel();
+		}
 		m_component.add(m_codeEditor.getEditorPane());
-		m_component.revalidate();
+		getPanel().revalidate();
+		getPanel().repaint();
 	}
 
 	private void recreateDialog() {
+
+		// Cleanup the panel
 		if (m_codeEditor != null) {
 			m_component.remove(m_codeEditor.getEditorPane());
 			// save script
 			m_settings.setScriptCode(m_codeEditor.getCodeEditor().getCode());
 		}
-
+		if (m_errorPanel != null) {
+			m_component.remove(m_errorPanel);
+		}
 		m_autogenPanel.removeAll();
+
+		m_inputPanel = new SwingInputPanel();
 		try {
 			m_compileProduct = recompile(m_settings.getScriptCode(),
 					m_settings.getScriptLanguageName());
-		} catch (InvalidSettingsException e) { // code did not compile
-			
+		} catch (InvalidSettingsException e) {
+			// code did not compile show error instead
+			getLogger().warn(e);
+			showErrorPane(e);
+			return;
 		}
 
 		final SwingInputHarvester builder = new SwingInputHarvester();
 		builder.setContext(m_context);
 
 		m_dialogSettingsService.clear();
-		m_inputPanel = new SwingInputPanel();
 
 		try {
 			final Module module = m_compileProduct
@@ -291,7 +313,24 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		m_autogenPanel.add(m_inputPanel.getComponent());
 		m_component.add(m_autogenPanel);
 		m_component.add(m_outputTablePanel);
-		m_component.revalidate();
+		getPanel().revalidate();
+		getPanel().repaint();
+	}
+
+	private void showErrorPane(InvalidSettingsException e) {
+		if (m_errorPanel != null) {
+			m_component.remove(m_errorPanel);
+		}
+		String error = m_errorWriter.toString();
+		m_errorPanel = new JPanel();
+		m_errorPanel.setLayout(new BoxLayout(m_errorPanel, BoxLayout.Y_AXIS));
+		m_errorPanel
+				.add(new JLabel("Can't create dialog, compilation failed!"));
+		m_errorPanel.add(new JTextArea(error));
+		m_component.add(m_errorPanel);
+		getPanel().repaint();
+		getPanel().revalidate();
+
 	}
 
 	private void createCodeEditorPanel() {
@@ -414,7 +453,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			String scriptLanguageName) throws InvalidSettingsException {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
-			return m_compileProduct = m_compiler.compile(code,
+			return m_compiler.compile(code,
 					m_scriptService.getLanguageByName(scriptLanguageName));
 		} catch (final Exception e) {
 			throw new InvalidSettingsException(e);

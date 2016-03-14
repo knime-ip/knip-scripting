@@ -53,8 +53,12 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -62,6 +66,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+
+import net.imagej.ui.swing.script.SyntaxHighlighter;
 
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
@@ -88,19 +94,23 @@ import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.node.settings.ScriptDialogMode;
 import org.knime.scijava.scripting.util.LineWriter;
 import org.scijava.Context;
+import org.scijava.InstantiableException;
 import org.scijava.command.CommandService;
 import org.scijava.module.Module;
 import org.scijava.module.ModuleException;
+import org.scijava.module.ModuleRunner;
+import org.scijava.module.process.GatewayPreprocessor;
+import org.scijava.module.process.PreprocessorPlugin;
+import org.scijava.module.process.ServicePreprocessor;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.plugin.PluginService;
+import org.scijava.plugin.SciJavaPlugin;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
 import org.scijava.ui.swing.widget.SwingInputHarvester;
 import org.scijava.ui.swing.widget.SwingInputPanel;
-
-import net.imagej.ui.swing.script.SyntaxHighlighter;
 
 /**
  * Dialog for the Scripting Node.
@@ -148,12 +158,11 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	private CompileHelper m_compiler = null;
 
 	private SwingInputPanel m_inputPanel;
-
 	private JPanel m_component = new JPanel();
-
 	private Component m_outputTablePanel;
-
 	private JPanel m_errorPanel;
+
+	private List<PreprocessorPlugin> m_preprocessPlugins;
 
 	/**
 	 * Default constructor
@@ -164,16 +173,10 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		m_errorWriter = new LineWriter();
 		m_outputWriter = new LineWriter();
 
-		// NodeLogger.addKNIMEConsoleWriter(m_errorWriter,
-		// NodeLogger.LEVEL.WARN,
-		// NodeLogger.LEVEL.ERROR);
-		// NodeLogger.addKNIMEConsoleWriter(m_outputWriter,
-		// NodeLogger.LEVEL.INFO,
-		// NodeLogger.LEVEL.DEBUG);
-
 		m_context = scijavaContext;
 		m_context.inject(this);
 
+		m_preprocessPlugins = createPreprocessorList();
 		// This is required for the compiler to find classes on classpath
 		// (scijava-common for example)
 		try (final TempClassLoader tempCl = new TempClassLoader(
@@ -209,11 +212,26 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		getPanel().repaint();
 	}
 
+	private List<PreprocessorPlugin> createPreprocessorList() {
+		List<Class<? extends PreprocessorPlugin>> preprotypes = Arrays
+				.asList(ServicePreprocessor.class, GatewayPreprocessor.class);
+
+		List<PreprocessorPlugin> out = preprotypes.stream().map(clazz -> {
+			try {
+				PreprocessorPlugin tmp = (PreprocessorPlugin) m_pluginService
+						.getPlugin(clazz).createInstance();
+				m_context.inject(tmp);
+				return tmp;
+			} catch (InstantiableException exc) {
+				return null;
+			}
+		}).collect(Collectors.toList());
+		return out;
+	}
+
 	/**
 	 * creates the main component
-	 * 
-	 * @return
-	 * @throws IOException
+	 *
 	 */
 	private void createComponent() {
 		m_component = new JPanel();
@@ -225,14 +243,14 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		modeSwitchButton.addActionListener(e -> {
 			switch (m_settings.getMode()) {
 			case CODE_EDIT:
+				recreateDialog();
 				modeSwitchButton.setText("Switch to Code");
 				m_settings.setMode(ScriptDialogMode.SETTINGS_EDIT);
-				recreateDialog();
 				break;
 			case SETTINGS_EDIT:
+				recreateCodeEditor();
 				modeSwitchButton.setText("Switch to Dialog");
 				m_settings.setMode(ScriptDialogMode.CODE_EDIT);
-				recreateCodeEditor();
 				break;
 			default:
 				throw new IllegalArgumentException(
@@ -305,9 +323,15 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		try {
 			final Module module = m_compileProduct
 					.createModule(getCurrentLanguage());
+			// fill in services
+			ModuleRunner runner = new ModuleRunner(m_context, module,
+					m_preprocessPlugins, null);
+			runner.preProcess();
+
 			builder.buildPanel(m_inputPanel, module);
-		} catch (final ModuleException e) {
-			throw new IllegalStateException(e);
+		} catch (Throwable e) {
+			showErrorPane(e);
+			return;
 		}
 
 		m_autogenPanel.add(m_inputPanel.getComponent());
@@ -317,7 +341,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		getPanel().repaint();
 	}
 
-	private void showErrorPane(InvalidSettingsException e) {
+	private void showErrorPane(Throwable e) {
 		if (m_errorPanel != null) {
 			m_component.remove(m_errorPanel);
 		}
@@ -326,11 +350,11 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		m_errorPanel.setLayout(new BoxLayout(m_errorPanel, BoxLayout.Y_AXIS));
 		m_errorPanel
 				.add(new JLabel("Can't create dialog, compilation failed!"));
+		// FIXME add compilation error output here
 		m_errorPanel.add(new JTextArea(error));
 		m_component.add(m_errorPanel);
 		getPanel().repaint();
 		getPanel().revalidate();
-
 	}
 
 	private void createCodeEditorPanel() {
@@ -349,8 +373,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		 */
 
 		final Set<String> languageSet = new LinkedHashSet<>();
-		for (final ScriptLanguage lang : m_context
-				.getService(ScriptService.class).getIndex()) {
+		for (final ScriptLanguage lang : m_scriptService.getIndex()) {
 			languageSet.add(lang.toString());
 		}
 		final String[] languages = languageSet.stream()

@@ -50,6 +50,7 @@ import org.knime.scijava.scripting.base.CompileProductHelper;
 import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
 import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
+import org.knime.scijava.scripting.node.settings.ScriptDialogMode;
 import org.knime.scijava.scripting.util.LineWriter;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
@@ -185,6 +186,12 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	@Override
 	protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
 			final ExecutionContext exec) throws Exception {
+
+		// ensure the dialog was generated
+		if (m_settings.getMode() != ScriptDialogMode.SETTINGS_EDIT) {
+			throw new IllegalArgumentException(
+					"Node is not correctly configured for execution! Please configure the node in the generated dialog!");
+		}
 
 		// prepare output table
 		final BufferedDataTable inTable = inData[0];

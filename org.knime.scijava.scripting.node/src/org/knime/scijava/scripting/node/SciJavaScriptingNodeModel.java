@@ -288,13 +288,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 				false);
 		m_columnMappingService.deserialize(m_settings.getColumnInputMapping());
 
-		final ScriptLanguage language = m_scriptService
-				.getLanguageByName(m_settings.getScriptLanguageName());
-		if (language == null) {
-			getLogger().error("Language " + m_settings.getScriptLanguageName()
-					+ " could not be found.");
-			return;
-		}
+		getCurrentLanguage(); // ensure the language is still available
 	}
 
 	@Override
@@ -315,14 +309,19 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	 *         <code>m_settings.getScriptLanguageName()</code>.
 	 */
 	private ScriptLanguage getCurrentLanguage() {
-		final String languageName = m_settings.getScriptLanguageName();
-		final ScriptLanguage language = m_scriptService
-				.getLanguageByName(languageName);
-		if (language == null) {
-			throw new NullPointerException("Could not load language "
-					+ languageName + " for Scripting Node.");
+		// NB Need to wrap this in the classloader to ensure that the language
+		// plugins are detected correctly
+		try (final TempClassLoader cl = new TempClassLoader(
+				ScriptingGateway.get().createUrlClassLoader())) {
+			final String languageName = m_settings.getScriptLanguageName();
+			final ScriptLanguage language = m_scriptService
+					.getLanguageByName(languageName);
+			if (language == null) {
+				throw new NullPointerException("Could not load language "
+						+ languageName + " for Scripting Node.");
+			}
+			return language;
 		}
-		return language;
 	}
 
 	private static CompileProductHelper recompile(final CompileHelper compiler,

@@ -11,6 +11,7 @@ import org.knime.scijava.commands.adapter.InputAdapterService;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
+import org.knime.scijava.commands.settings.NodeDialogSettingsService;
 import org.knime.scijava.commands.settings.NodeModelSettingsService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.commands.settings.SettingsModelTypeService;
@@ -68,21 +69,24 @@ public class ScriptingGateway {
 	 */
 	private Context m_globalContext;
 
-	/** a list of services which need to be present in newly created contexts */
-	protected static List<Class<? extends Service>> requiredServices = Arrays
-			.<Class<? extends Service>> asList(ScriptService.class,
-					JavaService.class, InputDataRowService.class,
-					OutputDataRowService.class, PrefService.class,
-					KNIMEExecutionService.class, NodeSettingsService.class,
-					ObjectService.class, WidgetService.class,
-					KNIMEWidgetService.class, InputAdapterService.class,
-					UIService.class, OutputAdapterService.class,
-					CommandService.class, LanguageSupportService.class,
-					ScriptHeaderService.class,
-					ParameterCodeGeneratorService.class,
-					NodeModelSettingsService.class, InputAdapterService.class,
-					JavaService.class, SettingsModelTypeService.class,
+	/** the services which must be local to the node. */
+	protected static List<Class<? extends Service>> localServices = Arrays
+			.asList(JavaService.class, InputDataRowService.class,
+					OutputDataRowService.class, KNIMEExecutionService.class,
+					NodeDialogSettingsService.class,
+					NodeModelSettingsService.class, ObjectService.class,
+					KNIMEWidgetService.class, UIService.class,
+					OutputAdapterService.class, CommandService.class,
+					ParameterCodeGeneratorService.class, JavaService.class,
 					SimpleColumnMappingService.class);
+	// former services (for reference TODO: remove))
+	// ScriptService.class,
+	// PrefService.class,
+	// SettingsModelTypeService.class,
+	// LanguageSupportService.class,
+	// ScriptHeaderService.class,
+	// InputAdapterService.class,
+	// WidgetService.class,
 
 	/**
 	 * Constructor. Only to be called from {@link #get()}.
@@ -116,7 +120,7 @@ public class ScriptingGateway {
 	 */
 	public Context createSubContext() {
 		final Context context = new SubContext(getGlobalContext(),
-				requiredServices, m_pluginIndex);
+				localServices, m_pluginIndex);
 
 		// cleanup unwanted services
 		final PluginService plugins = context.getService(PluginService.class);

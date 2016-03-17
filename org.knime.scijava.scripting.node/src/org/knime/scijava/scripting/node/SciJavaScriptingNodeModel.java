@@ -204,7 +204,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 		// create a clean module
 		final ScriptLanguage currentLanguage = getCurrentLanguage();
-		recompile(m_compiler, m_settings.getScriptCode(), currentLanguage);
+		m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
+				currentLanguage);
 		m_cellFactory = new ScriptingCellFactory(m_context,
 				m_compileProduct.createModule(currentLanguage));
 

@@ -319,6 +319,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		builder.setContext(m_context);
 
 		m_dialogSettingsService.clear();
+		m_simpleColumnMappingService.clear();
 
 		try {
 			final Module module = m_compileProduct

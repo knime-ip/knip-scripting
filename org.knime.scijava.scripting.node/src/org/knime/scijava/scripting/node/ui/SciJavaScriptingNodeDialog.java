@@ -57,12 +57,12 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -97,7 +97,6 @@ import org.scijava.Context;
 import org.scijava.InstantiableException;
 import org.scijava.command.CommandService;
 import org.scijava.module.Module;
-import org.scijava.module.ModuleException;
 import org.scijava.module.ModuleRunner;
 import org.scijava.module.process.GatewayPreprocessor;
 import org.scijava.module.process.PreprocessorPlugin;
@@ -106,7 +105,6 @@ import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.plugin.PluginService;
-import org.scijava.plugin.SciJavaPlugin;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
 import org.scijava.ui.swing.widget.SwingInputHarvester;
@@ -158,11 +156,13 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	private CompileHelper m_compiler = null;
 
 	private SwingInputPanel m_inputPanel;
-	private JPanel m_component = new JPanel();
-	private Component m_outputTablePanel;
+	private JComponent m_component = new JPanel();
+	private JComponent m_outputTablePanel;
 	private JPanel m_errorPanel;
 
 	private List<PreprocessorPlugin> m_preprocessPlugins;
+
+	private Module m_module;
 
 	/**
 	 * Default constructor
@@ -243,7 +243,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		modeSwitchButton.addActionListener(e -> {
 			switch (m_settings.getMode()) {
 			case CODE_EDIT:
-				recreateDialog();
+				recreateDialog(true);
 				modeSwitchButton.setText("Switch to Code");
 				m_settings.setMode(ScriptDialogMode.SETTINGS_EDIT);
 				break;
@@ -260,10 +260,11 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		});
 		m_component.add(modeSwitchButton);
 
+		// set initial mode
 		if (m_settings.getMode() == ScriptDialogMode.CODE_EDIT) {
 			recreateCodeEditor();
 		} else if (m_settings.getMode() == ScriptDialogMode.SETTINGS_EDIT) {
-			recreateDialog();
+			recreateDialog(false);
 		} else {
 			throw new IllegalStateException("The mode: '"
 					+ m_settings.getMode().toString() + "' is not supported");
@@ -287,11 +288,19 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			createCodeEditorPanel();
 		}
 		m_component.add(m_codeEditor.getEditorPane());
+		m_component.add(m_codeEditor.getColumnListPane());
 		getPanel().revalidate();
 		getPanel().repaint();
 	}
 
-	private void recreateDialog() {
+	/**
+	 * creates the dialog pane
+	 *
+	 * @param clean
+	 *            wheter the settings should be cleaned (code has been
+	 *            recompiled)
+	 */
+	private void recreateDialog(boolean clean) {
 
 		// Cleanup the panel
 		if (m_codeEditor != null) {
@@ -303,33 +312,36 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			m_component.remove(m_errorPanel);
 		}
 		m_autogenPanel.removeAll();
-
 		m_inputPanel = new SwingInputPanel();
+
 		try {
 			m_compileProduct = recompile(m_settings.getScriptCode(),
 					m_settings.getScriptLanguageName());
 		} catch (InvalidSettingsException e) {
 			// code did not compile show error instead
+			m_dialogSettingsService.clear();
+			m_simpleColumnMappingService.clear();
 			getLogger().warn(e);
 			showErrorPane(e);
 			return;
+		}
+		// when switching from code delete settings
+		if (clean) {
+			m_dialogSettingsService.clear();
+			m_simpleColumnMappingService.clear();
 		}
 
 		final SwingInputHarvester builder = new SwingInputHarvester();
 		builder.setContext(m_context);
 
-		m_dialogSettingsService.clear();
-		m_simpleColumnMappingService.clear();
-
 		try {
-			final Module module = m_compileProduct
-					.createModule(getCurrentLanguage());
+			m_module = m_compileProduct.createModule(getCurrentLanguage());
 			// fill in services
-			ModuleRunner runner = new ModuleRunner(m_context, module,
+			ModuleRunner runner = new ModuleRunner(m_context, m_module,
 					m_preprocessPlugins, null);
 			runner.preProcess();
 
-			builder.buildPanel(m_inputPanel, module);
+			builder.buildPanel(m_inputPanel, m_module);
 		} catch (Throwable e) {
 			showErrorPane(e);
 			return;
@@ -364,7 +376,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 				m_settings.getScriptCodeModel());
 		m_codeEditor.setContext(m_context);
 		m_listener = new SciJavaScriptingNodeDialogListener(m_codeEditor,
-				getLogger(), m_settings);
+				getLogger(), this, m_settings);
 		m_listener.setContext(m_context);
 		m_codeEditor.addListener(m_listener);
 
@@ -373,6 +385,11 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		 * user to select
 		 */
 
+	}
+
+	@Override
+	// Set language on opening to ensure it has be
+	public void onOpen() {
 		final Set<String> languageSet = new LinkedHashSet<>();
 		for (final ScriptLanguage lang : m_scriptService.getIndex()) {
 			languageSet.add(lang.toString());
@@ -506,7 +523,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			comp.loadSettingsFrom(settings, specs);
 		}
 
-		m_codeEditor.columnList().update(specs[0]);
+		m_codeEditor.getColumnListPane().update(specs[0]);
 	}
 
 	/**
@@ -521,5 +538,9 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 					+ languageName + " for Scripting Node.");
 		}
 		return language;
+	}
+
+	Module getModule() {
+		return m_module;
 	}
 }

@@ -217,7 +217,7 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 	 * @return The list which displays all columns of the table attached to the
 	 *         input port.
 	 */
-	public ColumnSelectionList columnList() {
+	public ColumnSelectionList getColumnListPane() {
 		return m_columnList;
 	}
 

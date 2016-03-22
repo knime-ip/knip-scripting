@@ -30,7 +30,7 @@ import org.scijava.script.ScriptService;
 public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		implements MouseListener {
 
-	private final SciJavaScriptingCodeEditor m_gui;
+	private final SciJavaScriptingCodeEditor m_editor;
 
 	private final SciJavaScriptingNodeSettings m_settings;
 
@@ -45,19 +45,23 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 
 	private final NodeLogger m_logger;
 
+	private SciJavaScriptingNodeDialog m_dialog;
+
 	/**
 	 * Constructor
 	 *
-	 * @param gui
-	 *            Pane to apply actions to
+	 * @param Pane
+	 *            to apply actions to
 	 * @param logger
 	 *            NodeLogger to output messages to
 	 */
 	public SciJavaScriptingNodeDialogListener(
-			final SciJavaScriptingCodeEditor gui, final NodeLogger logger,
+			final SciJavaScriptingCodeEditor editor, final NodeLogger logger,
+			final SciJavaScriptingNodeDialog dialog,
 			final SciJavaScriptingNodeSettings settings) {
-		m_gui = gui;
+		m_editor = editor;
 		m_logger = logger;
+		m_dialog = dialog;
 		m_settings = settings;
 	}
 
@@ -66,11 +70,11 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		/*
 		 * Create a column input mapping on column list double click
 		 */
-		if (e.getSource() == m_gui.columnList()) {
+		if (e.getSource() == m_editor.getColumnListPane()) {
 			// check for doubleclick
 			if (e.getClickCount() == 2) {
 				insertParameterCodeSnippetForColumn(
-						m_gui.columnList().locationToIndex(e.getPoint()));
+						m_editor.getColumnListPane().locationToIndex(e.getPoint()));
 			}
 		}
 	}
@@ -85,7 +89,8 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	 */
 	protected void insertParameterCodeSnippetForColumn(final int index) {
 		if (index >= 0) {
-			final Object o = m_gui.columnList().getModel().getElementAt(index);
+			final Object o = m_editor.getColumnListPane().getModel()
+					.getElementAt(index);
 
 			final DataColumnSpec cspec = (DataColumnSpec) o;
 
@@ -121,14 +126,14 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 			}
 
 			// find position for inserting @Parameter declaration
-			final String code = m_gui.getCodeEditor().getCode();
+			final String code = m_editor.getCodeEditor().getCode();
 			final int pos = generator.getPosition(code);
 
 			final String parameterCode = generator.generateInputParameter(code,
 					memberName, type);
 
-			m_gui.getCodeEditor().getEditorPane().insert(parameterCode, pos);
-			m_gui.getCodeEditor().updateModel();
+			m_editor.getCodeEditor().getEditorPane().insert(parameterCode, pos);
+			m_editor.getCodeEditor().updateModel();
 
 		}
 	}
@@ -152,20 +157,17 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 
 		// replace all illegal characters with '_'
 		// Used regex without java escapes for readability:
-		// \\|\#|\[|\]|\(|\)\{|\}|\%|\+|\?|\~|/|\&|\.|\:|\;|\|
+		// \|\#|\[|\]|\(|\)\{|\}|\%|\+|\?|\~|/|\&|\.|\:|\;|\||\,
 		name = name.replaceAll("\\\\|\\#|\\[|\\]|\\(|\\)\\{|\\}|\\%|\\+|"
-				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\|", "_");
+				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\||\\,", "_");
 
 		// ensure uniqueness
 		String chosen = name;
 		int i = 0;
-
-		// FIXME: Ensure uniqueness again!
-		// while (m_gui.columnInputMatchingTable().getModuleInfo()
-		// .getInput(chosen) != null) {
-		// chosen = name + i;
-		// ++i;
-		// }
+		while (m_dialog.getModule().getInfo().getInput(chosen) != null) {
+			chosen = name + i;
+			++i;
+		}
 		return chosen;
 	}
 

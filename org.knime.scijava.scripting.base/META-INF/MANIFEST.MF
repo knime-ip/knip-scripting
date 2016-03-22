@@ -18,13 +18,17 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  scijava-ui-swing;bundle-version="0.7.0",
  org.knime.scijava.core;bundle-version="0.2.0",
  org.knime.scijava.commands;bundle-version="0.2.0",
- scripting-java;bundle-version="0.3.3",
- scripting-jython;bundle-version="0.2.2",
+ scripting-java;bundle-version="0.3.5",
+ scripting-jython;bundle-version="0.3.0",
  jython-shaded;bundle-version="2.5.3",
- scripting-javascript;bundle-version="0.4.1",
+ scripting-javascript;bundle-version="0.4.3",
  imagej-ui-swing;bundle-version="0.15.0",
  imagej-common;bundle-version="0.18.0",
- imagej-deprecated;bundle-version="0.1.0"
+ imagej-deprecated;bundle-version="0.1.0",
+ scripting-clojure;bundle-version="0.1.4",
+ scripting-beanshell;bundle-version="0.2.4",
+ scripting-groovy;bundle-version="0.2.4",
+ scripting-jruby;bundle-version="0.2.4"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: lib/tools.jar,
  scijava_scripting_base.jar

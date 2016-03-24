@@ -50,8 +50,6 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	/**
 	 * Constructor
 	 *
-	 * @param Pane
-	 *            to apply actions to
 	 * @param logger
 	 *            NodeLogger to output messages to
 	 */
@@ -70,11 +68,11 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		/*
 		 * Create a column input mapping on column list double click
 		 */
-		if (e.getSource() == m_editor.getColumnListPane()) {
+		if (e.getSource() == m_editor.getColumnList()) {
 			// check for doubleclick
 			if (e.getClickCount() == 2) {
-				insertParameterCodeSnippetForColumn(
-						m_editor.getColumnListPane().locationToIndex(e.getPoint()));
+				insertParameterCodeSnippetForColumn(m_editor.getColumnList()
+						.locationToIndex(e.getPoint()));
 			}
 		}
 	}
@@ -89,7 +87,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	 */
 	protected void insertParameterCodeSnippetForColumn(final int index) {
 		if (index >= 0) {
-			final Object o = m_editor.getColumnListPane().getModel()
+			final Object o = m_editor.getColumnList().getModel()
 					.getElementAt(index);
 
 			final DataColumnSpec cspec = (DataColumnSpec) o;
@@ -117,12 +115,13 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 			}
 
 			final ParameterCodeGenerator generator = m_parameterGenerators
-					.getGeneratorForLanguage(getCurrentLanguage());
+					.getGeneratorForLanguage(m_dialog.getCurrentLanguage());
 
 			if (generator == null) {
 				m_logger.error(
 						"No way of generating input parameter code for language \""
 								+ m_settings.getScriptLanguageName() + "\".");
+				return;
 			}
 
 			// find position for inserting @Parameter declaration
@@ -191,17 +190,4 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		// unsused
 	}
 
-	/**
-	 * @return The currently set language for the node
-	 */
-	protected ScriptLanguage getCurrentLanguage() {
-		final String languageName = m_settings.getScriptLanguageName();
-		final ScriptLanguage language = m_scriptService
-				.getLanguageByName(languageName);
-		if (language == null) {
-			throw new NullPointerException("Could not load language "
-					+ languageName + " for Scripting Node.");
-		}
-		return language;
-	}
 }

@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
 
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
@@ -41,7 +40,6 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 	// Labels
 	private final JLabel LBL_HEADER = new JLabel("Script Editor");
 	private final JLabel LBL_LANG = new JLabel("Language:");
-	private final JLabel LBL_COLUMN = new JLabel("Column:");
 
 	// Code Editor
 	private CodeEditorDialogComponent m_codeEditor;
@@ -55,6 +53,7 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 
 	// column selection list for generating inputs with column matchings
 	private final ColumnSelectionList m_columnList = new ColumnSelectionList();
+	private JPanel m_columnListPanel;
 
 	// stores the code
 	private final SettingsModelString m_codeModel;
@@ -70,8 +69,6 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 	public SciJavaScriptingCodeEditor(final NodeLogger logger,
 			final SettingsModelString codeModel) {
 		/* one time setup of some components */
-		LBL_COLUMN.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-
 		m_codeModel = codeModel;
 
 		buildDialog();
@@ -154,28 +151,24 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 
 		final GridBagConstraints gbc_ep = createGBC(0, 1, 5, 1,
 				FIRST_LINE_START, FILL_BOTH, 1.0, 1.0, new Insets(0, 3, 0, 3));
-		final GridBagConstraints gbc_csl = createGBC(0, 2, 1, 2, WEST,
-				FILL_VERT, new Insets(0, 3, 3, 0));
 
 		m_editorPanel.add(m_langSelection, gbc_ls);
 
 		m_codeEditor = new CodeEditorDialogComponent(m_codeModel);
 		addDialogComponent(m_editorPanel, m_codeEditor, gbc_ep);
 
+		// create column selection code
 		m_columnList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_columnList.setUserSelectionAllowed(true);
 
-		final JPanel columnSelectionPanel = new JPanel(new GridBagLayout());
-		columnSelectionPanel.add(LBL_COLUMN,
-				createGBC(0, 0, 1, 1, FIRST_LINE_START, FILL_HORI, 1.0, 0.0));
-		columnSelectionPanel.add(
+		m_columnListPanel = new JPanel(new GridBagLayout());
+		m_columnListPanel.add(
 				new JScrollPane(m_columnList,
 						ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-						ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER),
+						ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS),
 				createGBC(0, 1, 1, 1, FIRST_LINE_START, FILL_BOTH, 1.0, 1.0));
-		columnSelectionPanel.setPreferredSize(new Dimension(180, 0));
-		m_editorPanel.add(columnSelectionPanel, gbc_csl);
 
+		m_columnListPanel.setPreferredSize(new Dimension(250, 300));
 		/*
 		 * Labels
 		 */
@@ -217,8 +210,8 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 	 * @return The list which displays all columns of the table attached to the
 	 *         input port.
 	 */
-	public ColumnSelectionList getColumnListPane() {
-		return m_columnList;
+	public JPanel getColumnListPanel() {
+		return m_columnListPanel;
 	}
 
 	/**
@@ -259,6 +252,10 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 	@Override
 	public Context getContext() {
 		return context();
+	}
+
+	public ColumnSelectionList getColumnList() {
+		return m_columnList;
 	}
 
 }

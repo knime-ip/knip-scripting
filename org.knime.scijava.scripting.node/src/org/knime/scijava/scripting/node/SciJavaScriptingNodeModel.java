@@ -2,7 +2,6 @@ package org.knime.scijava.scripting.node;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +105,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	 * script output.
 	 */
 	private final Writer m_errorWriter = new LineWriter();
-		
+
 	private final Writer m_outputWriter = new LineWriter();
 
 	private ColumnRearranger m_colRearranger;
@@ -131,18 +130,13 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		// populate @Parameter members
 		m_context.inject(this);
 
-		// setup all required KNIME related Scijava services
-
 		try {
-			m_compiler = new CompileHelper(scijavaContext, m_errorWriter, m_outputWriter);
+			m_compiler = new CompileHelper(scijavaContext, m_errorWriter,
+					m_outputWriter);
 		} catch (final IOException e) {
 			getLogger().error(
 					"Could not create temporary directory for Scripting Node.");
 		}
-//		NodeLogger.addKNIMEConsoleWriter(m_errorWriter, NodeLogger.LEVEL.WARN,
-//				NodeLogger.LEVEL.ERROR);
-//		NodeLogger.addKNIMEConsoleWriter(m_outputWriter, NodeLogger.LEVEL.INFO,
-//				NodeLogger.LEVEL.DEBUG);
 	}
 
 	@Override
@@ -371,8 +365,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		protected DataColumnSpec[] createDataColumnSpecs() {
 			final List<DataColumnSpec> tableSpecs = new ArrayList<>();
 
-			final String suffix = (m_settings.getColumnSuffixModel()
-					.isEnabled()) ? m_settings.getColumnSuffix() : "";
+			final String suffix = m_settings.getColumnSuffixModel().isEnabled()
+					? m_settings.getColumnSuffix() : "";
 
 			for (final ModuleItem<?> output : m_module.getInfo().outputs()) {
 				@SuppressWarnings("unchecked")

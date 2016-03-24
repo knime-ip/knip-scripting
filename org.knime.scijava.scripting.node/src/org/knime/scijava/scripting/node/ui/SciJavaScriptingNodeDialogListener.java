@@ -16,7 +16,6 @@ import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.plugin.Parameter;
-import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
 
 /**
@@ -45,7 +44,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 
 	private final NodeLogger m_logger;
 
-	private SciJavaScriptingNodeDialog m_dialog;
+	private final SciJavaScriptingNodeDialog m_dialog;
 
 	/**
 	 * Constructor
@@ -68,12 +67,10 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		/*
 		 * Create a column input mapping on column list double click
 		 */
-		if (e.getSource() == m_editor.getColumnList()) {
-			// check for doubleclick
-			if (e.getClickCount() == 2) {
-				insertParameterCodeSnippetForColumn(m_editor.getColumnList()
-						.locationToIndex(e.getPoint()));
-			}
+		if (e.getSource() == m_editor.getColumnList()
+				&& e.getClickCount() == 2) {
+			insertParameterCodeSnippetForColumn(
+					m_editor.getColumnList().locationToIndex(e.getPoint()));
 		}
 	}
 

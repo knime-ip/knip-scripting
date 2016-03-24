@@ -110,7 +110,7 @@ public class SciJavaScriptingNodeFactory
 	protected NodeDialogPane createNodeDialogPane() {
 		try {
 			return new SciJavaScriptingNodeDialog(m_context);
-		} catch (NotConfigurableException e) {
+		} catch (final NotConfigurableException e) {
 			return new ErrorDialogPane(e);
 		}
 	}

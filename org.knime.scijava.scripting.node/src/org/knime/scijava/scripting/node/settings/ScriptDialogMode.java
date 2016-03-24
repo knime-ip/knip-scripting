@@ -8,6 +8,8 @@ public enum ScriptDialogMode {
 
 	CODE_EDIT("Edit Code"), SETTINGS_EDIT("Edit Settings");
 
+	private final String m_name;
+
 	/**
 	 * Constructor.
 	 */
@@ -17,7 +19,7 @@ public enum ScriptDialogMode {
 
 	/**
 	 * Get a {@link ScriptDialogMode} enum value whose {@link #getName()()}
-	 * method returns <code>name</code>
+	 * method return <code>name</code>
 	 *
 	 * @param name
 	 *            the name of the option
@@ -43,7 +45,5 @@ public enum ScriptDialogMode {
 	public String toString() {
 		return m_name;
 	}
-
-	private final String m_name;
 
 }

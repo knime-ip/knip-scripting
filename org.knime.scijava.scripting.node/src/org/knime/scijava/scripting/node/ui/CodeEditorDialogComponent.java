@@ -9,6 +9,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.imagej.ui.swing.script.EditorPane;
+
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
@@ -17,8 +19,6 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.scijava.Context;
-
-import net.imagej.ui.swing.script.EditorPane;
 
 /**
  * DialogComponent which uses a {@link EditorPane} to edit Java Code.

@@ -49,7 +49,6 @@
 package org.knime.scijava.scripting.node.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -84,7 +83,6 @@ import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.DialogComponentString;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
-import org.knime.core.node.util.ColumnSelectionList;
 import org.knime.scijava.commands.settings.NodeDialogSettingsService;
 import org.knime.scijava.commands.simplemapping.SimpleColumnMappingService;
 import org.knime.scijava.core.TempClassLoader;
@@ -164,10 +162,10 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 	private SwingInputPanel m_inputPanel;
 	private JComponent m_component = new JPanel();
-	private JComponent m_outputTablePanel;
+	private final JComponent m_outputTablePanel;
 	private JPanel m_errorPanel;
 
-	private List<PreprocessorPlugin> m_preprocessPlugins;
+	private final List<PreprocessorPlugin> m_preprocessPlugins;
 
 	private Module m_module;
 
@@ -225,8 +223,9 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		m_innerPanel = new JPanel(new BorderLayout());
 
 		// Create mode switching button
-		String initialText = m_settings.getMode() == ScriptDialogMode.CODE_EDIT
-				? "Switch to Dialog" : "Switch to Code";
+		final String initialText = m_settings
+				.getMode() == ScriptDialogMode.CODE_EDIT ? "Switch to Dialog"
+						: "Switch to Code";
 		m_modeSwitchButton = new JButton(initialText);
 		m_modeSwitchButton.addActionListener(new ModeSwitchButtonListener());
 		m_component.add(m_modeSwitchButton, BorderLayout.NORTH);
@@ -250,7 +249,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		if (m_codeEditor == null) {
 			createCodeEditor();
 		}
-		JPanel columnListPane = m_codeEditor.getColumnListPanel();
+		final JPanel columnListPane = m_codeEditor.getColumnListPanel();
 		columnListPane.setBorder(new TitledBorder("Column Selection"));
 		m_codeEditPanel.add(columnListPane, BorderLayout.WEST);
 
@@ -266,7 +265,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	 *            whether the settings should be cleared (code has been
 	 *            recompiled)
 	 */
-	private JPanel createDialogPanel(boolean clean) {
+	private JPanel createDialogPanel(final boolean clean) {
 		if (m_errorPanel != null) {
 			m_component.remove(m_errorPanel);
 		}
@@ -277,7 +276,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		try {
 			m_compileProduct = recompile(m_settings.getScriptCode(),
 					m_settings.getScriptLanguageName());
-		} catch (InvalidSettingsException e) {
+		} catch (final InvalidSettingsException e) {
 			// code did not compile show error instead
 			m_dialogSettingsService.clear();
 			m_simpleColumnMappingService.clear();
@@ -296,12 +295,12 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		try {
 			m_module = m_compileProduct.createModule(getCurrentLanguage());
 			// fill in services
-			ModuleRunner runner = new ModuleRunner(m_context, m_module,
+			final ModuleRunner runner = new ModuleRunner(m_context, m_module,
 					m_preprocessPlugins, null);
 			runner.preProcess();
 
 			builder.buildPanel(m_inputPanel, m_module);
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			return createErrorPanel(e);
 		}
 
@@ -310,7 +309,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		return m_autogenPanel;
 	}
 
-	private JPanel createErrorPanel(Throwable e) {
+	private JPanel createErrorPanel(final Throwable e) {
 		if (m_errorPanel != null) {
 			m_component.remove(m_errorPanel);
 		}
@@ -321,13 +320,13 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		getLogger().error("Can't create dialog, compilation failed!", e);
 		// FIXME add compilation error output here
 
-		String error = m_errorWriter.toString();
+		final String error = m_errorWriter.toString();
 		m_errorPanel.add(new JTextArea(error));
 		return m_errorPanel;
 	}
 
 	private void createCodeEditor() {
-		m_codeEditor = new SciJavaScriptingCodeEditor(getLogger(),
+		m_codeEditor = new SciJavaScriptingCodeEditor(
 				m_settings.getScriptCodeModel());
 		m_codeEditor.setContext(m_context);
 		m_listener = new SciJavaScriptingNodeDialogListener(m_codeEditor,
@@ -349,7 +348,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		if (languages.length != 0) {
 			m_codeEditor.languageSelection()
 					.setModel(new DefaultComboBoxModel<>(languages));
-		} /* otherwise it stays String[]{"Java"} */
+		} /* otherwise it stays {"Java"} */
 
 		m_codeEditor.languageSelection()
 				.setSelectedItem(m_settings.getScriptLanguageName());
@@ -431,7 +430,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			throws InvalidSettingsException {
 
 		// Code editor etc...
-		for (DialogComponent comp : m_codeEditor.dialogComponents()) {
+		for (final DialogComponent comp : m_codeEditor.dialogComponents()) {
 			comp.saveSettingsTo(settings);
 		}
 
@@ -443,8 +442,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		m_settings.saveSettingsTo(settings, m_dialogSettingsService);
 	}
 
-	private CompileProductHelper recompile(String code,
-			String scriptLanguageName) throws InvalidSettingsException {
+	private CompileProductHelper recompile(final String code,
+			final String scriptLanguageName) throws InvalidSettingsException {
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			return m_compiler.compile(code,
@@ -463,7 +462,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		try {
 			m_settings.loadSettingsFrom(settings, m_dialogSettingsService,
 					true);
-		} catch (InvalidSettingsException e) {
+		} catch (final InvalidSettingsException e) {
 			throw new NotConfigurableException("Can't create dialog : " + e);
 		}
 
@@ -472,7 +471,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 					.deserialize(m_settings.getColumnInputMapping());
 		}
 
-		for (DialogComponent comp : m_codeEditor.dialogComponents()) {
+		for (final DialogComponent comp : m_codeEditor.dialogComponents()) {
 			comp.loadSettingsFrom(settings, specs);
 		}
 
@@ -511,15 +510,13 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	private final class ModeSwitchButtonListener implements ActionListener {
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
 
 			switch (m_settings.getMode()) {
 			case CODE_EDIT: // switch to dialog
 				// save code
-				if (m_codeEditor != null) {
-					m_settings.setScriptCode(
-							m_codeEditor.getCodeEditor().getCode());
-				}
+				m_settings
+						.setScriptCode(m_codeEditor.getCodeEditor().getCode());
 				m_innerPanel.removeAll();
 				m_innerPanel.add(createDialogPanel(true), BorderLayout.CENTER);
 				m_modeSwitchButton.setText("Switch to Code");
@@ -549,16 +546,16 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	 *         GUI creation.
 	 */
 	private List<PreprocessorPlugin> createPreprocessorList() {
-		List<Class<? extends PreprocessorPlugin>> preprotypes = Arrays
+		final List<Class<? extends PreprocessorPlugin>> preprotypes = Arrays
 				.asList(ServicePreprocessor.class);
 
-		List<PreprocessorPlugin> out = preprotypes.stream().map(clazz -> {
+		final List<PreprocessorPlugin> out = preprotypes.stream().map(clazz -> {
 			try {
-				PreprocessorPlugin tmp = (PreprocessorPlugin) m_pluginService
+				final PreprocessorPlugin tmp = (PreprocessorPlugin) m_pluginService
 						.getPlugin(clazz).createInstance();
 				m_context.inject(tmp);
 				return tmp;
-			} catch (InstantiableException exc) {
+			} catch (final InstantiableException exc) {
 				return null;
 			}
 		}).collect(Collectors.toList());

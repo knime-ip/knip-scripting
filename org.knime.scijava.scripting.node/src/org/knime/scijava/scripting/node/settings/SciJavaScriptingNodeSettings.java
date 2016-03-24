@@ -36,7 +36,7 @@ public class SciJavaScriptingNodeSettings {
 	public static final String SM_KEY_EDITMODE = "EditorMode";
 
 	/* contains the mode (code / dialog ) of the node */
-	private SettingsModelString m_editModeModel = createEditModeModel();
+	private final SettingsModelString m_editModeModel = createEditModeModel();
 
 	/* contains the language to execute the script code with */
 	private final SettingsModelString m_scriptLanguageModel = createScriptLanguageSettingsModel();
@@ -134,7 +134,7 @@ public class SciJavaScriptingNodeSettings {
 				super.validateSettingsForModel(settings);
 
 				// don't accept an empty suffix
-				if (settings.getString(SM_KEY_COLUMN_SUFFIX).equals("")
+				if ("".equals(settings.getString(SM_KEY_COLUMN_SUFFIX))
 						&& columnCreationMode.getStringValue().equals(
 								ColumnCreationMode.APPEND_COLUMNS.toString())) {
 					throw new InvalidSettingsException(
@@ -148,10 +148,9 @@ public class SciJavaScriptingNodeSettings {
 				.equals(columnCreationMode.getStringValue()));
 
 		// disable suffixModel if columnCreationMode is not APPEND_COLUMNS
-		columnCreationMode.addChangeListener((e) -> {
-			suffixModel.setEnabled(ColumnCreationMode.APPEND_COLUMNS.toString()
-					.equals(columnCreationMode.getStringValue()));
-		});
+		columnCreationMode.addChangeListener(e -> suffixModel
+				.setEnabled(ColumnCreationMode.APPEND_COLUMNS.toString()
+						.equals(columnCreationMode.getStringValue())));
 
 		return suffixModel;
 	}
@@ -283,7 +282,6 @@ public class SciJavaScriptingNodeSettings {
 	 *            the Settings
 	 * @param service
 	 *            the service
-	 * @throws InvalidSettingsException
 	 */
 	public void saveSettingsTo(final NodeSettingsWO settings,
 			final NodeSettingsService service) {
@@ -307,7 +305,7 @@ public class SciJavaScriptingNodeSettings {
 
 	/**
 	 * Load settings into the Settingsmodels and the NodeSettingsService.
-	 * 
+	 *
 	 * @param settings
 	 *            the settings
 	 * @param settingsService
@@ -342,14 +340,12 @@ public class SciJavaScriptingNodeSettings {
 	}
 
 	public ScriptDialogMode getMode() {
-		ScriptDialogMode mode = ScriptDialogMode
-				.fromString(m_editModeModel.getStringValue());
-		return mode;
+		return ScriptDialogMode.fromString(m_editModeModel.getStringValue());
 	}
 
 	/**
 	 * Validate the Settingsmodels.
-	 * 
+	 *
 	 * @param settings
 	 *            the settings
 	 * @throws InvalidSettingsException
@@ -374,7 +370,7 @@ public class SciJavaScriptingNodeSettings {
 		}
 	}
 
-	public void setMode(ScriptDialogMode codeEdit) {
+	public void setMode(final ScriptDialogMode codeEdit) {
 		m_editModeModel.setStringValue(codeEdit.toString());
 	}
 }

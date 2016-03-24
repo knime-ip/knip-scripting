@@ -8,16 +8,18 @@ package org.knime.scijava.scripting.node.settings;
 public enum ColumnCreationMode {
 	NEW_TABLE("New Table"), APPEND_COLUMNS("Append Columns");
 
+	private final String m_value;
+
 	/**
 	 * Constructor.
 	 */
-	ColumnCreationMode(final String value) {
-		m_value = value;
+	ColumnCreationMode(final String name) {
+		m_value = name;
 	}
 
 	/**
 	 * Get a {@link ColumnCreationMode} enum value whose {@link #toString()}
-	 * method returns <code>name</code>
+	 * method return <code>name</code>
 	 *
 	 * @param name
 	 * @throws IllegalArgumentException
@@ -41,5 +43,4 @@ public enum ColumnCreationMode {
 		return m_value;
 	}
 
-	private final String m_value;
 }

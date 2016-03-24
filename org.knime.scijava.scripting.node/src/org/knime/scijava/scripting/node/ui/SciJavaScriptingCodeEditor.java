@@ -17,7 +17,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.util.ColumnSelectionList;
@@ -61,13 +60,10 @@ public class SciJavaScriptingCodeEditor implements Contextual {
 	/**
 	 * Constructor
 	 *
-	 * @param logger
-	 *            NodeLogger to output messages to
 	 * @param codeModel
 	 *            the SettingsModel storing the code
 	 */
-	public SciJavaScriptingCodeEditor(final NodeLogger logger,
-			final SettingsModelString codeModel) {
+	public SciJavaScriptingCodeEditor(final SettingsModelString codeModel) {
 		/* one time setup of some components */
 		m_codeModel = codeModel;
 

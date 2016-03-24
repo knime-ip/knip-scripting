@@ -156,9 +156,9 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		}
 
 		// replace all illegal characters with '_'
-		// Used regex without java escapes for readability:
-		// \|\#|\[|\]|\(|\)\{|\}|\%|\+|\?|\~|/|\&|\.|\:|\;|\||\,
-		name = name.replaceAll("\\\\|\\#|\\[|\\]|\\(|\\)\\{|\\}|\\%|\\+|"
+		// Characters considered illegal:
+		// \ | # [ ] ( ) { } % + ? ~ / & . : ; ,
+		name = name.replaceAll("\\\\|\\#|\\[|\\]|\\(|\\)|\\{|\\}|\\%|\\+|"
 				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\||\\,", "_");
 
 		// ensure uniqueness

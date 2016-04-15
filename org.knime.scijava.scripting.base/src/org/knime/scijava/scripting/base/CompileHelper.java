@@ -78,6 +78,7 @@ public class CompileHelper {
 			JavaEngine scriptEngine = (JavaEngine) language.getScriptEngine();
 			scriptEngine.getContext().setErrorWriter(m_errorWriter);
 			scriptEngine.getContext().setWriter(m_outputWriter);
+			@SuppressWarnings("unchecked")
 			Class<? extends Command> commandClass = (Class<? extends Command>) scriptEngine
 					.compile(new StringReader(m_script));
 			if (commandClass == null) {
@@ -93,7 +94,6 @@ public class CompileHelper {
 
 		final ScriptInfo info = new ScriptInfo(m_context,
 				scriptFile.getAbsolutePath(), new StringReader(m_script));
-
 		return new ScriptCompileProductHelper(info, m_context);
 	}
 

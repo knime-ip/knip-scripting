@@ -54,6 +54,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -68,8 +69,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
-
-import net.imagej.ui.swing.script.SyntaxHighlighter;
 
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
@@ -94,7 +93,6 @@ import org.knime.scijava.scripting.node.SciJavaScriptingNodeModel;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
 import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.node.settings.ScriptDialogMode;
-import org.knime.scijava.scripting.util.LineWriter;
 import org.scijava.Context;
 import org.scijava.InstantiableException;
 import org.scijava.command.CommandService;
@@ -111,6 +109,8 @@ import org.scijava.script.ScriptService;
 import org.scijava.ui.swing.widget.SwingInputHarvester;
 import org.scijava.ui.swing.widget.SwingInputPanel;
 
+import net.imagej.ui.swing.script.SyntaxHighlighter;
+
 /**
  * Dialog for the Scripting Node.
  *
@@ -125,8 +125,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	private final SciJavaScriptingNodeSettings m_settings = new SciJavaScriptingNodeSettings();
 
 	/* script output and error writers */
-	LineWriter m_errorWriter;
-	LineWriter m_outputWriter;
+	StringWriter m_errorWriter;
+	StringWriter m_outputWriter;
 
 	/* panel generated from current script */
 	private final JPanel m_autogenPanel = new JPanel(new GridBagLayout());
@@ -162,9 +162,10 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 	private SwingInputPanel m_inputPanel;
 	private JComponent m_component = new JPanel();
-	private final JComponent m_outputTablePanel;
+	private JComponent m_outputTablePanel;
 	private JPanel m_errorPanel;
 
+	/* preprocessor plugins needed to successfully display dialog components */
 	private final List<PreprocessorPlugin> m_preprocessPlugins;
 
 	private Module m_module;
@@ -172,15 +173,14 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	public SciJavaScriptingNodeDialog(final Context scijavaContext)
 			throws NotConfigurableException {
 
-		m_errorWriter = new LineWriter();
-		m_outputWriter = new LineWriter();
+		m_errorWriter = new StringWriter();
+		m_outputWriter = new StringWriter();
 
 		m_context = scijavaContext;
 		m_context.inject(this);
 
 		m_preprocessPlugins = createPreprocessorList();
 		// This is required for the compiler to find classes on classpath
-		// (scijava-common for example)
 		try (final TempClassLoader tempCl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			try {
@@ -207,11 +207,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			}
 		}
 
-		createComponent();
-		m_outputTablePanel = createOutputTablePane();
-		addTab("content", m_component);
-		getPanel().revalidate();
-		getPanel().repaint();
+		// needs to be created
+		createCodeEditor();
 	}
 
 	/**
@@ -245,10 +242,6 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 		m_codeEditPanel = new JPanel(new BorderLayout());
 
-		// create editor
-		if (m_codeEditor == null) {
-			createCodeEditor();
-		}
 		final JPanel columnListPane = m_codeEditor.getColumnListPanel();
 		columnListPane.setBorder(new TitledBorder("Column Selection"));
 		m_codeEditPanel.add(columnListPane, BorderLayout.WEST);
@@ -318,11 +311,14 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		m_errorPanel
 				.add(new JLabel("Can't create dialog, compilation failed!"));
 		getLogger().error("Can't create dialog, compilation failed!", e);
-		// FIXME add compilation error output here
 
 		final String error = m_errorWriter.toString();
 		m_errorPanel.add(new JTextArea(error));
+		// clear writer
+		m_errorWriter.getBuffer().setLength(0);
+
 		return m_errorPanel;
+
 	}
 
 	private void createCodeEditor() {
@@ -333,35 +329,6 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 				getLogger(), this, m_settings);
 		m_listener.setContext(m_context);
 		m_codeEditor.addListener(m_listener);
-	}
-
-	@Override
-	// Set language on opening to ensure all language plugins have been loaded.
-	public void onOpen() {
-		final Set<String> languageSet = new LinkedHashSet<>();
-		for (final ScriptLanguage lang : m_scriptService.getIndex()) {
-			languageSet.add(lang.toString());
-		}
-		final String[] languages = languageSet.stream()
-				.toArray(size -> new String[size]);
-
-		if (languages.length != 0) {
-			m_codeEditor.languageSelection()
-					.setModel(new DefaultComboBoxModel<>(languages));
-		} /* otherwise it stays {"Java"} */
-
-		m_codeEditor.languageSelection()
-				.setSelectedItem(m_settings.getScriptLanguageName());
-
-		// Update settings and script language, if language is selected
-		// via the combobox.
-		m_codeEditor.languageSelection().addItemListener(event -> {
-			m_settings.setScriptLanguageName((String) m_codeEditor
-					.languageSelection().getSelectedItem());
-			updateScriptLanguage();
-		});
-
-		updateScriptLanguage();
 	}
 
 	/**
@@ -422,6 +389,58 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		}
 	}
 
+	private CompileProductHelper recompile(final String code,
+			final String scriptLanguageName) throws InvalidSettingsException {
+		try (final TempClassLoader tempCl = new TempClassLoader(
+				ScriptingGateway.get().createUrlClassLoader())) {
+			return m_compiler.compile(code,
+					m_scriptService.getLanguageByName(scriptLanguageName));
+		} catch (final Exception e) {
+			throw new InvalidSettingsException(e);
+		}
+	}
+
+	@Override
+	public void onOpen() {
+
+		// create dialog component on open, to ensure that the settings are
+		// already loaded.
+		if (m_outputTablePanel == null) {
+			m_outputTablePanel = createOutputTablePane();
+			createComponent();
+			addTab("Dialog", m_component);
+			getPanel().revalidate();
+			getPanel().repaint();
+		}
+
+		// Set language on opening to ensure all language plugins have been
+		// loaded.
+		final Set<String> languageSet = new LinkedHashSet<>();
+		for (final ScriptLanguage lang : m_scriptService.getIndex()) {
+			languageSet.add(lang.toString());
+		}
+		final String[] languages = languageSet.stream()
+				.toArray(size -> new String[size]);
+
+		if (languages.length != 0) {
+			m_codeEditor.languageSelection()
+					.setModel(new DefaultComboBoxModel<>(languages));
+		} /* otherwise it stays {"Java"} */
+
+		m_codeEditor.languageSelection()
+				.setSelectedItem(m_settings.getScriptLanguageName());
+
+		// Update settings and script language, if language is selected
+		// via the combobox.
+		m_codeEditor.languageSelection().addItemListener(event -> {
+			m_settings.setScriptLanguageName((String) m_codeEditor
+					.languageSelection().getSelectedItem());
+			updateScriptLanguage();
+		});
+
+		updateScriptLanguage();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -440,17 +459,6 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 					m_simpleColumnMappingService.serialize());
 		}
 		m_settings.saveSettingsTo(settings, m_dialogSettingsService);
-	}
-
-	private CompileProductHelper recompile(final String code,
-			final String scriptLanguageName) throws InvalidSettingsException {
-		try (final TempClassLoader tempCl = new TempClassLoader(
-				ScriptingGateway.get().createUrlClassLoader())) {
-			return m_compiler.compile(code,
-					m_scriptService.getLanguageByName(scriptLanguageName));
-		} catch (final Exception e) {
-			throw new InvalidSettingsException(e);
-		}
 	}
 
 	/**
@@ -546,19 +554,16 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 	 *         GUI creation.
 	 */
 	private List<PreprocessorPlugin> createPreprocessorList() {
-		final List<Class<? extends PreprocessorPlugin>> preprotypes = Arrays
-				.asList(ServicePreprocessor.class);
-
-		final List<PreprocessorPlugin> out = preprotypes.stream().map(clazz -> {
+		return Arrays.asList(ServicePreprocessor.class).stream().map(clazz -> {
 			try {
 				final PreprocessorPlugin tmp = (PreprocessorPlugin) m_pluginService
 						.getPlugin(clazz).createInstance();
 				m_context.inject(tmp);
 				return tmp;
 			} catch (final InstantiableException exc) {
+				getLogger().error(exc);
 				return null;
 			}
 		}).collect(Collectors.toList());
-		return out;
 	}
 }

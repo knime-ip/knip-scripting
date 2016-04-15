@@ -2,6 +2,7 @@ package org.knime.scijava.scripting.node;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,6 @@ import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
 import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.node.settings.ScriptDialogMode;
-import org.knime.scijava.scripting.util.LineWriter;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.module.Module;
@@ -100,13 +100,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	 */
 	private CompileHelper m_compiler;
 
-	/*
-	 * TODO Error and output writers which could once be used for directing
-	 * script output.
-	 */
-	private final Writer m_errorWriter = new LineWriter();
-
-	private final Writer m_outputWriter = new LineWriter();
+	private final StringWriter m_errorWriter = new StringWriter();
+	private final StringWriter m_outputWriter = new StringWriter();
 
 	private ColumnRearranger m_colRearranger;
 
@@ -126,8 +121,6 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		super(1, 1);
 
 		m_context = scijavaContext;
-
-		// populate @Parameter members
 		m_context.inject(this);
 
 		try {
@@ -145,13 +138,12 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		final ScriptLanguage language = getCurrentLanguage();
 		try {
 			m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
-					language);
+					language, m_errorWriter);
 
 			m_cellFactory = new ScriptingCellFactory(m_context,
 					m_compileProduct.createModule(language));
 
-		} catch (final NullPointerException | ScriptException
-				| ModuleException e) {
+		} catch (final NullPointerException | ModuleException e) {
 			LOGGER.error(e);
 			// Throw exception to prevent node from being executed.
 			// Warning: some script languages will not fail to compile
@@ -164,6 +156,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		// (for column lookup in ColumnInputMappingKnimePreprocessor)
 		m_inputrowService.setDataTableSpec(inSpecs[0]);
 
+		// column creation mode
 		if (m_settings
 				.getColumnCreationMode() == ColumnCreationMode.APPEND_COLUMNS) {
 			m_colRearranger = new ColumnRearranger(inSpecs[0]);
@@ -199,7 +192,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		// create a clean module
 		final ScriptLanguage currentLanguage = getCurrentLanguage();
 		m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
-				currentLanguage);
+				currentLanguage, m_errorWriter);
 		m_cellFactory = new ScriptingCellFactory(m_context,
 				m_compileProduct.createModule(currentLanguage));
 
@@ -295,13 +288,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 	@Override
 	protected void saveSettingsTo(final NodeSettingsWO settings) {
-		try {
-			m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
-					getCurrentLanguage());
-		} catch (final ScriptException e) {
-			// Compilation failure
-			return;
-		}
+		m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
+				getCurrentLanguage(), m_errorWriter);
 		m_settings.setColumnInputMapping(m_columnMappingService.serialize());
 		m_settings.saveSettingsTo(settings, m_nodeModelSettingsService);
 	}
@@ -327,11 +315,16 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	}
 
 	private static CompileProductHelper recompile(final CompileHelper compiler,
-			final String scriptCode, final ScriptLanguage language)
-					throws ScriptException {
+			final String scriptCode, final ScriptLanguage language,
+			StringWriter errorWriter) {
 		try (final TempClassLoader cl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			return compiler.compile(scriptCode, language);
+		} catch (ScriptException e) {
+			String error = errorWriter.toString();
+			errorWriter.getBuffer().setLength(0);
+			throw new IllegalArgumentException(
+					"Script compilation failed: \n " + error);
 		}
 
 	}

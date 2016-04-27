@@ -7,14 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.knime.scijava.commands.KNIMEExecutionService;
-import org.knime.scijava.commands.adapter.InputAdapterService;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
 import org.knime.scijava.commands.settings.NodeDialogSettingsService;
 import org.knime.scijava.commands.settings.NodeModelSettingsService;
-import org.knime.scijava.commands.settings.NodeSettingsService;
-import org.knime.scijava.commands.settings.SettingsModelTypeService;
 import org.knime.scijava.commands.simplemapping.SimpleColumnMappingService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
 import org.knime.scijava.core.ResourceAwareClassLoader;
@@ -28,15 +25,8 @@ import org.scijava.object.ObjectService;
 import org.scijava.plugin.DefaultPluginFinder;
 import org.scijava.plugin.PluginIndex;
 import org.scijava.plugin.PluginService;
-import org.scijava.plugins.scripting.java.JavaService;
-import org.scijava.prefs.PrefService;
-import org.scijava.script.ScriptHeaderService;
-import org.scijava.script.ScriptService;
 import org.scijava.service.Service;
 import org.scijava.ui.UIService;
-import org.scijava.widget.WidgetService;
-
-import net.imagej.ui.swing.script.LanguageSupportService;
 
 /**
  * ScriptingGateway is a singleton class which creates the scijava contexts for
@@ -71,13 +61,13 @@ public class ScriptingGateway {
 
 	/** the services which must be local to the node. */
 	protected static List<Class<? extends Service>> localServices = Arrays
-			.asList(JavaService.class, InputDataRowService.class,
-					OutputDataRowService.class, KNIMEExecutionService.class,
+			.asList(InputDataRowService.class, OutputDataRowService.class,
+					KNIMEExecutionService.class,
 					NodeDialogSettingsService.class,
 					NodeModelSettingsService.class, ObjectService.class,
 					KNIMEWidgetService.class, UIService.class,
 					OutputAdapterService.class, CommandService.class,
-					ParameterCodeGeneratorService.class, JavaService.class,
+					ParameterCodeGeneratorService.class,
 					SimpleColumnMappingService.class);
 	// former services (for reference TODO: remove))
 	// ScriptService.class,

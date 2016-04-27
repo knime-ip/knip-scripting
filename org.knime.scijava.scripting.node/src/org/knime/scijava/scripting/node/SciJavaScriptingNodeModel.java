@@ -3,7 +3,6 @@ package org.knime.scijava.scripting.node;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -111,6 +110,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	/* Output data table specification */
 	private DataTableSpec m_outTableSpec = null;
 
+	private String m_oldCode;
+
 	// --- node lifecycle: configure/execute/reset ---
 
 	/**
@@ -136,20 +137,25 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
 			throws InvalidSettingsException {
 		final ScriptLanguage language = getCurrentLanguage();
-		try {
-			m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
-					language, m_errorWriter);
 
-			m_cellFactory = new ScriptingCellFactory(m_context,
-					m_compileProduct.createModule(language));
+		// only recompile if the code changed
+		if (!m_settings.getScriptCode().equals(m_oldCode)) {
+			m_oldCode = m_settings.getScriptCode();
+			try {
+				m_compileProduct = recompile(m_compiler,
+						m_settings.getScriptCode(), language, m_errorWriter);
 
-		} catch (final NullPointerException | ModuleException e) {
-			LOGGER.error(e);
-			// Throw exception to prevent node from being executed.
-			// Warning: some script languages will not fail to compile
-			// until executed.
-			throw new InvalidSettingsException(
-					"Code did not compile!, view log for more details.");
+				m_cellFactory = new ScriptingCellFactory(m_context,
+						m_compileProduct.createModule(language));
+
+			} catch (final NullPointerException | ModuleException e) {
+				LOGGER.error(e);
+				// Throw exception to prevent node from being executed.
+				// Warning: some script languages will not fail to compile
+				// until executed.
+				throw new InvalidSettingsException(
+						"Code did not compile!, view log for more details.");
+			}
 		}
 
 		// provide the input table spec to module preprocessors
@@ -196,7 +202,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		m_cellFactory = new ScriptingCellFactory(m_context,
 				m_compileProduct.createModule(currentLanguage));
 
-		try (final TempClassLoader tempCl = new TempClassLoader(
+		try (final TempClassLoader cl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 
 			if (m_settings
@@ -274,6 +280,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	protected void validateSettings(final NodeSettingsRO settings)
 			throws InvalidSettingsException {
 		m_settings.validateSettings(settings, m_nodeModelSettingsService);
+		m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
+				getCurrentLanguage(), m_errorWriter);
 	}
 
 	@Override
@@ -288,8 +296,6 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
 	@Override
 	protected void saveSettingsTo(final NodeSettingsWO settings) {
-		m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
-				getCurrentLanguage(), m_errorWriter);
 		m_settings.setColumnInputMapping(m_columnMappingService.serialize());
 		m_settings.saveSettingsTo(settings, m_nodeModelSettingsService);
 	}
@@ -317,6 +323,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	private static CompileProductHelper recompile(final CompileHelper compiler,
 			final String scriptCode, final ScriptLanguage language,
 			StringWriter errorWriter) {
+
 		try (final TempClassLoader cl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
 			return compiler.compile(scriptCode, language);
@@ -399,7 +406,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			} catch (InterruptedException | ExecutionException e) {
 				throw new IllegalStateException(
 						"Module execution failed in Row: " + row.getKey()
-								+ ": \n" + " " + e.getMessage());
+								+ ": \n" + " " + e);
 			}
 
 			final DataCell[] cells = m_outputrowService.getOutputDataCells();
@@ -433,7 +440,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 	 * @author Jonathan Hale
 	 */
 	protected class ScriptingStreamableFunction extends StreamableFunction {
-		private TempClassLoader tempCl;
+		private TempClassLoader m_tempCl;
 
 		/**
 		 * {@inheritDoc}
@@ -443,7 +450,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			// provide the KNIME data via Scijava services to module
 			m_executionService.setExecutionContext(exec);
 
-			tempCl = new TempClassLoader(
+			m_tempCl = new TempClassLoader(
 					ScriptingGateway.get().createUrlClassLoader());
 		}
 
@@ -456,8 +463,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		@Override
 		public void finish() {
 			super.finish();
-
-			tempCl.close();
+			m_tempCl.close();
 		}
 	}
 

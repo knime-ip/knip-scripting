@@ -170,6 +170,9 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
 	private Module m_module;
 
+	// Cache of the current code, to prevent unnecessary caching
+	private String m_oldCode;
+
 	public SciJavaScriptingNodeDialog(final Context scijavaContext)
 			throws NotConfigurableException {
 
@@ -263,17 +266,18 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			m_component.remove(m_errorPanel);
 		}
 
-		m_autogenPanel.removeAll();
-		m_inputPanel = new SwingInputPanel();
-
-		try {
-			m_compileProduct = recompile(m_settings.getScriptCode(),
-					m_settings.getScriptLanguageName());
-		} catch (final InvalidSettingsException e) {
-			// code did not compile show error instead
-			m_dialogSettingsService.clear();
-			m_simpleColumnMappingService.clear();
-			return createErrorPanel(e);
+		// only recompile if needed
+		if (!m_settings.getScriptCode().equals(m_oldCode)) {
+			m_oldCode = m_settings.getScriptCode();
+			try {
+				m_compileProduct = recompile(m_settings.getScriptCode(),
+						m_settings.getScriptLanguageName());
+			} catch (final InvalidSettingsException e) {
+				// code did not compile show error instead
+				m_dialogSettingsService.clear();
+				m_simpleColumnMappingService.clear();
+				return createErrorPanel(e);
+			}
 		}
 
 		// when switching from code clear settings
@@ -282,6 +286,9 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			m_simpleColumnMappingService.clear();
 		}
 
+		// Build dialog panel
+		m_autogenPanel.removeAll();
+		m_inputPanel = new SwingInputPanel();
 		final SwingInputHarvester builder = new SwingInputHarvester();
 		builder.setContext(m_context);
 
@@ -308,8 +315,8 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 		}
 		m_errorPanel = new JPanel();
 		m_errorPanel.setLayout(new BoxLayout(m_errorPanel, BoxLayout.Y_AXIS));
-		m_errorPanel
-				.add(new JLabel("Can't create dialog, compilation failed!"));
+		m_errorPanel.add(
+				new JLabel("Can't create dialog, compilation failed! " + e));
 		getLogger().error("Can't create dialog, compilation failed!", e);
 
 		final String error = m_errorWriter.toString();

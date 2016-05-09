@@ -2,7 +2,9 @@ package org.knime.scijava.scripting.node.ui;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 
 import javax.swing.JOptionPane;
 
@@ -93,16 +95,13 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 			final String memberName = cleanupMemberName(columnName);
 
 			// get the Name of the first createable type
-			@SuppressWarnings("rawtypes")
-			final Iterator<InputAdapter> itor = m_inputAdapters
+
+			Optional<InputAdapter> adapter = m_inputAdapters
 					.getMatchingInputAdapters(
 							cspec.getType().getPreferredValueClass())
-					.iterator();
+					.stream().findFirst();
 
-			final Class<?> type;
-			if (itor.hasNext()) {
-				type = itor.next().getOutputType();
-			} else {
+			if (!adapter.isPresent()) {
 				// no adapter found, error out
 				JOptionPane.showMessageDialog(null,
 						"The column you selected has a datatype which\n"
@@ -110,6 +109,8 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 						"No matching adapter", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+
+			final Class<?> type = adapter.get().getOutputType();
 
 			final ParameterCodeGenerator generator = m_parameterGenerators
 					.getGeneratorForLanguage(m_dialog.getCurrentLanguage());

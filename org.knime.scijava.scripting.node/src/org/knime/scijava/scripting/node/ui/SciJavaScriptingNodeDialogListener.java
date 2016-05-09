@@ -155,7 +155,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		// Characters considered illegal:
 		// \ | # [ ] ( ) { } % + ? ~ / & . : ; ,
 		name = name.replaceAll("\\\\|\\#|\\[|\\]|\\(|\\)|\\{|\\}|\\%|\\+|"
-				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\||\\,", "_");
+				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\||\\||\\ ", "_");
 
 		// ensure uniqueness
 		String chosen = name;

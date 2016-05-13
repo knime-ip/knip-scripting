@@ -84,7 +84,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 	 * @param index
 	 *            Index of the column to create the code snippet for
 	 */
-	protected void insertParameterCodeSnippetForColumn(final int index) {
+	private void insertParameterCodeSnippetForColumn(final int index) {
 		if (index >= 0) {
 			final Object o = m_editor.getColumnList().getModel()
 					.getElementAt(index);
@@ -161,9 +161,12 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 		// ensure uniqueness
 		String chosen = name;
 		int i = 0;
-		while (m_dialog.getModule().getInfo().getInput(chosen) != null) {
-			chosen = name + i;
-			++i;
+
+		if (m_dialog.getModule() != null) { // can only check for inputs if the dialog was created
+			while (m_dialog.getModule().getInfo().getInput(chosen) != null) {
+				chosen = name + i;
+				i++;
+			}
 		}
 		return chosen;
 	}

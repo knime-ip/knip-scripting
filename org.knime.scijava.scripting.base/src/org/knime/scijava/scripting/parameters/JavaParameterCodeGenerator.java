@@ -1,5 +1,6 @@
 package org.knime.scijava.scripting.parameters;
 
+import org.knime.scijava.commands.KNIMESciJavaConstants;
 import org.knime.scijava.scripting.util.ClassUtils;
 import org.scijava.plugin.Plugin;
 
@@ -18,8 +19,18 @@ public class JavaParameterCodeGenerator implements ParameterCodeGenerator {
 				|| type == String.class) ? type.getSimpleName()
 						: type.getName();
 
-		return "\n\n\t@Parameter(type = ItemIO.INPUT)\n\tprivate " + typeName
-				+ " " + memberName + ";";
+		StringBuilder builder = new StringBuilder();
+		builder.append(" \n\n\t@Parameter(type = ItemIO.INPUT, ");
+		builder.append("attrs = {@Attr(name = \"");
+		builder.append(KNIMESciJavaConstants.COLUMN_SELECT_KEY);
+		builder.append("\", value = \"true\") })");
+		builder.append("\n\tprivate ");
+		builder.append(typeName);
+		builder.append(" ");
+		builder.append(memberName);
+		builder.append(";");
+
+		return builder.toString();
 	}
 
 	@Override

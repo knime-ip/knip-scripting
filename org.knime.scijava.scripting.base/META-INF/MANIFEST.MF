@@ -33,6 +33,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: lib/tools.jar,
  scijava_scripting_base.jar
 Export-Package: org.knime.scijava.scripting.base,
- org.knime.scijava.scripting.java,
  org.knime.scijava.scripting.parameters,
  org.knime.scijava.scripting.util

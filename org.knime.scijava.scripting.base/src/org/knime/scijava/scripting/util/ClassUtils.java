@@ -10,12 +10,9 @@ import java.util.Set;
  */
 public class ClassUtils {
 
-	public ClassUtils() {
-		// NB Utility Class
-	}
-
 	private static final Set<Class<?>> primitives = new HashSet<>();
 	private static final Set<Class<?>> wrappers = new HashSet<>();
+	private static final Set<Class<?>> services = new HashSet<>();
 
 	static {
 		primitives.add(boolean.class);
@@ -37,6 +34,11 @@ public class ClassUtils {
 		wrappers.add(Float.class);
 		wrappers.add(Double.class);
 		wrappers.add(Void.class);
+		
+	}
+
+	public ClassUtils() {
+		// NB Utility Class
 	}
 
 	/**

@@ -14,7 +14,7 @@ public abstract class CommentBasedParameterCodeGenerator
 
 	@Override
 	public final String generateInputParameter(String code, String memberName,
-			Class<?> type) {
+			Class<?> type, String defaultColumn) {
 
 		// Type conversion is done by the scijava framework
 		final String typeName = type.getSimpleName();
@@ -30,7 +30,11 @@ public abstract class CommentBasedParameterCodeGenerator
 		builder.append(typeName);
 		builder.append("(");
 		builder.append(KNIMESciJavaConstants.COLUMN_SELECT_KEY);
-		builder.append("= \"true\")");
+		builder.append("= \"true\", ");
+		builder.append(KNIMESciJavaConstants.DEFAULT_COLUMN_KEY);
+		builder.append("= \"");
+		builder.append(defaultColumn);
+		builder.append("\")");
 		builder.append(" ");
 		builder.append(memberName);
 		builder.append("\n");

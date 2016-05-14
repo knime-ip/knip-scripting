@@ -14,7 +14,7 @@ public class JavaParameterCodeGenerator implements ParameterCodeGenerator {
 
 	@Override
 	public String generateInputParameter(String code, String memberName,
-			Class<?> type) {
+			Class<?> type, String defaultColumn) {
 		final String typeName = (ClassUtils.isPrimitiveOrWrapper(type)
 				|| type == String.class) ? type.getSimpleName()
 						: type.getName();
@@ -23,7 +23,11 @@ public class JavaParameterCodeGenerator implements ParameterCodeGenerator {
 		builder.append(" \n\n\t@Parameter(type = ItemIO.INPUT, ");
 		builder.append("attrs = {@Attr(name = \"");
 		builder.append(KNIMESciJavaConstants.COLUMN_SELECT_KEY);
-		builder.append("\", value = \"true\") })");
+		builder.append("\", value = \"true\"),");
+		builder.append(KNIMESciJavaConstants.DEFAULT_COLUMN_KEY);
+		builder.append("\", value = \"");
+		builder.append(defaultColumn);
+		builder.append("\")})");
 		builder.append("\n\tprivate ");
 		builder.append(typeName);
 		builder.append(" ");

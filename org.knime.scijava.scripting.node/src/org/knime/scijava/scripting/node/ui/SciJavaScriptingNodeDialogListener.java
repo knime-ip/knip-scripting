@@ -127,7 +127,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 			final int pos = generator.getPosition(code);
 
 			final String parameterCode = generator.generateInputParameter(code,
-					memberName, type);
+					memberName, type, columnName);
 
 			m_editor.getCodeEditor().getEditorPane().insert(parameterCode, pos);
 			m_editor.getCodeEditor().updateModel();

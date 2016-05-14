@@ -20,10 +20,12 @@ public interface ParameterCodeGenerator extends SingletonPlugin {
 	 *            Name for the input
 	 * @param type
 	 *            Type for the input
+	 * @param defaultColumn 
+	 * 				The name of the default column
 	 * @return Modified code
 	 */
 	public String generateInputParameter(String code, String var,
-			Class<?> type);
+			Class<?> type, String defaultColumn);
 
 	/**
 	 * Find a position to insert a input parameter code snippet.

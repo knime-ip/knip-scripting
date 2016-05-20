@@ -36,6 +36,7 @@ import org.knime.core.node.streamable.PartitionInfo;
 import org.knime.core.node.streamable.StreamableFunction;
 import org.knime.core.node.streamable.StreamableOperator;
 import org.knime.core.node.streamable.StreamableOperatorInternals;
+import org.knime.core.util.UniqueNameGenerator;
 import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.adapter.OutputAdapter;
 import org.knime.scijava.commands.adapter.OutputAdapterService;
@@ -145,7 +146,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 				m_compileProduct = recompile(m_compiler,
 						m_settings.getScriptCode(), language, m_errorWriter);
 
-				m_cellFactory = new ScriptingCellFactory(m_context,
+				m_cellFactory = new ScriptingCellFactory(m_context, inSpecs[0],
 						m_compileProduct.createModule(language));
 
 			} catch (final NullPointerException | ModuleException e) {
@@ -200,7 +201,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
 				currentLanguage, m_errorWriter);
 		m_cellFactory = new ScriptingCellFactory(m_context,
-				m_compileProduct.createModule(currentLanguage));
+				m_outTableSpec, m_compileProduct.createModule(currentLanguage));
 
 		try (final TempClassLoader cl = new TempClassLoader(
 				ScriptingGateway.get().createUrlClassLoader())) {
@@ -355,18 +356,20 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 		@Parameter
 		private ModuleService m_moduleService;
 
-		public ScriptingCellFactory(final Context context,
+		public ScriptingCellFactory(final Context context, DataTableSpec inSpec,
 				final Module module) {
 			m_module = module;
 			setContext(context);
-			m_spec = createDataColumnSpecs();
+			m_spec = createDataColumnSpecs(inSpec);
 		}
 
-		protected DataColumnSpec[] createDataColumnSpecs() {
+		protected DataColumnSpec[] createDataColumnSpecs(DataTableSpec inSpec) {
 			final List<DataColumnSpec> tableSpecs = new ArrayList<>();
 
 			final String suffix = m_settings.getColumnSuffixModel().isEnabled()
 					? m_settings.getColumnSuffix() : "";
+
+			UniqueNameGenerator nameGen = new UniqueNameGenerator(inSpec);
 
 			for (final ModuleItem<?> output : m_module.getInfo().outputs()) {
 				@SuppressWarnings("unchecked")
@@ -388,10 +391,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 					continue;
 				}
 
-				// Add the column to table specs with name equal to the outputs
-				// name with suffix.
-				tableSpecs.add(new DataColumnSpecCreator(
-						output.getName() + suffix, type).createSpec());
+				tableSpecs.add(
+						nameGen.newColumn(output.getName() + suffix, type));
 			}
 
 			return tableSpecs.toArray(new DataColumnSpec[] {});

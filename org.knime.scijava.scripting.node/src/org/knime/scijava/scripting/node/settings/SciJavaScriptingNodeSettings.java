@@ -126,22 +126,7 @@ public class SciJavaScriptingNodeSettings {
 			final SettingsModelString columnCreationMode) {
 
 		final SettingsModelString suffixModel = new SettingsModelString(
-				SM_KEY_COLUMN_SUFFIX, "") {
-			@Override
-			protected void validateSettingsForModel(
-					final NodeSettingsRO settings)
-							throws InvalidSettingsException {
-				super.validateSettingsForModel(settings);
-
-				// don't accept an empty suffix
-				if ("".equals(settings.getString(SM_KEY_COLUMN_SUFFIX))
-						&& columnCreationMode.getStringValue().equals(
-								ColumnCreationMode.APPEND_COLUMNS.toString())) {
-					throw new InvalidSettingsException(
-							"Suffix can not be empty when 'Append Columns' is selected!");
-				}
-			}
-		};
+				SM_KEY_COLUMN_SUFFIX, "");
 
 		// set inital state
 		suffixModel.setEnabled(ColumnCreationMode.APPEND_COLUMNS.toString()

@@ -23,7 +23,7 @@ public class JavaParameterCodeGenerator implements ParameterCodeGenerator {
 		builder.append(" \n\n\t@Parameter(type = ItemIO.INPUT, ");
 		builder.append("attrs = {@Attr(name = \"");
 		builder.append(KNIMESciJavaConstants.COLUMN_SELECT_KEY);
-		builder.append("\", value = \"true\"),");
+		builder.append("\", value = \"true\"), @Attr(name= \"");
 		builder.append(KNIMESciJavaConstants.DEFAULT_COLUMN_KEY);
 		builder.append("\", value = \"");
 		builder.append(defaultColumn);

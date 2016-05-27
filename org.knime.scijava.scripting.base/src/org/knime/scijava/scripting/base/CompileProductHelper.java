@@ -8,7 +8,7 @@ import org.scijava.script.ScriptLanguage;
 
 /**
  * Interface for classes which wrap a compilation product. This may be a
- * CommandInfo (for Java scripts) or a ScriptInfo (basically everything else.
+ * CommandInfo (for Java scripts) or a ScriptInfo (everything else).
  *
  * @author Jonathan Hale
  */

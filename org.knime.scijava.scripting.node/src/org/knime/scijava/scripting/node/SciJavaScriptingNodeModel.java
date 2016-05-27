@@ -62,9 +62,10 @@ import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
 
 /**
- * NodeModel of the ScriptingNode
+ * NodeModel of the SciJava ScriptingNode.
  *
  * @author Jonathan Hale (University of Konstanz)
+ * @author Gabriel Einsdorf (University of Konstanz)
  */
 public class SciJavaScriptingNodeModel extends NodeModel {
 
@@ -411,6 +412,13 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 			}
 
 			final DataCell[] cells = m_outputrowService.getOutputDataCells();
+			for (DataCell cell : cells) {
+				if (cell == null) {
+					throw new IllegalStateException(
+							"Execution of script failed, please check the"
+							+ " syntax of your script and the log messages!");
+				}
+			}
 
 			m_compileProduct.resetModule(m_module);
 

@@ -266,8 +266,9 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 			m_component.remove(m_errorPanel);
 		}
 
-		// only recompile if needed
-		if (!m_settings.getScriptCode().equals(m_oldCode)) {
+		// only recompile if code changed or compileProduct null
+		if (!m_settings.getScriptCode().equals(m_oldCode)
+				|| m_compileProduct == null) {
 			m_oldCode = m_settings.getScriptCode();
 			try {
 				m_compileProduct = recompile(m_settings.getScriptCode(),

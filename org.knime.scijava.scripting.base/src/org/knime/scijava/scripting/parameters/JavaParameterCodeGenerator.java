@@ -12,34 +12,34 @@ import org.scijava.plugin.Plugin;
 @Plugin(type = ParameterCodeGenerator.class, name = "java")
 public class JavaParameterCodeGenerator implements ParameterCodeGenerator {
 
-	@Override
-	public String generateInputParameter(String code, String memberName,
-			Class<?> type, String defaultColumn) {
-		final String typeName = (ClassUtils.isPrimitiveOrWrapper(type)
-				|| type == String.class) ? type.getSimpleName()
-						: type.getName();
+    @Override
+    public String generateInputParameter(String code, String memberName,
+            Class<?> type, String defaultColumn) {
+        final String typeName = (ClassUtils.isPrimitiveOrWrapper(type)
+                || type == String.class) ? type.getSimpleName()
+                        : type.getName();
 
-		StringBuilder builder = new StringBuilder();
-		builder.append(" \n\n\t@Parameter(type = ItemIO.INPUT, ");
-		builder.append("attrs = {@Attr(name = \"");
-		builder.append(KNIMESciJavaConstants.COLUMN_SELECT_KEY);
-		builder.append("\", value = \"true\"), @Attr(name= \"");
-		builder.append(KNIMESciJavaConstants.DEFAULT_COLUMN_KEY);
-		builder.append("\", value = \"");
-		builder.append(defaultColumn);
-		builder.append("\")})");
-		builder.append("\n\tprivate ");
-		builder.append(typeName);
-		builder.append(" ");
-		builder.append(memberName);
-		builder.append(";");
+        StringBuilder builder = new StringBuilder();
+        builder.append(" \n\n\t@Parameter(type = ItemIO.INPUT, ");
+        builder.append("attrs = {@Attr(name = \"");
+        builder.append(KNIMESciJavaConstants.COLUMN_SELECT_KEY);
+        builder.append("\", value = \"true\"), @Attr(name= \"");
+        builder.append(KNIMESciJavaConstants.DEFAULT_COLUMN_KEY);
+        builder.append("\", value = \"");
+        builder.append(defaultColumn);
+        builder.append("\")})");
+        builder.append("\n\tprivate ");
+        builder.append(typeName);
+        builder.append(" ");
+        builder.append(memberName);
+        builder.append(";");
 
-		return builder.toString();
-	}
+        return builder.toString();
+    }
 
-	@Override
-	public int getPosition(String code) {
-		return code.indexOf('{') + 1;
-	}
+    @Override
+    public int getPosition(String code) {
+        return code.indexOf('{') + 1;
+    }
 
 }

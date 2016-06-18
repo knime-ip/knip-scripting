@@ -14,12 +14,12 @@ import org.scijava.script.ScriptLanguage;
  */
 public interface CompileProductHelper {
 
-	public Iterable<ModuleItem<?>> inputs();
+    public Iterable<ModuleItem<?>> inputs();
 
-	public ModuleInfo getModuleInfo();
+    public ModuleInfo getModuleInfo();
 
-	public Module createModule(ScriptLanguage language) throws ModuleException;
+    public Module createModule(ScriptLanguage language) throws ModuleException;
 
-	public void resetModule(Module m);
+    public void resetModule(Module m);
 
 }

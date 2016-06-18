@@ -29,166 +29,167 @@ import org.scijava.script.ScriptService;
  *
  */
 public class SciJavaScriptingNodeDialogListener extends AbstractContextual
-		implements MouseListener {
+        implements MouseListener {
 
-	private final SciJavaScriptingCodeEditor m_editor;
+    private final SciJavaScriptingCodeEditor m_editor;
 
-	private final SciJavaScriptingNodeSettings m_settings;
+    private final SciJavaScriptingNodeSettings m_settings;
 
-	@Parameter
-	private Context context;
-	@Parameter
-	private InputAdapterService m_inputAdapters;
-	@Parameter
-	private ScriptService m_scriptService;
-	@Parameter
-	private ParameterCodeGeneratorService m_parameterGenerators;
+    @Parameter
+    private Context context;
+    @Parameter
+    private InputAdapterService m_inputAdapters;
+    @Parameter
+    private ScriptService m_scriptService;
+    @Parameter
+    private ParameterCodeGeneratorService m_parameterGenerators;
 
-	private final NodeLogger m_logger;
+    private final NodeLogger m_logger;
 
-	private final SciJavaScriptingNodeDialog m_dialog;
+    private final SciJavaScriptingNodeDialog m_dialog;
 
-	/**
-	 * Constructor
-	 *
-	 * @param logger
-	 *            NodeLogger to output messages to
-	 */
-	public SciJavaScriptingNodeDialogListener(
-			final SciJavaScriptingCodeEditor editor, final NodeLogger logger,
-			final SciJavaScriptingNodeDialog dialog,
-			final SciJavaScriptingNodeSettings settings) {
-		m_editor = editor;
-		m_logger = logger;
-		m_dialog = dialog;
-		m_settings = settings;
-	}
+    /**
+     * Constructor
+     *
+     * @param logger
+     *            NodeLogger to output messages to
+     */
+    public SciJavaScriptingNodeDialogListener(
+            final SciJavaScriptingCodeEditor editor, final NodeLogger logger,
+            final SciJavaScriptingNodeDialog dialog,
+            final SciJavaScriptingNodeSettings settings) {
+        m_editor = editor;
+        m_logger = logger;
+        m_dialog = dialog;
+        m_settings = settings;
+    }
 
-	@Override
-	public void mouseClicked(final MouseEvent e) {
-		/*
-		 * Create a column input mapping on column list double click
-		 */
-		if (e.getSource() == m_editor.getColumnList()
-				&& e.getClickCount() == 2) {
-			insertParameterCodeSnippetForColumn(
-					m_editor.getColumnList().locationToIndex(e.getPoint()));
-		}
-	}
+    @Override
+    public void mouseClicked(final MouseEvent e) {
+        /*
+         * Create a column input mapping on column list double click
+         */
+        if (e.getSource() == m_editor.getColumnList()
+                && e.getClickCount() == 2) {
+            insertParameterCodeSnippetForColumn(
+                    m_editor.getColumnList().locationToIndex(e.getPoint()));
+        }
+    }
 
-	/**
-	 * Create a code snippet for a new input in the script which is
-	 * automatically mapped to the column in the column selection list at the
-	 * given index.
-	 *
-	 * @param index
-	 *            Index of the column to create the code snippet for
-	 */
-	private void insertParameterCodeSnippetForColumn(final int index) {
-		if (index >= 0) {
-			final Object o = m_editor.getColumnList().getModel()
-					.getElementAt(index);
+    /**
+     * Create a code snippet for a new input in the script which is
+     * automatically mapped to the column in the column selection list at the
+     * given index.
+     *
+     * @param index
+     *            Index of the column to create the code snippet for
+     */
+    private void insertParameterCodeSnippetForColumn(final int index) {
+        if (index >= 0) {
+            final Object o =
+                    m_editor.getColumnList().getModel().getElementAt(index);
 
-			final DataColumnSpec cspec = (DataColumnSpec) o;
+            final DataColumnSpec cspec = (DataColumnSpec) o;
 
-			final String columnName = cspec.getName();
-			final String memberName = cleanupMemberName(columnName);
+            final String columnName = cspec.getName();
+            final String memberName = cleanupMemberName(columnName);
 
-			// get the Name of the first createable type
+            // get the Name of the first createable type
 
-			Optional<InputAdapter> adapter = m_inputAdapters
-					.getMatchingInputAdapters(
-							cspec.getType().getPreferredValueClass())
-					.stream().findFirst();
+            Optional<InputAdapter> adapter = m_inputAdapters
+                    .getMatchingInputAdapters(
+                            cspec.getType().getPreferredValueClass())
+                    .stream().findFirst();
 
-			if (!adapter.isPresent()) {
-				// no adapter found, error out
-				JOptionPane.showMessageDialog(null,
-						"The column you selected has a datatype which\n"
-								+ "currently cannot be used in Scripts.",
-						"No matching adapter", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+            if (!adapter.isPresent()) {
+                // no adapter found, error out
+                JOptionPane.showMessageDialog(null,
+                        "The column you selected has a datatype which\n"
+                                + "currently cannot be used in Scripts.",
+                        "No matching adapter", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-			final Class<?> type = adapter.get().getOutputType();
+            final Class<?> type = adapter.get().getOutputType();
 
-			final ParameterCodeGenerator generator = m_parameterGenerators
-					.getGeneratorForLanguage(m_dialog.getCurrentLanguage());
+            final ParameterCodeGenerator generator = m_parameterGenerators
+                    .getGeneratorForLanguage(m_dialog.getCurrentLanguage());
 
-			if (generator == null) {
-				m_logger.error(
-						"No way of generating input parameter code for language \""
-								+ m_settings.getScriptLanguageName() + "\".");
-				return;
-			}
+            if (generator == null) {
+                m_logger.error(
+                        "No way of generating input parameter code for language \""
+                                + m_settings.getScriptLanguageName() + "\".");
+                return;
+            }
 
-			// find position for inserting @Parameter declaration
-			final String code = m_editor.getCodeEditor().getCode();
-			final int pos = generator.getPosition(code);
+            // find position for inserting @Parameter declaration
+            final String code = m_editor.getCodeEditor().getCode();
+            final int pos = generator.getPosition(code);
 
-			final String parameterCode = generator.generateInputParameter(code,
-					memberName, type, columnName);
+            final String parameterCode = generator.generateInputParameter(code,
+                    memberName, type, columnName);
 
-			m_editor.getCodeEditor().getEditorPane().insert(parameterCode, pos);
-			m_editor.getCodeEditor().updateModel();
+            m_editor.getCodeEditor().getEditorPane().insert(parameterCode, pos);
+            m_editor.getCodeEditor().updateModel();
 
-		}
-	}
+        }
+    }
 
-	/**
-	 * Cleans the columnname from illegal characters to make it usable as a
-	 * parameter.
-	 *
-	 * @param columnName
-	 *            the name of the column
-	 * @return name of the parameter
-	 */
-	private String cleanupMemberName(final String columnName) {
+    /**
+     * Cleans the columnname from illegal characters to make it usable as a
+     * parameter.
+     *
+     * @param columnName
+     *            the name of the column
+     * @return name of the parameter
+     */
+    private String cleanupMemberName(final String columnName) {
 
-		// lowercase first letter
-		String name = Character.toLowerCase(columnName.charAt(0))
-				+ columnName.substring(1);
-		if (Character.isDigit(name.charAt(0))) {
-			name = "_" + columnName.substring(0);
-		}
+        // lowercase first letter
+        String name = Character.toLowerCase(columnName.charAt(0))
+                + columnName.substring(1);
+        if (Character.isDigit(name.charAt(0))) {
+            name = "_" + columnName.substring(0);
+        }
 
-		// replace all illegal characters with '_'
-		// Characters considered illegal:
-		// \ | # [ ] ( ) { } % + ? ~ / & . : ; ,
-		name = name.replaceAll("\\\\|\\#|\\[|\\]|\\(|\\)|\\{|\\}|\\%|\\+|"
-				+ "\\?|\\~|/|\\&|\\.|\\:|\\;|\\||\\||\\ ", "_");
+        // replace all illegal characters with '_'
+        // Characters considered illegal:
+        // \ | # [ ] ( ) { } % + ? ~ / & . : ; ,
+        name = name.replaceAll("\\\\|\\#|\\[|\\]|\\(|\\)|\\{|\\}|\\%|\\+|"
+                + "\\?|\\~|/|\\&|\\.|\\:|\\;|\\||\\||\\ ", "_");
 
-		// ensure uniqueness
-		String chosen = name;
-		int i = 0;
+        // ensure uniqueness
+        String chosen = name;
+        int i = 0;
 
-		if (m_dialog.getModule() != null) { // can only check for inputs if the dialog was created
-			while (m_dialog.getModule().getInfo().getInput(chosen) != null) {
-				chosen = name + i;
-				i++;
-			}
-		}
-		return chosen;
-	}
+        if (m_dialog.getModule() != null) { // can only check for inputs if the
+                                            // dialog was created
+            while (m_dialog.getModule().getInfo().getInput(chosen) != null) {
+                chosen = name + i;
+                i++;
+            }
+        }
+        return chosen;
+    }
 
-	@Override
-	public void mousePressed(final MouseEvent e) {
-		// unsused
-	}
+    @Override
+    public void mousePressed(final MouseEvent e) {
+        // unsused
+    }
 
-	@Override
-	public void mouseReleased(final MouseEvent e) {
-		// unsused
-	}
+    @Override
+    public void mouseReleased(final MouseEvent e) {
+        // unsused
+    }
 
-	@Override
-	public void mouseEntered(final MouseEvent e) {
-		// unsused
-	}
+    @Override
+    public void mouseEntered(final MouseEvent e) {
+        // unsused
+    }
 
-	@Override
-	public void mouseExited(final MouseEvent e) {
-		// unsused
-	}
+    @Override
+    public void mouseExited(final MouseEvent e) {
+        // unsused
+    }
 
 }

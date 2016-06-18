@@ -23,89 +23,89 @@ import org.scijava.script.ScriptLanguage;
  */
 public class CompileHelper {
 
-	private File m_tempDir;
-	private String m_script;
+    private File m_tempDir;
+    private String m_script;
 
-	private Context m_context;
-	private Writer m_errorWriter;
-	private Writer m_outputWriter;
+    private Context m_context;
+    private Writer m_errorWriter;
+    private Writer m_outputWriter;
 
-	/**
-	 * Constructor
-	 *
-	 * @param context
-	 * @param outputWriter
-	 * @throws IOException
-	 */
-	public CompileHelper(Context context, Writer errorWriter,
-			Writer outputWriter) throws IOException {
+    /**
+     * Constructor
+     *
+     * @param context
+     * @param outputWriter
+     * @throws IOException
+     */
+    public CompileHelper(Context context, Writer errorWriter,
+            Writer outputWriter) throws IOException {
 
-		m_errorWriter = errorWriter;
-		m_outputWriter = outputWriter;
-		m_tempDir = FileUtil.createTempDir("ScriptingNode");
+        m_errorWriter = errorWriter;
+        m_outputWriter = outputWriter;
+        m_tempDir = FileUtil.createTempDir("ScriptingNode");
 
-		m_context = context;
-	}
+        m_context = context;
+    }
 
-	/*
-	 * Write script code from the current settings to a file in the temp
-	 * directory.
-	 */
-	private void writeScriptToFile(final ScriptLanguage lang) {
-		try (Writer w = new FileWriter(
-				new File(m_tempDir, "script." + lang.getExtensions().get(0)))) {
-			w.write(m_script);
-			w.close();
-		} catch (IOException exc) {
-			exc.printStackTrace();
-		}
-	}
+    /*
+     * Write script code from the current settings to a file in the temp
+     * directory.
+     */
+    private void writeScriptToFile(final ScriptLanguage lang) {
+        try (Writer w = new FileWriter(
+                new File(m_tempDir, "script." + lang.getExtensions().get(0)))) {
+            w.write(m_script);
+            w.close();
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
+    }
 
-	/**
-	 * Compile the script from settings with the given language Note that
-	 * compilation may be done lazily.
-	 *
-	 * @param language
-	 *            for compiling the script
-	 * @return The resulting scriptInfo.
-	 * @throws ScriptException
-	 */
-	public CompileProductHelper compile(final String script,
-			final ScriptLanguage language) throws ScriptException {
-		setScript(script, language);
+    /**
+     * Compile the script from settings with the given language Note that
+     * compilation may be done lazily.
+     *
+     * @param language
+     *            for compiling the script
+     * @return The resulting scriptInfo.
+     * @throws ScriptException
+     */
+    public CompileProductHelper compile(final String script,
+            final ScriptLanguage language) throws ScriptException {
+        setScript(script, language);
 
-		if (language instanceof JavaScriptLanguage) {
-			JavaEngine scriptEngine = (JavaEngine) language.getScriptEngine();
-			scriptEngine.getContext().setErrorWriter(m_errorWriter);
-			scriptEngine.getContext().setWriter(m_outputWriter);
-			@SuppressWarnings("unchecked")
-			Class<? extends Command> commandClass = (Class<? extends Command>) scriptEngine
-					.compile(new StringReader(m_script));
-			if (commandClass == null) {
-				throw new ScriptException("");
-			}
-			return new CommandCompileProductHelper(
-					new CommandInfo(commandClass), m_context);
-		}
+        if (language instanceof JavaScriptLanguage) {
+            JavaEngine scriptEngine = (JavaEngine) language.getScriptEngine();
+            scriptEngine.getContext().setErrorWriter(m_errorWriter);
+            scriptEngine.getContext().setWriter(m_outputWriter);
+            @SuppressWarnings("unchecked")
+            Class<? extends Command> commandClass = (Class<? extends Command>) scriptEngine
+                    .compile(new StringReader(m_script));
+            if (commandClass == null) {
+                throw new ScriptException("");
+            }
+            return new CommandCompileProductHelper(
+                    new CommandInfo(commandClass), m_context);
+        }
 
-		// create script module for execution
-		final File scriptFile = new File(m_tempDir,
-				"script." + language.getExtensions().get(0));
+        // create script module for execution
+        final File scriptFile = new File(m_tempDir,
+                "script." + language.getExtensions().get(0));
 
-		final ScriptInfo info = new ScriptInfo(m_context,
-				scriptFile.getAbsolutePath(), new StringReader(m_script));
-		return new ScriptCompileProductHelper(info, m_context);
-	}
+        final ScriptInfo info = new ScriptInfo(m_context,
+                scriptFile.getAbsolutePath(), new StringReader(m_script));
+        return new ScriptCompileProductHelper(info, m_context);
+    }
 
-	/**
-	 * Set the script to compile.
-	 *
-	 * @param script
-	 * @param language
-	 */
-	protected void setScript(final String script,
-			final ScriptLanguage language) {
-		m_script = script;
-		writeScriptToFile(language);
-	}
+    /**
+     * Set the script to compile.
+     *
+     * @param script
+     * @param language
+     */
+    protected void setScript(final String script,
+            final ScriptLanguage language) {
+        m_script = script;
+        writeScriptToFile(language);
+    }
 }

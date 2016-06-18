@@ -14,54 +14,54 @@ import org.scijava.script.ScriptModule;
 
 public class ScriptCompileProductHelper implements CompileProductHelper {
 
-	private final ScriptInfo m_info;
-	private Iterable<ModuleItem<?>> m_inputs = null;
-	private Context m_context;
+    private final ScriptInfo m_info;
+    private Iterable<ModuleItem<?>> m_inputs = null;
+    private Context m_context;
 
-	public ScriptCompileProductHelper(final ScriptInfo info, Context context) {
-		m_info = info;
-		m_context = context;
-	}
+    public ScriptCompileProductHelper(final ScriptInfo info, Context context) {
+        m_info = info;
+        m_context = context;
+    }
 
-	@Override
-	public Iterable<ModuleItem<?>> inputs() {
-		if (m_inputs == null) {
-			// ScriptInfo inputs are reparsed every time. Cache for more
-			// efficiency.
-			m_inputs = m_info.inputs();
-		}
+    @Override
+    public Iterable<ModuleItem<?>> inputs() {
+        if (m_inputs == null) {
+            // ScriptInfo inputs are reparsed every time. Cache for more
+            // efficiency.
+            m_inputs = m_info.inputs();
+        }
 
-		return m_inputs;
-	}
+        return m_inputs;
+    }
 
-	@Override
-	public ModuleInfo getModuleInfo() {
-		return m_info;
-	}
+    @Override
+    public ModuleInfo getModuleInfo() {
+        return m_info;
+    }
 
-	@Override
-	public Module createModule(final ScriptLanguage language)
-			throws ModuleException {
-		final ScriptModule module = m_info.createModule();
+    @Override
+    public Module createModule(final ScriptLanguage language)
+            throws ModuleException {
+        final ScriptModule module = m_info.createModule();
 
-		// use the currently selected language to execute the script
-		module.setLanguage(language);
-		m_context.inject(module);
+        // use the currently selected language to execute the script
+        module.setLanguage(language);
+        m_context.inject(module);
 
-		return module;
-	}
+        return module;
+    }
 
-	@Override
-	public void resetModule(Module m) {
-		final ScriptEngine scriptEngine = ((ScriptModule) m).getEngine();
+    @Override
+    public void resetModule(Module m) {
+        final ScriptEngine scriptEngine = ((ScriptModule) m).getEngine();
 
-		for (final String input : m.getInputs().keySet()) {
-			m.setResolved(input, false);
-		}
-		for (final String output : m.getOutputs().keySet()) {
-			m.setResolved(output, false);
-			scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).remove(output);
-		}
-	}
+        for (final String input : m.getInputs().keySet()) {
+            m.setResolved(input, false);
+        }
+        for (final String output : m.getOutputs().keySet()) {
+            m.setResolved(output, false);
+            scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).remove(output);
+        }
+    }
 
 }

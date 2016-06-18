@@ -32,91 +32,91 @@ import org.scijava.widget.WidgetService;
  */
 public class KNIMESciJavaGateway {
 
-	/** singleton instance */
-	protected static KNIMESciJavaGateway m_instance = null;
+    /** singleton instance */
+    protected static KNIMESciJavaGateway m_instance = null;
 
-	/** the gateways class loader */
-	protected ResourceAwareClassLoader m_classLoader = null;
+    /** the gateways class loader */
+    protected ResourceAwareClassLoader m_classLoader = null;
 
-	/**
-	 * the cached plugin index. Building the plugin index only needs to be done
-	 * once.
-	 */
-	protected PluginIndex m_pluginIndex = null;
+    /**
+     * the cached plugin index. Building the plugin index only needs to be done
+     * once.
+     */
+    protected PluginIndex m_pluginIndex = null;
 
-	/**
-	 * The global context for all KNIP-2.0 Nodes.
-	 */
-	private Context m_globalContext;
+    /**
+     * The global context for all KNIP-2.0 Nodes.
+     */
+    private Context m_globalContext;
 
-	/** a list of services which need to be present in newly created contexts */
-	protected static List<Class<? extends Service>> requiredServices = Arrays
-			.<Class<? extends Service>> asList(InputDataRowService.class,
-					OutputDataRowService.class, PrefService.class,
-					KNIMEExecutionService.class, NodeSettingsService.class,
-					ObjectService.class, WidgetService.class,
-					KNIMEWidgetService.class, InputAdapterService.class,
-					UIService.class, OutputAdapterService.class,
-					CommandService.class, NodeModelSettingsService.class,
-					InputAdapterService.class, SettingsModelTypeService.class);
+    /** a list of services which need to be present in newly created contexts */
+    protected static List<Class<? extends Service>> requiredServices = Arrays
+            .<Class<? extends Service>> asList(InputDataRowService.class,
+                    OutputDataRowService.class, PrefService.class,
+                    KNIMEExecutionService.class, NodeSettingsService.class,
+                    ObjectService.class, WidgetService.class,
+                    KNIMEWidgetService.class, InputAdapterService.class,
+                    UIService.class, OutputAdapterService.class,
+                    CommandService.class, NodeModelSettingsService.class,
+                    InputAdapterService.class, SettingsModelTypeService.class);
 
-	/**
-	 * Constructor. Only to be called from {@link #get()}.
-	 */
-	protected KNIMESciJavaGateway() {
-		m_classLoader = new ResourceAwareClassLoader(
-				getClass().getClassLoader(), getClass());
+    /**
+     * Constructor. Only to be called from {@link #get()}.
+     */
+    protected KNIMESciJavaGateway() {
+        m_classLoader = new ResourceAwareClassLoader(
+                getClass().getClassLoader(), getClass());
 
-		m_pluginIndex = new ReusablePluginIndex(
-				new DefaultPluginFinder(m_classLoader));
-	}
+        m_pluginIndex = new ReusablePluginIndex(
+                new DefaultPluginFinder(m_classLoader));
+    }
 
-	/**
-	 * Get the Gateway instance.
-	 *
-	 * @return the singletons instance
-	 */
-	public static synchronized KNIMESciJavaGateway get() {
-		if (m_instance == null) {
-			m_instance = new KNIMESciJavaGateway();
-		}
+    /**
+     * Get the Gateway instance.
+     *
+     * @return the singletons instance
+     */
+    public static synchronized KNIMESciJavaGateway get() {
+        if (m_instance == null) {
+            m_instance = new KNIMESciJavaGateway();
+        }
 
-		return m_instance;
-	}
+        return m_instance;
+    }
 
-	/**
-	 * Create a new Scijava {@link Context} with Services required for the
-	 * ScriptingNode.
-	 *
-	 * @return the created context
-	 */
-	public Context createSubContext() {
-		final Context context = new SubContext(getGlobalContext(),
-				requiredServices,
-				new PluginIndex(new DefaultPluginFinder(m_classLoader)));
+    /**
+     * Create a new Scijava {@link Context} with Services required for the
+     * ScriptingNode.
+     *
+     * @return the created context
+     */
+    public Context createSubContext() {
+        final Context context = new SubContext(getGlobalContext(),
+                requiredServices,
+                new PluginIndex(new DefaultPluginFinder(m_classLoader)));
 
-		// cleanup unwanted services
-		final PluginService plugins = context.getService(PluginService.class);
-		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
+        // cleanup unwanted services
+        final PluginService plugins = context.getService(PluginService.class);
+        plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
 
-		return context;
-	}
+        return context;
+    }
 
-	private Context getGlobalContext() {
-		if (m_globalContext == null) {
-			m_globalContext = new Context(m_pluginIndex);
+    private Context getGlobalContext() {
+        if (m_globalContext == null) {
+            m_globalContext = new Context(m_pluginIndex);
 
-		}
-		return m_globalContext;
-	}
+        }
+        return m_globalContext;
+    }
 
-	/**
-	 * Get the {@link ResourceAwareClassLoader} used by this Gateways contexts.
-	 *
-	 * @return class loader for the contexts
-	 */
-	public ResourceAwareClassLoader getClassLoader() {
-		return m_classLoader;
-	}
+    /**
+     * Get the {@link ResourceAwareClassLoader} used by this Gateways contexts.
+     *
+     * @return class loader for the contexts
+     */
+    public ResourceAwareClassLoader getClassLoader() {
+        return m_classLoader;
+    }
 
 }

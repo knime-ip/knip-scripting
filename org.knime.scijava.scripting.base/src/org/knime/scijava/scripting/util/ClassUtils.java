@@ -10,44 +10,44 @@ import java.util.Set;
  */
 public class ClassUtils {
 
-	private static final Set<Class<?>> primitives = new HashSet<>();
-	private static final Set<Class<?>> wrappers = new HashSet<>();
-	private static final Set<Class<?>> services = new HashSet<>();
+    private static final Set<Class<?>> primitives = new HashSet<>();
+    private static final Set<Class<?>> wrappers = new HashSet<>();
+    private static final Set<Class<?>> services = new HashSet<>();
 
-	static {
-		primitives.add(boolean.class);
-		primitives.add(byte.class);
-		primitives.add(char.class);
-		primitives.add(short.class);
-		primitives.add(int.class);
-		primitives.add(long.class);
-		primitives.add(float.class);
-		primitives.add(double.class);
-		primitives.add(void.class);
+    static {
+        primitives.add(boolean.class);
+        primitives.add(byte.class);
+        primitives.add(char.class);
+        primitives.add(short.class);
+        primitives.add(int.class);
+        primitives.add(long.class);
+        primitives.add(float.class);
+        primitives.add(double.class);
+        primitives.add(void.class);
 
-		wrappers.add(Boolean.class);
-		wrappers.add(Byte.class);
-		wrappers.add(Character.class);
-		wrappers.add(Short.class);
-		wrappers.add(Integer.class);
-		wrappers.add(Long.class);
-		wrappers.add(Float.class);
-		wrappers.add(Double.class);
-		wrappers.add(Void.class);
-		
-	}
+        wrappers.add(Boolean.class);
+        wrappers.add(Byte.class);
+        wrappers.add(Character.class);
+        wrappers.add(Short.class);
+        wrappers.add(Integer.class);
+        wrappers.add(Long.class);
+        wrappers.add(Float.class);
+        wrappers.add(Double.class);
+        wrappers.add(Void.class);
 
-	public ClassUtils() {
-		// NB Utility Class
-	}
+    }
 
-	/**
-	 * @param c
-	 *            The class to check
-	 * @return <code>true</code> if the given class is either a primitve class
-	 *         or a primitive wrapper class.
-	 */
-	public static boolean isPrimitiveOrWrapper(final Class<?> c) {
-		return primitives.contains(c) || wrappers.contains(c);
-	}
+    public ClassUtils() {
+        // NB Utility Class
+    }
+
+    /**
+     * @param c
+     *            The class to check
+     * @return <code>true</code> if the given class is either a primitve class
+     *         or a primitive wrapper class.
+     */
+    public static boolean isPrimitiveOrWrapper(final Class<?> c) {
+        return primitives.contains(c) || wrappers.contains(c);
+    }
 }

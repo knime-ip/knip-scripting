@@ -63,56 +63,56 @@ import org.knime.core.node.config.ConfigRO;
  */
 public class SciJavaScriptingNodeSetFactory implements NodeSetFactory {
 
-	private final Map<String, String> m_nodeFactories = new HashMap<>();
+    private final Map<String, String> m_nodeFactories = new HashMap<>();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ConfigRO getAdditionalSettings(final String id) {
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ConfigRO getAdditionalSettings(final String id) {
+        return null;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String getAfterID(final String id) {
-		return "/";
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAfterID(final String id) {
+        return "/";
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String getCategoryPath(final String id) {
-		return m_nodeFactories.get(id);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCategoryPath(final String id) {
+        return m_nodeFactories.get(id);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public Class<? extends NodeFactory<? extends NodeModel>> getNodeFactory(
-			final String id) {
-		try {
-			return (Class<? extends NodeFactory<? extends NodeModel>>) Class
-					.forName(id);
-		} catch (final ClassNotFoundException e) {
-			return null;
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<? extends NodeFactory<? extends NodeModel>>
+            getNodeFactory(final String id) {
+        try {
+            return (Class<? extends NodeFactory<? extends NodeModel>>) Class
+                    .forName(id);
+        } catch (final ClassNotFoundException e) {
+            return null;
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Collection<String> getNodeFactoryIds() {
-		m_nodeFactories.put(
-				SciJavaScriptingNodeFactory.class.getCanonicalName(),
-				"/community/knip/");
-		return m_nodeFactories.keySet();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Collection<String> getNodeFactoryIds() {
+        m_nodeFactories.put(
+                SciJavaScriptingNodeFactory.class.getCanonicalName(),
+                "/community/knip/");
+        return m_nodeFactories.keySet();
+    }
 
 }

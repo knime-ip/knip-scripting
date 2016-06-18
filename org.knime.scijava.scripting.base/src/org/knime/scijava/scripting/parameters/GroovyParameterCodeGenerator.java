@@ -9,11 +9,11 @@ import org.scijava.plugin.Plugin;
  */
 @Plugin(type = ParameterCodeGenerator.class, name = "groovy")
 public class GroovyParameterCodeGenerator
-		extends CommentBasedParameterCodeGenerator {
+        extends CommentBasedParameterCodeGenerator {
 
-	@Override
-	protected String getCommentString() {
-		return "//";
-	}
+    @Override
+    protected String getCommentString() {
+        return "//";
+    }
 
 }

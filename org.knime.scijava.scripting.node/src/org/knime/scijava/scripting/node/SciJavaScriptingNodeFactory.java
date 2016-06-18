@@ -67,60 +67,60 @@ import org.scijava.Context;
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
 public class SciJavaScriptingNodeFactory
-		extends NodeFactory<SciJavaScriptingNodeModel> {
+        extends NodeFactory<SciJavaScriptingNodeModel> {
 
-	private final Context m_context;
+    private final Context m_context;
 
-	public SciJavaScriptingNodeFactory() {
-		super();
-		m_context = ScriptingGateway.get().createSubContext();
-	}
+    public SciJavaScriptingNodeFactory() {
+        super();
+        m_context = ScriptingGateway.get().createSubContext();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected int getNrNodeViews() {
-		return 0;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected int getNrNodeViews() {
+        return 0;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @return null (ScriptingNode does not have views.)
-	 */
-	@Override
-	public NodeView<SciJavaScriptingNodeModel> createNodeView(
-			final int viewIndex, final SciJavaScriptingNodeModel nodeModel) {
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @return null (ScriptingNode does not have views.)
+     */
+    @Override
+    public NodeView<SciJavaScriptingNodeModel> createNodeView(
+            final int viewIndex, final SciJavaScriptingNodeModel nodeModel) {
+        return null;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected boolean hasDialog() {
-		return true;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean hasDialog() {
+        return true;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected NodeDialogPane createNodeDialogPane() {
-		try {
-			return new SciJavaScriptingNodeDialog(m_context);
-		} catch (final NotConfigurableException e) {
-			return new ErrorDialogPane(e);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected NodeDialogPane createNodeDialogPane() {
+        try {
+            return new SciJavaScriptingNodeDialog(m_context);
+        } catch (final NotConfigurableException e) {
+            return new ErrorDialogPane(e);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public SciJavaScriptingNodeModel createNodeModel() {
-		return new SciJavaScriptingNodeModel(m_context);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SciJavaScriptingNodeModel createNodeModel() {
+        return new SciJavaScriptingNodeModel(m_context);
+    }
 
 }

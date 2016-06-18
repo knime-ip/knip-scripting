@@ -17,48 +17,48 @@ import org.scijava.service.Service;
  */
 @Plugin(type = Service.class)
 public class DefaultParameterCodeGeneratorService
-		extends AbstractSingletonService<ParameterCodeGenerator>
-		implements ParameterCodeGeneratorService {
+        extends AbstractSingletonService<ParameterCodeGenerator>
+        implements ParameterCodeGeneratorService {
 
-	private Map<String, ParameterCodeGenerator> m_generatorMap = null;
+    private Map<String, ParameterCodeGenerator> m_generatorMap = null;
 
-	@Override
-	public Class<ParameterCodeGenerator> getPluginType() {
-		return ParameterCodeGenerator.class;
-	}
+    @Override
+    public Class<ParameterCodeGenerator> getPluginType() {
+        return ParameterCodeGenerator.class;
+    }
 
-	@Override
-	public ParameterCodeGenerator getGeneratorForLanguage(
-			ScriptLanguage language) {
-		if (m_generatorMap == null) {
-			processInstances();
-		}
+    @Override
+    public ParameterCodeGenerator getGeneratorForLanguage(
+            ScriptLanguage language) {
+        if (m_generatorMap == null) {
+            processInstances();
+        }
 
-		for (String name : language.getNames()) {
-			ParameterCodeGenerator generator = m_generatorMap
-					.get(name.toLowerCase());
-			if (generator != null) {
-				return generator;
-			}
-		}
+        for (String name : language.getNames()) {
+            ParameterCodeGenerator generator = m_generatorMap
+                    .get(name.toLowerCase());
+            if (generator != null) {
+                return generator;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	/*
-	 * Sort the plugins into a hashmap of ScriptingLanguage name to plugin
-	 * instance.
-	 */
-	private void processInstances() {
-		try {
-			m_generatorMap = new HashMap<>();
-			for (PluginInfo<ParameterCodeGenerator> pluginInfo : getPlugins()) {
-				m_generatorMap.put(pluginInfo.getName().toLowerCase(),
-						getInstance(pluginInfo.loadClass()));
-			}
-		} catch (InstantiableException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    /*
+     * Sort the plugins into a hashmap of ScriptingLanguage name to plugin
+     * instance.
+     */
+    private void processInstances() {
+        try {
+            m_generatorMap = new HashMap<>();
+            for (PluginInfo<ParameterCodeGenerator> pluginInfo : getPlugins()) {
+                m_generatorMap.put(pluginInfo.getName().toLowerCase(),
+                        getInstance(pluginInfo.loadClass()));
+            }
+        } catch (InstantiableException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

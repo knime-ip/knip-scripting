@@ -42,122 +42,122 @@ import org.scijava.ui.UIService;
  */
 public class ScriptingGateway {
 
-	/** singleton instance */
-	protected static ScriptingGateway m_instance = null;
+    /** singleton instance */
+    protected static ScriptingGateway m_instance = null;
 
-	/** the gateways class loader */
-	protected ResourceAwareClassLoader m_classLoader = null;
+    /** the gateways class loader */
+    protected ResourceAwareClassLoader m_classLoader = null;
 
-	/**
-	 * the cached plugin index. Building the plugin index only needs to be done
-	 * once.
-	 */
-	protected PluginIndex m_pluginIndex = null;
+    /**
+     * the cached plugin index. Building the plugin index only needs to be done
+     * once.
+     */
+    protected PluginIndex m_pluginIndex = null;
 
-	/**
-	 * The global context for all KNIP-2.0 Nodes.
-	 */
-	private Context m_globalContext;
+    /**
+     * The global context for all KNIP-2.0 Nodes.
+     */
+    private Context m_globalContext;
 
-	/** the services which must be local to the node. */
-	protected static List<Class<? extends Service>> localServices = Arrays
-			.asList(InputDataRowService.class, OutputDataRowService.class,
-					KNIMEExecutionService.class,
-					NodeDialogSettingsService.class,
-					NodeModelSettingsService.class, ObjectService.class,
-					KNIMEWidgetService.class, UIService.class,
-					OutputAdapterService.class, CommandService.class,
-					ParameterCodeGeneratorService.class,
-					SimpleColumnMappingService.class);
-	// former services (for reference TODO: remove))
-	// ScriptService.class,
-	// PrefService.class,
-	// SettingsModelTypeService.class,
-	// LanguageSupportService.class,
-	// ScriptHeaderService.class,
-	// InputAdapterService.class,
-	// WidgetService.class,
+    /** the services which must be local to the node. */
+    protected static List<Class<? extends Service>> localServices = Arrays
+            .asList(InputDataRowService.class, OutputDataRowService.class,
+                    KNIMEExecutionService.class,
+                    NodeDialogSettingsService.class,
+                    NodeModelSettingsService.class, ObjectService.class,
+                    KNIMEWidgetService.class, UIService.class,
+                    OutputAdapterService.class, CommandService.class,
+                    ParameterCodeGeneratorService.class,
+                    SimpleColumnMappingService.class);
+    // former services (for reference TODO: remove))
+    // ScriptService.class,
+    // PrefService.class,
+    // SettingsModelTypeService.class,
+    // LanguageSupportService.class,
+    // ScriptHeaderService.class,
+    // InputAdapterService.class,
+    // WidgetService.class,
 
-	/**
-	 * Constructor. Only to be called from {@link #get()}.
-	 */
-	protected ScriptingGateway() {
-		m_classLoader = new ResourceAwareClassLoader(
-				getClass().getClassLoader(), getClass());
+    /**
+     * Constructor. Only to be called from {@link #get()}.
+     */
+    protected ScriptingGateway() {
+        m_classLoader = new ResourceAwareClassLoader(
+                getClass().getClassLoader(), getClass());
 
-		m_pluginIndex = new ReusablePluginIndex(
-				new DefaultPluginFinder(m_classLoader));
-	}
+        m_pluginIndex = new ReusablePluginIndex(
+                new DefaultPluginFinder(m_classLoader));
+    }
 
-	/**
-	 * Get the Gateway instance.
-	 *
-	 * @return the singletons instance
-	 */
-	public static synchronized ScriptingGateway get() {
-		if (m_instance == null) {
-			m_instance = new ScriptingGateway();
-		}
+    /**
+     * Get the Gateway instance.
+     *
+     * @return the singletons instance
+     */
+    public static synchronized ScriptingGateway get() {
+        if (m_instance == null) {
+            m_instance = new ScriptingGateway();
+        }
 
-		return m_instance;
-	}
+        return m_instance;
+    }
 
-	/**
-	 * Create a new Scijava {@link Context} with Services required for the
-	 * ScriptingNode.
-	 *
-	 * @return the created context
-	 */
-	public Context createSubContext() {
-		final Context context = new SubContext(getGlobalContext(),
-				localServices, m_pluginIndex);
+    /**
+     * Create a new Scijava {@link Context} with Services required for the
+     * ScriptingNode.
+     *
+     * @return the created context
+     */
+    public Context createSubContext() {
+        final Context context = new SubContext(getGlobalContext(),
+                localServices, m_pluginIndex);
 
-		// cleanup unwanted services
-		final PluginService plugins = context.getService(PluginService.class);
-		plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
+        // cleanup unwanted services
+        final PluginService plugins = context.getService(PluginService.class);
+        plugins.removePlugin(plugins.getPlugin(DisplayPostprocessor.class));
 
-		return context;
-	}
+        return context;
+    }
 
-	private Context getGlobalContext() {
-		if (m_globalContext == null) {
-			m_globalContext = new Context(m_pluginIndex);
+    private Context getGlobalContext() {
+        if (m_globalContext == null) {
+            m_globalContext = new Context(m_pluginIndex);
 
-			// NB: required services are local for the subcontext.
-			// FIXME: make the required services list as small as possible, then
-			// remove.
-			// m_globalContext.getServiceIndex().removeAll(requiredServices);
-			// m_globalContext.getPluginIndex().removeAll(requiredServices);
-		}
-		return m_globalContext;
-	}
+            // NB: required services are local for the subcontext.
+            // FIXME: make the required services list as small as possible, then
+            // remove.
+            // m_globalContext.getServiceIndex().removeAll(requiredServices);
+            // m_globalContext.getPluginIndex().removeAll(requiredServices);
+        }
+        return m_globalContext;
+    }
 
-	/**
-	 * Get the {@link ResourceAwareClassLoader} used by this Gateways contexts.
-	 *
-	 * @return class loader for the contexts
-	 */
-	public ResourceAwareClassLoader getClassLoader() {
-		return m_classLoader;
-	}
+    /**
+     * Get the {@link ResourceAwareClassLoader} used by this Gateways contexts.
+     *
+     * @return class loader for the contexts
+     */
+    public ResourceAwareClassLoader getClassLoader() {
+        return m_classLoader;
+    }
 
-	private ClassLoader m_urlClassLoader = null;
+    private ClassLoader m_urlClassLoader = null;
 
-	/**
-	 * Create a {@link URLClassLoader} which contains scijava plugins and
-	 * services.
-	 *
-	 * @return the class laoder
-	 */
-	public ClassLoader createUrlClassLoader() {
+    /**
+     * Create a {@link URLClassLoader} which contains scijava plugins and
+     * services.
+     *
+     * @return the class laoder
+     */
+    public ClassLoader createUrlClassLoader() {
 
-		if (m_urlClassLoader == null) {
-			m_urlClassLoader = new URLClassLoader(
-					m_classLoader.getBundleUrls().toArray(new URL[] {}),
-					new JoinClassLoader(getClassLoader(),
-							Thread.currentThread().getContextClassLoader()));
-		}
-		return m_urlClassLoader;
-	}
+        if (m_urlClassLoader == null) {
+            m_urlClassLoader = new URLClassLoader(
+                    m_classLoader.getBundleUrls().toArray(new URL[] {}),
+                    new JoinClassLoader(getClassLoader(),
+                            Thread.currentThread().getContextClassLoader()));
+        }
+        return m_urlClassLoader;
+    }
 
 }

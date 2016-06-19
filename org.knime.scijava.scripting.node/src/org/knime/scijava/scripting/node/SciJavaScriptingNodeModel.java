@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import javax.script.ScriptException;
@@ -37,8 +38,7 @@ import org.knime.core.node.streamable.StreamableOperator;
 import org.knime.core.node.streamable.StreamableOperatorInternals;
 import org.knime.core.util.UniqueNameGenerator;
 import org.knime.scijava.commands.KNIMEExecutionService;
-import org.knime.scijava.commands.adapter.OutputAdapter;
-import org.knime.scijava.commands.adapter.OutputAdapterService;
+import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
 import org.knime.scijava.commands.settings.NodeModelSettingsService;
@@ -352,10 +352,9 @@ public class SciJavaScriptingNodeModel extends NodeModel {
         private final DataColumnSpec[] m_spec;
 
         @Parameter
-        private OutputAdapterService m_outAdapters;
-
-        @Parameter
         private ModuleService m_moduleService;
+        @Parameter
+        private ConverterCacheService m_converterCache;
 
         public ScriptingCellFactory(final Context context, DataTableSpec inSpec,
                 final Module module) {
@@ -380,21 +379,14 @@ public class SciJavaScriptingNodeModel extends NodeModel {
                     continue;
                 }
 
-                final OutputAdapter<?, DataCell> outputAdapter = m_outAdapters
-                        .getMatchingOutputAdapter(output.getType());
                 final DataType type;
-
-                if (outputAdapter != null) {
-                    type = DataType.getType(outputAdapter.getOutputType());
+                Optional<DataType> convertedType =
+                        m_converterCache.getConvertedType(output.getType());
+                if (convertedType.isPresent()) {
+                    type = convertedType.get();
                 } else {
-                    // print warning if output is not the special scijava script
-                    // module return value.
-                    if (output.getName() != "result"
-                            && output.getType() != Object.class) {
-                        getLogger()
-                                .warn("Could not find an OutputAdapter for \""
-                                        + output.getName() + "\", skipping.");
-                    }
+                    getLogger().warn("Could not find an OutputAdapter for \""
+                            + output.getName() + "\", skipping.");
                     continue;
                 }
 
@@ -490,10 +482,10 @@ public class SciJavaScriptingNodeModel extends NodeModel {
     protected class RearrangingScriptingStreamableFunction
             extends StreamableFunction {
 
-        final StreamableFunction m_colRearrangerFunction;
+        private final StreamableFunction m_colRearrangerFunction;
 
         /**
-         * Constructor
+         * Constructor.
          *
          * @param streamableFunction
          *            Function of the column rearranger

@@ -4,8 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.knime.scijava.commands.KNIMEExecutionService;
-import org.knime.scijava.commands.adapter.InputAdapterService;
-import org.knime.scijava.commands.adapter.OutputAdapterService;
+import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
 import org.knime.scijava.commands.settings.NodeModelSettingsService;
@@ -55,10 +54,10 @@ public class KNIMESciJavaGateway {
                     OutputDataRowService.class, PrefService.class,
                     KNIMEExecutionService.class, NodeSettingsService.class,
                     ObjectService.class, WidgetService.class,
-                    KNIMEWidgetService.class, InputAdapterService.class,
-                    UIService.class, OutputAdapterService.class,
-                    CommandService.class, NodeModelSettingsService.class,
-                    InputAdapterService.class, SettingsModelTypeService.class);
+                    KNIMEWidgetService.class, ConverterCacheService.class,
+                    UIService.class, CommandService.class,
+                    NodeModelSettingsService.class,
+                    SettingsModelTypeService.class);
 
     /**
      * Constructor. Only to be called from {@link #get()}.

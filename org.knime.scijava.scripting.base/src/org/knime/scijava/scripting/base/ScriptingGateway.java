@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.knime.scijava.commands.KNIMEExecutionService;
-import org.knime.scijava.commands.adapter.OutputAdapterService;
+import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
 import org.knime.scijava.commands.settings.NodeDialogSettingsService;
@@ -64,19 +64,9 @@ public class ScriptingGateway {
             .asList(InputDataRowService.class, OutputDataRowService.class,
                     KNIMEExecutionService.class,
                     NodeDialogSettingsService.class,
-                    NodeModelSettingsService.class, ObjectService.class,
-                    KNIMEWidgetService.class, UIService.class,
-                    OutputAdapterService.class, CommandService.class,
-                    ParameterCodeGeneratorService.class,
+                    NodeModelSettingsService.class, KNIMEWidgetService.class,
+                    CommandService.class, ConverterCacheService.class,
                     SimpleColumnMappingService.class);
-    // former services (for reference TODO: remove))
-    // ScriptService.class,
-    // PrefService.class,
-    // SettingsModelTypeService.class,
-    // LanguageSupportService.class,
-    // ScriptHeaderService.class,
-    // InputAdapterService.class,
-    // WidgetService.class,
 
     /**
      * Constructor. Only to be called from {@link #get()}.

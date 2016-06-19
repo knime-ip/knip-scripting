@@ -2,16 +2,13 @@ package org.knime.scijava.scripting.node.ui;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Optional;
 
 import javax.swing.JOptionPane;
 
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.node.NodeLogger;
-import org.knime.scijava.commands.adapter.InputAdapter;
-import org.knime.scijava.commands.adapter.InputAdapterService;
+import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.parameters.ParameterCodeGenerator;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
@@ -36,9 +33,9 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
     private final SciJavaScriptingNodeSettings m_settings;
 
     @Parameter
-    private Context context;
+    private Context m_context;
     @Parameter
-    private InputAdapterService m_inputAdapters;
+    private ConverterCacheService m_converterCache;
     @Parameter
     private ScriptService m_scriptService;
     @Parameter
@@ -49,10 +46,16 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
     private final SciJavaScriptingNodeDialog m_dialog;
 
     /**
-     * Constructor
+     * Instantiates a new sci java scripting node dialog listener.
      *
+     * @param editor
+     *            the editor
      * @param logger
      *            NodeLogger to output messages to
+     * @param dialog
+     *            the dialog
+     * @param settings
+     *            the settings
      */
     public SciJavaScriptingNodeDialogListener(
             final SciJavaScriptingCodeEditor editor, final NodeLogger logger,
@@ -94,14 +97,12 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
             final String columnName = cspec.getName();
             final String memberName = cleanupMemberName(columnName);
 
-            // get the Name of the first createable type
+            // get the Name of the first type we can create
 
-            Optional<InputAdapter> adapter = m_inputAdapters
-                    .getMatchingInputAdapters(
-                            cspec.getType().getPreferredValueClass())
-                    .stream().findFirst();
+            final Optional<Class<?>> type =
+                    m_converterCache.getMatchingJavaType(cspec.getType());
 
-            if (!adapter.isPresent()) {
+            if (!type.isPresent()) {
                 // no adapter found, error out
                 JOptionPane.showMessageDialog(null,
                         "The column you selected has a datatype which\n"
@@ -109,8 +110,6 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
                         "No matching adapter", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            final Class<?> type = adapter.get().getOutputType();
 
             final ParameterCodeGenerator generator = m_parameterGenerators
                     .getGeneratorForLanguage(m_dialog.getCurrentLanguage());
@@ -127,7 +126,7 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
             final int pos = generator.getPosition(code);
 
             final String parameterCode = generator.generateInputParameter(code,
-                    memberName, type, columnName);
+                    memberName, type.get(), columnName);
 
             m_editor.getCodeEditor().getEditorPane().insert(parameterCode, pos);
             m_editor.getCodeEditor().updateModel();

@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node.ui;
+package org.knime.scijava.scripting.nodes.interactive.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

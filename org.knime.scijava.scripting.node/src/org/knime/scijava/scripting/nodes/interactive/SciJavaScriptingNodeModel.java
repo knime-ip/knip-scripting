@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node;
+package org.knime.scijava.scripting.nodes.interactive;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,9 +47,9 @@ import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.CompileHelper;
 import org.knime.scijava.scripting.base.CompileProductHelper;
 import org.knime.scijava.scripting.base.ScriptingGateway;
-import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
-import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
-import org.knime.scijava.scripting.node.settings.ScriptDialogMode;
+import org.knime.scijava.scripting.nodes.interactive.settings.ColumnCreationMode;
+import org.knime.scijava.scripting.nodes.interactive.settings.SciJavaScriptingNodeSettings;
+import org.knime.scijava.scripting.nodes.interactive.settings.ScriptDialogMode;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
 import org.scijava.module.Module;

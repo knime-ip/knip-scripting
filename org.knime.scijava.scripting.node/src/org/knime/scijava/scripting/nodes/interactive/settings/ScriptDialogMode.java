@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node.settings;
+package org.knime.scijava.scripting.nodes.interactive.settings;
 
 /**
  * @author gabriel

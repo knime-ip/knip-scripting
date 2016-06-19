@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node.ui;
+package org.knime.scijava.scripting.nodes.interactive.ui;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -9,7 +9,7 @@ import javax.swing.JOptionPane;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.node.NodeLogger;
 import org.knime.scijava.commands.converter.ConverterCacheService;
-import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
+import org.knime.scijava.scripting.nodes.interactive.settings.SciJavaScriptingNodeSettings;
 import org.knime.scijava.scripting.parameters.ParameterCodeGenerator;
 import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.AbstractContextual;

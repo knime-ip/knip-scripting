@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node.settings;
+package org.knime.scijava.scripting.nodes.interactive.settings;
 
 /**
  * Enum for column creation mode settings values.

@@ -46,52 +46,32 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.scijava.scripting.node;
+package org.knime.scijava.scripting.nodes;
 
-import org.knime.core.node.NodeDialogPane;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
-import org.knime.core.node.NotConfigurableException;
-import org.knime.scijava.scripting.base.ScriptingGateway;
-import org.knime.scijava.scripting.node.ui.ErrorDialogPane;
-import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
-import org.scijava.Context;
+import org.knime.core.node.NodeModel;
+import org.knime.core.node.NodeSetFactory;
+import org.knime.core.node.config.ConfigRO;
+import org.knime.scijava.scripting.nodes.interactive.SciJavaScriptingNodeFactory;
+import org.knime.scijava.scripting.nodes.scriptrunner.SciJavaScriptRunnerNodeFactory;;
 
 /**
- * NodeFactory for {@link SciJavaScriptingNodeModel}.
- *
- * Creates {@link SciJavaScriptingNodeModel}s and
- * {@link SciJavaScriptingNodeDialog}s.
- *
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  */
-public class SciJavaScriptingNodeFactory
-        extends NodeFactory<SciJavaScriptingNodeModel> {
+public class SciJavaScriptingNodeSetFactory implements NodeSetFactory {
 
-    private final Context m_context;
-
-    public SciJavaScriptingNodeFactory() {
-        super();
-        m_context = ScriptingGateway.get().createSubContext();
-    }
+    private final Map<String, String> m_nodeFactories = new HashMap<>();
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected int getNrNodeViews() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return null (ScriptingNode does not have views.)
-     */
-    @Override
-    public NodeView<SciJavaScriptingNodeModel> createNodeView(
-            final int viewIndex, final SciJavaScriptingNodeModel nodeModel) {
+    public ConfigRO getAdditionalSettings(final String id) {
         return null;
     }
 
@@ -99,19 +79,30 @@ public class SciJavaScriptingNodeFactory
      * {@inheritDoc}
      */
     @Override
-    protected boolean hasDialog() {
-        return true;
+    public String getAfterID(final String id) {
+        return "/";
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected NodeDialogPane createNodeDialogPane() {
+    public String getCategoryPath(final String id) {
+        return m_nodeFactories.get(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<? extends NodeFactory<? extends NodeModel>>
+            getNodeFactory(final String id) {
         try {
-            return new SciJavaScriptingNodeDialog(m_context);
-        } catch (final NotConfigurableException e) {
-            return new ErrorDialogPane(e);
+            return (Class<? extends NodeFactory<? extends NodeModel>>) Class
+                    .forName(id);
+        } catch (final ClassNotFoundException e) {
+            return null;
         }
     }
 
@@ -119,8 +110,14 @@ public class SciJavaScriptingNodeFactory
      * {@inheritDoc}
      */
     @Override
-    public SciJavaScriptingNodeModel createNodeModel() {
-        return new SciJavaScriptingNodeModel(m_context);
+    public Collection<String> getNodeFactoryIds() {
+        m_nodeFactories.put(
+                SciJavaScriptingNodeFactory.class.getCanonicalName(),
+                "/community/knip/");
+        // m_nodeFactories.put(
+        // SciJavaScriptRunnerNodeFactory.class.getCanonicalName(),
+        // "/community/knip/");
+        return m_nodeFactories.keySet();
     }
 
 }

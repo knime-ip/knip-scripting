@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node.ui;
+package org.knime.scijava.scripting.nodes.interactive.ui;
 
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentLabel;

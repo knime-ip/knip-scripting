@@ -1,4 +1,4 @@
-package org.knime.scijava.scripting.node.settings;
+package org.knime.scijava.scripting.nodes.interactive.settings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.knime.core.node.defaultnodesettings.SettingsModel;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.defaultnodesettings.SettingsModelStringArray;
 import org.knime.scijava.commands.settings.NodeSettingsService;
-import org.knime.scijava.scripting.node.SciJavaScriptingNodeModel;
-import org.knime.scijava.scripting.node.ui.SciJavaScriptingNodeDialog;
+import org.knime.scijava.scripting.nodes.interactive.SciJavaScriptingNodeModel;
+import org.knime.scijava.scripting.nodes.interactive.ui.SciJavaScriptingNodeDialog;
 import org.knime.scijava.scripting.util.ScriptUtils;
 
 /**

@@ -46,7 +46,7 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.scijava.scripting.node.ui;
+package org.knime.scijava.scripting.nodes.interactive.ui;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
@@ -88,11 +88,11 @@ import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.CompileHelper;
 import org.knime.scijava.scripting.base.CompileProductHelper;
 import org.knime.scijava.scripting.base.ScriptingGateway;
-import org.knime.scijava.scripting.node.SciJavaScriptingNodeFactory;
-import org.knime.scijava.scripting.node.SciJavaScriptingNodeModel;
-import org.knime.scijava.scripting.node.settings.ColumnCreationMode;
-import org.knime.scijava.scripting.node.settings.SciJavaScriptingNodeSettings;
-import org.knime.scijava.scripting.node.settings.ScriptDialogMode;
+import org.knime.scijava.scripting.nodes.interactive.SciJavaScriptingNodeFactory;
+import org.knime.scijava.scripting.nodes.interactive.SciJavaScriptingNodeModel;
+import org.knime.scijava.scripting.nodes.interactive.settings.ColumnCreationMode;
+import org.knime.scijava.scripting.nodes.interactive.settings.SciJavaScriptingNodeSettings;
+import org.knime.scijava.scripting.nodes.interactive.settings.ScriptDialogMode;
 import org.scijava.Context;
 import org.scijava.InstantiableException;
 import org.scijava.command.CommandService;

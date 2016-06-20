@@ -282,8 +282,6 @@ public class SciJavaScriptingNodeModel extends NodeModel {
     protected void validateSettings(final NodeSettingsRO settings)
             throws InvalidSettingsException {
         m_settings.validateSettings(settings, m_nodeModelSettingsService);
-        m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
-                getCurrentLanguage(), m_errorWriter);
     }
 
     @Override

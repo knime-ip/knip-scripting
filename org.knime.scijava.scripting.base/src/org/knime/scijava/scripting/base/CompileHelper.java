@@ -82,18 +82,11 @@ public class CompileHelper {
             scriptEngine.getContext().setWriter(m_outputWriter);
 
             Class<? extends Command> commandClass = null;
-            try {
-                commandClass = (Class<? extends Command>) scriptEngine
-                        .compile(new StringReader(m_script));
-                // If the code does not follow basic java syntax (e.g. not
-                // contained in a class, etc. the scriptEngine throws a
-                // NullPointerException
-            } catch (NullPointerException e) {
+            commandClass = (Class<? extends Command>) scriptEngine
+                    .compile(new StringReader(m_script));
+            if (commandClass == null) {
                 throw new ScriptException("Code could not be parsed as Java,"
                         + " did you select the right language?");
-            }
-            if (commandClass == null) {
-                throw new ScriptException("Could not initialize Command!");
             }
             return new CommandCompileProductHelper(
                     new CommandInfo(commandClass), m_context);

@@ -62,9 +62,11 @@ public class CompileHelper {
     }
 
     /**
-     * Compile the script from settings with the given language Note that
-     * compilation may be done lazily.
-     *
+     * Compile the given script with the given language Note that compilation
+     * may be done lazily.
+     * 
+     * @param script
+     *            the script
      * @param language
      *            for compiling the script
      * @return The resulting scriptInfo.
@@ -78,11 +80,20 @@ public class CompileHelper {
             JavaEngine scriptEngine = (JavaEngine) language.getScriptEngine();
             scriptEngine.getContext().setErrorWriter(m_errorWriter);
             scriptEngine.getContext().setWriter(m_outputWriter);
-            @SuppressWarnings("unchecked")
-            Class<? extends Command> commandClass = (Class<? extends Command>) scriptEngine
-                    .compile(new StringReader(m_script));
+
+            Class<? extends Command> commandClass = null;
+            try {
+                commandClass = (Class<? extends Command>) scriptEngine
+                        .compile(new StringReader(m_script));
+                // If the code does not follow basic java syntax (e.g. not
+                // contained in a class, etc. the scriptEngine throws a
+                // NullPointerException
+            } catch (NullPointerException e) {
+                throw new ScriptException("Code could not be parsed as Java,"
+                        + " did you select the right language?");
+            }
             if (commandClass == null) {
-                throw new ScriptException("");
+                throw new ScriptException("Could not initialize Command!");
             }
             return new CommandCompileProductHelper(
                     new CommandInfo(commandClass), m_context);

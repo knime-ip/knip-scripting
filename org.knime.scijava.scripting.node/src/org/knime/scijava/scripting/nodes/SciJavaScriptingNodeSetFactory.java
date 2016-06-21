@@ -57,7 +57,6 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSetFactory;
 import org.knime.core.node.config.ConfigRO;
 import org.knime.scijava.scripting.nodes.interactive.SciJavaScriptingNodeFactory;
-import org.knime.scijava.scripting.nodes.scriptrunner.SciJavaScriptRunnerNodeFactory;;
 
 /**
  * @author <a href="mailto:jonathan.hale@uni-konstanz.de">Jonathan Hale</a>
@@ -114,9 +113,6 @@ public class SciJavaScriptingNodeSetFactory implements NodeSetFactory {
         m_nodeFactories.put(
                 SciJavaScriptingNodeFactory.class.getCanonicalName(),
                 "/community/knip/");
-        // m_nodeFactories.put(
-        // SciJavaScriptRunnerNodeFactory.class.getCanonicalName(),
-        // "/community/knip/");
         return m_nodeFactories.keySet();
     }
 

@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-Name: KNIME Scijava Scripting Nodes
-Bundle-SymbolicName: org.knime.scijava.scripting.node;singleton:=true
+Bundle-SymbolicName: org.knime.scijava.scripting.nodes;singleton:=true
 Bundle-ManifestVersion: 2
 Bundle-Version: 0.9.0.qualifier
 Bundle-Vendor: University of Konstanz
@@ -22,7 +22,7 @@ Require-Bundle: org.knime.workbench.repository;bundle-version="3.0.0",
  org.knime.scijava.commands;bundle-version="0.2.0",
  org.knime.scijava.scripting.base;bundle-version="0.9.0",
  imagej-ui-awt;bundle-version="0.3.0",
- imagej-ui-swing;bundle-version="0.18.0",
+ imagej-ui-swing;bundle-version="0.15.1",
  com.fifesoft.rsyntaxtextarea;bundle-version="2.5.8"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: scijava_scripting_node.jar

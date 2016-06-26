@@ -264,8 +264,10 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
      *            recompiled)
      */
     private JPanel createDialogPanel(final boolean clean) {
+
         if (m_errorPanel != null) {
             m_component.remove(m_errorPanel);
+            m_oldCode = ""; // ensure that we always recompile after an error
         }
 
         // only recompile if code changed or compileProduct null

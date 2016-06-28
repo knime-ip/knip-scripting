@@ -4,7 +4,7 @@ Bundle-SymbolicName: org.knime.scijava.scripting.nodes;singleton:=true
 Bundle-ManifestVersion: 2
 Bundle-Version: 0.9.0.qualifier
 Bundle-Vendor: University of Konstanz
-Eclipse-RegisterBuddy: org.knime.scijava.commands, org.knime.scijava.scripting.base
+Eclipse-RegisterBuddy: org.knime.scijava.scripting.base
 Require-Bundle: org.knime.base;bundle-version="3.0.0",
  scijava-common;bundle-version="2.47.0",
  scijava-ui-swing;bundle-version="0.7.0",
@@ -12,7 +12,9 @@ Require-Bundle: org.knime.base;bundle-version="3.0.0",
  org.knime.scijava.scripting.base;bundle-version="0.9.0",
  com.fifesoft.rsyntaxtextarea;bundle-version="2.5.8",
  imagej-ui-swing;bundle-version="0.15.1",
- org.knime.scijava.core;bundle-version="0.3.0"
+ org.knime.scijava.core;bundle-version="0.3.0",
+ imagej-common;bundle-version="0.21.0",
+ imagej-updater;bundle-version="0.8.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: scijava_scripting_node.jar
 Export-Package: org.knime.scijava.scripting.nodes.interactive.ui

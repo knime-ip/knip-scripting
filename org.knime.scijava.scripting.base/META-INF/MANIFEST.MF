@@ -16,7 +16,8 @@ Require-Bundle: org.knime.base;bundle-version="3.0.0",
  scripting-javascript;bundle-version="0.4.3",
  scripting-jruby;bundle-version="0.2.4",
  scripting-jython;bundle-version="0.3.0",
- jython-shaded;bundle-version="2.5.3"
+ jython-shaded;bundle-version="2.5.3",
+ imagej-ui-swing;bundle-version="0.20.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: lib/tools.jar,
  scijava_scripting_base.jar

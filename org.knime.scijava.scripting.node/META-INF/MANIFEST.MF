@@ -17,8 +17,7 @@ Require-Bundle: org.knime.base;bundle-version="3.0.0",
  com.fifesoft.autocomplete;bundle-version="2.5.8",
  com.fifesoft.rstaui;bundle-version="2.5.7",
  com.fifesoft.languagesupport;bundle-version="2.5.8",
- com.fifesoft.spellchecker;bundle-version="2.5.7",
- com.fifesoft.rstaui.source;bundle-version="2.5.7"
+ com.fifesoft.spellchecker;bundle-version="2.5.7"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: scijava_scripting_node.jar
 Export-Package: org.knime.scijava.scripting.nodes.interactive.ui

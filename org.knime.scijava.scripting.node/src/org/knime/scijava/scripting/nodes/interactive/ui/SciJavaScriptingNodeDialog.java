@@ -106,10 +106,9 @@ import org.scijava.plugin.PluginInfo;
 import org.scijava.plugin.PluginService;
 import org.scijava.script.ScriptLanguage;
 import org.scijava.script.ScriptService;
+import org.scijava.ui.swing.script.SyntaxHighlighter;
 import org.scijava.ui.swing.widget.SwingInputHarvester;
 import org.scijava.ui.swing.widget.SwingInputPanel;
-
-import net.imagej.ui.swing.script.SyntaxHighlighter;
 
 /**
  * Dialog for the Scripting Node.
@@ -214,6 +213,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
 
         // needs to be created
         createCodeEditor();
+        
     }
 
     /**
@@ -257,7 +257,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
     }
 
     /**
-     * creates the dialog pane
+     * creates the dialog pane.
      *
      * @param clean
      *            whether the settings should be cleared (code has been
@@ -422,6 +422,7 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
             m_outputTablePanel = createOutputTablePane();
             createComponent();
             addTab("Dialog", m_component);
+            super.setSelected("Dialog");
             getPanel().revalidate();
             getPanel().repaint();
         }

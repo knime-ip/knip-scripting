@@ -17,8 +17,8 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.ScriptingGateway;
 import org.scijava.Context;
+import org.scijava.ui.swing.script.EditorPane;
 
-import net.imagej.ui.swing.script.EditorPane;
 
 /**
  * DialogComponent which uses a {@link EditorPane} to edit Java Code.

@@ -6,18 +6,17 @@ Bundle-Version: 0.9.0.qualifier
 Bundle-Vendor: University of Konstanz
 Require-Bundle: org.knime.base;bundle-version="3.0.0",
  scijava-common;bundle-version="2.47.0",
- scijava-ui-swing;bundle-version="0.7.0",
  org.knime.scijava.commands;bundle-version="0.2.0",
  org.knime.scijava.scripting.base;bundle-version="0.9.0",
  com.fifesoft.rsyntaxtextarea;bundle-version="2.5.8",
- imagej-ui-swing;bundle-version="0.15.1",
  org.knime.scijava.core;bundle-version="0.3.0",
  imagej-common;bundle-version="0.21.0",
- imagej-updater;bundle-version="0.8.0",
  com.fifesoft.autocomplete;bundle-version="2.5.8",
  com.fifesoft.rstaui;bundle-version="2.5.7",
  com.fifesoft.languagesupport;bundle-version="2.5.8",
- com.fifesoft.spellchecker;bundle-version="2.5.7"
+ com.fifesoft.spellchecker;bundle-version="2.5.7",
+ script-editor;bundle-version="0.1.0",
+ scijava-ui-swing;bundle-version="0.9.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: scijava_scripting_node.jar
 Export-Package: org.knime.scijava.scripting.nodes.interactive.ui

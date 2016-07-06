@@ -12,8 +12,6 @@ public class ClassUtils {
 
     private static final Set<Class<?>> primitives = new HashSet<>();
     private static final Set<Class<?>> wrappers = new HashSet<>();
-    private static final Set<Class<?>> services = new HashSet<>();
-
     static {
         primitives.add(boolean.class);
         primitives.add(byte.class);

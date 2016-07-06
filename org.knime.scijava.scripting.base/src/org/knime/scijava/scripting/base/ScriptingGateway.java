@@ -17,16 +17,13 @@ import org.knime.scijava.commands.widget.KNIMEWidgetService;
 import org.knime.scijava.core.ResourceAwareClassLoader;
 import org.knime.scijava.core.SubContext;
 import org.knime.scijava.core.pluginindex.ReusablePluginIndex;
-import org.knime.scijava.scripting.parameters.ParameterCodeGeneratorService;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.display.DisplayPostprocessor;
-import org.scijava.object.ObjectService;
 import org.scijava.plugin.DefaultPluginFinder;
 import org.scijava.plugin.PluginIndex;
 import org.scijava.plugin.PluginService;
 import org.scijava.service.Service;
-import org.scijava.ui.UIService;
 
 /**
  * ScriptingGateway is a singleton class which creates the scijava contexts for

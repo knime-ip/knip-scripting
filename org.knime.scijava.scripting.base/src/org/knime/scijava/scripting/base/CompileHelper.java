@@ -72,6 +72,7 @@ public class CompileHelper {
      * @return The resulting scriptInfo.
      * @throws ScriptException
      */
+    @SuppressWarnings("unchecked")
     public CompileProductHelper compile(final String script,
             final ScriptLanguage language) throws ScriptException {
         setScript(script, language);

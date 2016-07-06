@@ -88,7 +88,7 @@ public class SciJavaScriptingNodeSettings {
      */
     public static SettingsModelString createCodeSettingsModel() {
         return new SettingsModelString(SM_KEY_CODE, ScriptUtils.fileAsString(
-                "platform:/plugin/org.knime.scijava.scripting.nodes/res/DefaultScript.txt"));
+                "platform:/plugin/org.knime.scijava.scripting.base/res/DefaultScript.txt"));
     }
 
     /**

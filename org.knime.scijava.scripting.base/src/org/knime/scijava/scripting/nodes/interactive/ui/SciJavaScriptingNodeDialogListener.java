@@ -2,11 +2,14 @@ package org.knime.scijava.scripting.nodes.interactive.ui;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Optional;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
 import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.convert.java.DataCellToJavaConverterFactory;
 import org.knime.core.node.NodeLogger;
 import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.scripting.nodes.interactive.settings.SciJavaScriptingNodeSettings;
@@ -89,8 +92,8 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
      */
     private void insertParameterCodeSnippetForColumn(final int index) {
         if (index >= 0) {
-            final Object o =
-                    m_editor.getColumnList().getModel().getElementAt(index);
+            final Object o = m_editor.getColumnList().getModel()
+                    .getElementAt(index);
 
             final DataColumnSpec cspec = (DataColumnSpec) o;
 
@@ -99,16 +102,37 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 
             // get the Name of the first type we can create
 
-            final Optional<Class<?>> type =
-                    m_converterCache.getMatchingJavaType(cspec.getType());
+            final Collection<DataCellToJavaConverterFactory<?, ?>> types = m_converterCache
+                    .getMatchingJavaTypes(getClass().getClassLoader(),
+                            cspec.getType());
 
-            if (!type.isPresent()) {
-                // no adapter found, error out
+            Class<?> type;
+            switch (types.size()) {
+            case 0:
                 JOptionPane.showMessageDialog(null,
                         "The column you selected has a datatype which\n"
                                 + "currently cannot be used in Scripts.",
                         "No matching adapter", JOptionPane.ERROR_MESSAGE);
                 return;
+            case 1:
+                type = types.stream().findFirst().get().getDestinationType();
+                break;
+            default:
+
+                final Set<NamedCandidate> candidates = new HashSet<>();
+                for (final DataCellToJavaConverterFactory<?, ?> candidate : types) {
+                    candidates.add(new NamedCandidate(candidate));
+                }
+
+                final NamedCandidate res = (NamedCandidate) JOptionPane
+                        .showInputDialog(null,
+                                "Choose the corresponding Java type:\n",
+                                "Java Type Selection",
+                                JOptionPane.PLAIN_MESSAGE, null,
+                                candidates.toArray(),
+                                candidates.iterator().next());
+
+                type = res.getType();
             }
 
             final ParameterCodeGenerator generator = m_parameterGenerators
@@ -126,12 +150,13 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
             final int pos = generator.getPosition(code);
 
             final String parameterCode = generator.generateInputParameter(code,
-                    memberName, type.get(), columnName);
+                    memberName, type, columnName);
 
             m_editor.getCodeEditor().getEditorPane().insert(parameterCode, pos);
             m_editor.getCodeEditor().updateModel();
 
         }
+
     }
 
     /**
@@ -173,22 +198,56 @@ public class SciJavaScriptingNodeDialogListener extends AbstractContextual
 
     @Override
     public void mousePressed(final MouseEvent e) {
-        // unsused
+        // unused
     }
 
     @Override
     public void mouseReleased(final MouseEvent e) {
-        // unsused
+        // unused
     }
 
     @Override
     public void mouseEntered(final MouseEvent e) {
-        // unsused
+        // unused
     }
 
     @Override
     public void mouseExited(final MouseEvent e) {
-        // unsused
+        // unused
+    }
+
+    // Helper
+    private class NamedCandidate {
+
+        private DataCellToJavaConverterFactory<?, ?> candidate;
+
+        public NamedCandidate(DataCellToJavaConverterFactory<?, ?> candidate) {
+            this.candidate = candidate;
+        }
+
+        public Class<?> getType() {
+            return candidate.getDestinationType();
+        }
+
+        @Override
+        public String toString() {
+            return getType().getSimpleName();
+        }
+
+        @Override
+        public int hashCode() {
+            return candidate.getDestinationType().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof NamedCandidate) {
+                if (((NamedCandidate) obj).getType().equals(getType())) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
 }

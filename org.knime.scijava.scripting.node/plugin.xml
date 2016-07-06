@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
-         point="org.knime.workbench.repository.nodesets">
-      <nodeset
-            expert-flag="false"
-            factory-class="org.knime.scijava.scripting.nodes.SciJavaScriptingNodeSetFactory"
-            id="org.knime.knip.scripting.node.ScriptingNodeSetFactory">
-      </nodeset>
-   </extension>
-
 </plugin>

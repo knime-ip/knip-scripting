@@ -120,7 +120,7 @@ public class SciJavaScriptingCodeEditor implements Contextual {
         final int FILL_BOTH = GridBagConstraints.BOTH;
         final int FILL_NONE = GridBagConstraints.NONE;
         final int FILL_HORI = GridBagConstraints.HORIZONTAL;
-        final int FILL_VERT = GridBagConstraints.VERTICAL;
+//        final int FILL_VERT = GridBagConstraints.VERTICAL;
         final int FIRST_LINE_START = GridBagConstraints.FIRST_LINE_START;
         final int WEST = GridBagConstraints.WEST;
         final int EAST = GridBagConstraints.EAST;

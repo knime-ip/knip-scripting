@@ -2,8 +2,6 @@ package org.knime.scijava.scripting.base;
 
 import org.scijava.module.Module;
 import org.scijava.module.ModuleException;
-import org.scijava.module.ModuleInfo;
-import org.scijava.module.ModuleItem;
 import org.scijava.script.ScriptLanguage;
 
 /**
@@ -14,11 +12,8 @@ import org.scijava.script.ScriptLanguage;
  */
 public interface CompileProductHelper {
 
-    public Iterable<ModuleItem<?>> inputs();
-
-    public ModuleInfo getModuleInfo();
-
-    public Module createModule(ScriptLanguage language) throws ModuleException;
+    public Module createModule(ScriptLanguage language)
+            throws ModuleException;
 
     public void resetModule(Module m);
 

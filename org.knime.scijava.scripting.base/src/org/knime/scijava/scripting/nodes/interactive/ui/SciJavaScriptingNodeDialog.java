@@ -561,6 +561,9 @@ public class SciJavaScriptingNodeDialog extends NodeDialogPane {
     }
 
     /**
+     * 
+     * FIXME
+     * 
      * We need to preprocess the the modules so that we don't try to don't try
      * to create dialog components for invalid inputs.
      *

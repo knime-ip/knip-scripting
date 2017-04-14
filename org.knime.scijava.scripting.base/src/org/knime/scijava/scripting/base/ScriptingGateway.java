@@ -11,7 +11,7 @@ import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
 import org.knime.scijava.commands.settings.NodeDialogSettingsService;
-import org.knime.scijava.commands.settings.NodeModelSettingsService;
+import org.knime.scijava.commands.settings.NodeService;
 import org.knime.scijava.commands.simplemapping.SimpleColumnMappingService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
 import org.knime.scijava.core.ResourceAwareClassLoader;
@@ -61,7 +61,7 @@ public class ScriptingGateway {
             .asList(InputDataRowService.class, OutputDataRowService.class,
                     KNIMEExecutionService.class,
                     NodeDialogSettingsService.class,
-                    NodeModelSettingsService.class, KNIMEWidgetService.class,
+                    NodeService.class, KNIMEWidgetService.class,
                     CommandService.class, ConverterCacheService.class,
                     SimpleColumnMappingService.class);
 

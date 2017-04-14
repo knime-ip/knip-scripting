@@ -41,8 +41,7 @@ import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
-import org.knime.scijava.commands.settings.NodeModelSettingsService;
-import org.knime.scijava.commands.simplemapping.SimpleColumnMappingService;
+import org.knime.scijava.commands.settings.NodeService;
 import org.knime.scijava.core.TempClassLoader;
 import org.knime.scijava.scripting.base.CompileHelper;
 import org.knime.scijava.scripting.base.CompileProductHelper;
@@ -68,27 +67,29 @@ import org.scijava.script.ScriptService;
  */
 public class SciJavaScriptingNodeModel extends NodeModel {
 
-    private static final NodeLogger LOGGER =
-            NodeLogger.getLogger(SciJavaScriptingNodeModel.class);
+    private static final NodeLogger LOGGER = NodeLogger
+            .getLogger(SciJavaScriptingNodeModel.class);
 
     /* scijava context stuff */
     private final Context m_context;
 
     /* Node settings */
-    private final SciJavaScriptingNodeSettings m_settings =
-            new SciJavaScriptingNodeSettings();
+    private final SciJavaScriptingNodeSettings m_settings = new SciJavaScriptingNodeSettings();
 
     /* Service providing access to ScriptLanguages plugins */
     @Parameter
     private ScriptService m_scriptService;
+    
     @Parameter
-    private NodeModelSettingsService m_nodeModelSettingsService;
-    @Parameter
-    private SimpleColumnMappingService m_columnMappingService;
+    private NodeService m_nodeModelSettingsService;
+    
+    
     @Parameter
     private KNIMEExecutionService m_executionService;
+    
     @Parameter
     private OutputDataRowService m_outputrowService;
+    
     @Parameter
     private InputDataRowService m_inputrowService;
 
@@ -182,6 +183,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
             final ExecutionContext exec) throws Exception {
 
+        // FIXME
         // ensure the dialog was generated
         if (m_settings.getMode() != ScriptDialogMode.SETTINGS_EDIT) {
             throw new IllegalArgumentException(
@@ -190,8 +192,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
         // prepare output table
         final BufferedDataTable inTable = inData[0];
-        final BufferedDataContainer container =
-                exec.createDataContainer(m_outTableSpec);
+        final BufferedDataContainer container = exec
+                .createDataContainer(m_outTableSpec);
         BufferedDataTable out;
 
         // provide the KNIME data via Scijava services to module
@@ -202,7 +204,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
         m_compileProduct = recompile(m_compiler, m_settings.getScriptCode(),
                 currentLanguage, m_errorWriter);
         m_cellFactory = new ScriptingCellFactory(m_context, m_outTableSpec,
-                m_compileProduct.createModule(currentLanguage));
+                m_compileProduct.createModule(getCurrentLanguage()));
 
         try (final TempClassLoader cl = new TempClassLoader(
                 ScriptingGateway.get().createUrlClassLoader())) {
@@ -237,7 +239,7 @@ public class SciJavaScriptingNodeModel extends NodeModel {
     @Override
     public StreamableOperator createStreamableOperator(
             final PartitionInfo partitionInfo, final PortObjectSpec[] inSpecs)
-            throws InvalidSettingsException {
+                    throws InvalidSettingsException {
 
         switch (m_settings.getColumnCreationMode()) {
         case APPEND_COLUMNS:
@@ -267,14 +269,14 @@ public class SciJavaScriptingNodeModel extends NodeModel {
     @Override
     protected void loadInternals(final File nodeInternDir,
             final ExecutionMonitor exec)
-            throws IOException, CanceledExecutionException {
+                    throws IOException, CanceledExecutionException {
         /* nothing to do */
     }
 
     @Override
     protected void saveInternals(final File nodeInternDir,
             final ExecutionMonitor exec)
-            throws IOException, CanceledExecutionException {
+                    throws IOException, CanceledExecutionException {
         /* nothing to do */
     }
 
@@ -289,14 +291,12 @@ public class SciJavaScriptingNodeModel extends NodeModel {
             throws InvalidSettingsException {
         m_settings.loadSettingsFrom(settings, m_nodeModelSettingsService,
                 false);
-        m_columnMappingService.deserialize(m_settings.getColumnInputMapping());
 
         getCurrentLanguage(); // ensure the language is still available
     }
 
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
-        m_settings.setColumnInputMapping(m_columnMappingService.serialize());
         m_settings.saveSettingsTo(settings, m_nodeModelSettingsService);
     }
 
@@ -310,8 +310,8 @@ public class SciJavaScriptingNodeModel extends NodeModel {
         try (final TempClassLoader cl = new TempClassLoader(
                 ScriptingGateway.get().createUrlClassLoader())) {
             final String languageName = m_settings.getScriptLanguageName();
-            final ScriptLanguage language =
-                    m_scriptService.getLanguageByName(languageName);
+            final ScriptLanguage language = m_scriptService
+                    .getLanguageByName(languageName);
             if (language == null) {
                 throw new NullPointerException("Could not load language "
                         + languageName + " for Scripting Node.");
@@ -351,14 +351,15 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
         @Parameter
         private ModuleService m_moduleService;
+        
         @Parameter
         private ConverterCacheService m_converterCache;
 
-        public ScriptingCellFactory(final Context context, DataTableSpec inSpec,
+        public ScriptingCellFactory(final Context context, final DataTableSpec inSpec,
                 final Module module) {
             m_module = module;
-            setContext(context);
             m_spec = createDataColumnSpecs(inSpec);
+            setContext(context);
         }
 
         protected DataColumnSpec[] createDataColumnSpecs(DataTableSpec inSpec) {
@@ -371,15 +372,15 @@ public class SciJavaScriptingNodeModel extends NodeModel {
 
             for (final ModuleItem<?> output : m_module.getInfo().outputs()) {
 
-                // FIXME Hack to supress autogenerated result output
+                // FIXME Hack to suppress auto-generated result output
                 if (output.getName().equals("result")) {
                     LOGGER.warn("removed output names 'result'");
                     continue;
                 }
 
                 final DataType type;
-                Optional<DataType> convertedType =
-                        m_converterCache.getConvertedType(output.getType());
+                Optional<DataType> convertedType = m_converterCache
+                        .getConvertedType(output.getType());
                 if (convertedType.isPresent()) {
                     type = convertedType.get();
                 } else {

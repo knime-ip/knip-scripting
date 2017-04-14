@@ -7,7 +7,7 @@ import org.knime.scijava.commands.KNIMEExecutionService;
 import org.knime.scijava.commands.converter.ConverterCacheService;
 import org.knime.scijava.commands.io.InputDataRowService;
 import org.knime.scijava.commands.io.OutputDataRowService;
-import org.knime.scijava.commands.settings.NodeModelSettingsService;
+import org.knime.scijava.commands.settings.NodeService;
 import org.knime.scijava.commands.settings.NodeSettingsService;
 import org.knime.scijava.commands.settings.SettingsModelTypeService;
 import org.knime.scijava.commands.widget.KNIMEWidgetService;
@@ -56,7 +56,7 @@ public class KNIMESciJavaGateway {
                     ObjectService.class, WidgetService.class,
                     KNIMEWidgetService.class, ConverterCacheService.class,
                     UIService.class, CommandService.class,
-                    NodeModelSettingsService.class,
+                    NodeService.class,
                     SettingsModelTypeService.class);
 
     /**
